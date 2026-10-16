@@ -1,4 +1,5 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import type { Control } from 'react-hook-form';
 import Button from '../../components/Button';
 import Select from '../../components/Select';
@@ -21,11 +22,12 @@ export default function NewCropScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      className={`flex-1 ${palette.bg}`}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View className="flex-1 justify-center gap-5 p-6">
+    <View className={`flex-1 ${palette.bg}`}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="items-center gap-1">
           <Text className={`text-2xl font-bricolage ${palette.title}`}>Nuevo cultivo</Text>
           <Text className={`text-center ${palette.sub}`}>
@@ -72,7 +74,7 @@ export default function NewCropScreen() {
             />
           </>
         )}
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

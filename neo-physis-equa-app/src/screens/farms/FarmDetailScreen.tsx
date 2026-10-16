@@ -1,4 +1,5 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import { useAccessibility } from '../../accessibility/context';
@@ -44,10 +45,12 @@ export default function FarmDetailScreen() {
   }
 
   return (
-    <ScrollView
-      className={`flex-1 ${palette.bg}`}
-      contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
-    >
+    <View className={`flex-1 ${palette.bg}`}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
       <Text className={`text-2xl font-bricolage ${palette.title}`}>Mi finca</Text>
       <Text className={`mb-5 text-sm ${palette.sub}`}>Gestiona los datos de tu terreno agrícola</Text>
 
@@ -100,6 +103,7 @@ export default function FarmDetailScreen() {
         secondary
         accessibilityHint="Elimina la finca y todos sus datos asociados"
       />
-    </ScrollView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

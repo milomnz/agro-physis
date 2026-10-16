@@ -1,4 +1,5 @@
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Link, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import AuthHeader from './components/AuthHeader';
@@ -41,12 +42,15 @@ export default function RegisterScreen() {
     }`;
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-crema"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="flex-grow justify-center px-6 py-10"
+    <View className="flex-1 bg-crema">
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          paddingHorizontal: 24,
+          paddingVertical: 40,
+        }}
         keyboardShouldPersistTaps="handled"
       >
         <AuthHeader
@@ -131,7 +135,7 @@ export default function RegisterScreen() {
         <Link href="/login" className="mt-4 text-center text-turquesa">
           ¿Ya tienes cuenta? Inicia sesión
         </Link>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

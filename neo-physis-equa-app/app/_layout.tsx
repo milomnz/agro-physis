@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
@@ -54,8 +55,10 @@ export default function RootLayout() {
   }
 
   return (
-    <AccessibilityProvider>
-      <RootStack />
-    </AccessibilityProvider>
+    <KeyboardProvider>
+      <AccessibilityProvider>
+        <RootStack />
+      </AccessibilityProvider>
+    </KeyboardProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import SearchBar from '../../components/SearchBar';
@@ -66,17 +67,23 @@ export default function FarmsListScreen() {
       ) : null}
 
       {showForm ? (
-        <View className={`mb-6 gap-5 rounded-2xl p-4 ${palette.card}`}>
-          <Text className={`text-xl font-bricolage ${palette.title}`}>Registrar finca</Text>
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className={`mb-6 gap-5 rounded-2xl p-4 ${palette.card}`}>
+            <Text className={`text-xl font-bricolage ${palette.title}`}>Registrar finca</Text>
 
-          <FarmFormFields control={control} withPlaceholders />
+            <FarmFormFields control={control} withPlaceholders />
 
-          <Button
-            text={submitting ? 'Registrando…' : 'Registrar finca'}
-            onPress={handleSubmit(onSubmit)}
-            disabled={submitting}
-          />
-        </View>
+            <Button
+              text={submitting ? 'Registrando…' : 'Registrar finca'}
+              onPress={handleSubmit(onSubmit)}
+              disabled={submitting}
+            />
+          </View>
+        </KeyboardAwareScrollView>
       ) : farms.length === 0 ? (
         <View className={`flex-1 items-center justify-center gap-3 rounded-2xl p-6 ${palette.card}`}>
           <Text className={`text-lg font-inter-semibold ${palette.title}`}>No tienes fincas registradas</Text>

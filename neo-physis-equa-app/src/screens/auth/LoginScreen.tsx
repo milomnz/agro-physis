@@ -1,4 +1,5 @@
-import { KeyboardAvoidingView, Platform, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Link, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Button from '../../components/Button';
@@ -20,11 +21,12 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-crema"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View className="flex-1 justify-center gap-5 p-6">
+    <View className="flex-1 bg-crema">
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <AuthHeader title="Neo Physis Equa" subtitle="Inicia sesión en tu cuenta" />
 
         {error && (
@@ -60,7 +62,7 @@ export default function LoginScreen() {
         <Link href="/register" className="text-center text-turquesa">
           ¿No tienes cuenta? Regístrate
         </Link>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
