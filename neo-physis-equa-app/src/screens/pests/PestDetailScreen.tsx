@@ -1,11 +1,5 @@
-import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    View,
-} from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import Field from '../../components/Field';
@@ -28,11 +22,12 @@ export default function PestDetailScreen() {
     }
 
     return (
-        <KeyboardAvoidingView
-            className={`flex-1 ${palette.bg}`}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-            <ScrollView className="flex-1 p-6" contentContainerStyle={{ paddingBottom: 40 }}>
+        <View className={`flex-1 ${palette.bg}`}>
+            <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+                keyboardShouldPersistTaps="handled"
+            >
                 <Text className={`text-2xl font-bricolage ${palette.title}`}>Plaga</Text>
                 <Text className={`mb-5 text-sm ${palette.sub}`}>Edita los datos del registro de plaga</Text>
 
@@ -114,7 +109,7 @@ export default function PestDetailScreen() {
 
                 <Button text="Eliminar plaga" danger onPress={handleDelete} />
 
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
+        </View>
     );
 }

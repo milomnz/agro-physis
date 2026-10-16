@@ -1,32 +1,15 @@
-import { Stack, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { Stack } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
 import { SessionProvider } from '../src/session/context';
 import '../global.css';
-import { Ionicons } from '@expo/vector-icons';
 
 function RootStack() {
   const { highContrast } = useAccessibility();
-  const router = useRouter();
   const bgColor = highContrast ? '#011824' : '#17536D';
-
-  const renderBackButton = () => (
-    <Pressable 
-      onPress={() => {
-        if (router.canGoBack()) {
-          router.back();
-        } else {
-          router.replace('/home'); // Fallback si se recarga la página web de golpe
-        }
-      }} 
-      className="pr-5 active:opacity-70"
-      accessibilityLabel="Volver a la pantalla anterior"
-    >
-      <Ionicons name="arrow-back" size={26} color="#F3F4F4" />
-    </Pressable>
-  );  
 
   return (
     <Stack
@@ -73,10 +56,12 @@ export default function RootLayout() {
   }
 
   return (
-    <SessionProvider>
-      <AccessibilityProvider>
-        <RootStack />
-      </AccessibilityProvider>
-    </SessionProvider>
+    <KeyboardProvider>
+      <SessionProvider>
+        <AccessibilityProvider>
+          <RootStack />
+        </AccessibilityProvider>
+      </SessionProvider>
+    </KeyboardProvider>
   );
 }
