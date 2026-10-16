@@ -1,22 +1,13 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '../src/components/Button';
 import { useAccessibility } from '../src/accessibility/context';
-import { getSession, type Session } from '../src/services/session';
+import { useSession } from '../src/hooks/useSession';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { palette } = useAccessibility();
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getSession().then((stored) => {
-      setSession(stored);
-      setLoading(false);
-    });
-  }, []);
+  const { session, loading } = useSession();
 
   if (loading) {
     return (

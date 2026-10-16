@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { register as registerRequest, type RegisterData } from '../services/auth';
+import { type RegisterData } from '../services/auth';
 import { validateRegisterForm, type RegisterFieldErrors } from '../utils/auth-validators';
+import { useSession } from './useSession';
 
 export type AuthFieldName = 'nombre' | 'email' | 'password';
 
@@ -26,6 +27,7 @@ interface UseRegisterResult {
 }
 
 export function useRegister(): UseRegisterResult {
+  const { signUp } = useSession();
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,7 +56,7 @@ export function useRegister(): UseRegisterResult {
         disabilityType: disability === 'ninguna' ? null : disability,
         accessibilityProfile: { ttsEnabled, highContrast },
       };
-      await registerRequest(payload);
+      await signUp(payload);
       setNombre('');
       setEmail('');
       setPassword('');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { login as loginRequest, type LoginData } from '../services/auth';
-import { saveSession } from '../services/session';
+import { type LoginData } from '../services/auth';
+import { useSession } from './useSession';
 
 interface UseLoginResult {
   loading: boolean;
@@ -9,6 +9,7 @@ interface UseLoginResult {
 }
 
 export function useLogin(): UseLoginResult {
+  const { signIn } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,19 +17,7 @@ export function useLogin(): UseLoginResult {
     setLoading(true);
     setError(null);
     try {
-      const response = await loginRequest({ email: data.email.trim(), password: data.password });
-      if (!response.token) {
-        throw new Error('No se recibió un token de sesión');
-      }
-      await saveSession({
-        token: response.token,
-        id: response.id,
-        nombre: response.nombre,
-        email: response.email,
-        role: response.role,
-        accessibilityProfile: response.accessibilityProfile,
-        disabilityType: response.disabilityType,
-      });
+      await signIn(data);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado del servidor');

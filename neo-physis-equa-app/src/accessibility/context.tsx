@@ -1,6 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { usePathname } from 'expo-router';
-import { getSession, type Session } from '../services/session';
+import { createContext, useContext, type ReactNode } from 'react';
+import { useSession } from '../hooks/useSession';
 
 export interface AppPalette {
   bg: string;
@@ -44,37 +43,22 @@ export const buildPalette = (highContrast: boolean): AppPalette =>
 
 interface AccessibilityContextValue {
   highContrast: boolean;
-  session: Session | null;
   palette: AppPalette;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextValue>({
   highContrast: false,
-  session: null,
   palette: buildPalette(false),
 });
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    getSession().then((stored) => {
-      if (active) {
-        setSession(stored);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [pathname]);
+  const { session } = useSession();
 
   const highContrast = session?.accessibilityProfile?.highContrast === true;
 
   return (
     <AccessibilityContext.Provider
-      value={{ highContrast, session, palette: buildPalette(highContrast) }}
+      value={{ highContrast, palette: buildPalette(highContrast) }}
     >
       {children}
     </AccessibilityContext.Provider>

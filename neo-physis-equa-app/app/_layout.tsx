@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
+import { SessionProvider } from '../src/session/context';
 import '../global.css';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -72,8 +73,10 @@ export default function RootLayout() {
   }
 
   return (
-    <AccessibilityProvider>
-      <RootStack />
-    </AccessibilityProvider>
+    <SessionProvider>
+      <AccessibilityProvider>
+        <RootStack />
+      </AccessibilityProvider>
+    </SessionProvider>
   );
 }

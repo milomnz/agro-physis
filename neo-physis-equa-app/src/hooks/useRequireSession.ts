@@ -1,26 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 
-import { getSession } from '../services/session';
+import { useSession } from './useSession';
 
 export function useRequireSession(): boolean {
     const router = useRouter();
-    const [ready, setReady] = useState(false);
+    const { session, loading } = useSession();
+    const ready = !loading && Boolean(session?.token);
 
     useEffect(() => {
-        (async () => {
-            try {
-                const session = await getSession();
-                if (session?.token) {
-                    setReady(true);
-                } else {
-                    router.replace('/login');
-                }
-            } catch {
-                router.replace('/login');
-            }
-        })();
-    }, [router]);
+        if (!loading && !session?.token) {
+            router.replace('/login');
+        }
+    }, [loading, session, router]);
 
     return ready;
 }
