@@ -4,6 +4,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
+import { SessionProvider } from '../src/session/context';
 import '../global.css';
 
 function RootStack() {
@@ -56,9 +57,11 @@ export default function RootLayout() {
 
   return (
     <KeyboardProvider>
-      <AccessibilityProvider>
-        <RootStack />
-      </AccessibilityProvider>
+      <SessionProvider>
+        <AccessibilityProvider>
+          <RootStack />
+        </AccessibilityProvider>
+      </SessionProvider>
     </KeyboardProvider>
   );
 }

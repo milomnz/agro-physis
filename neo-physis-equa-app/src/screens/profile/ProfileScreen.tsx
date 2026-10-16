@@ -10,12 +10,12 @@ import { useSession } from '../../hooks/useSession';
 export default function ProfileScreen() {
   const router = useRouter();
   const { palette } = useAccessibility();
-  const { session, loading, logout } = useSession();
+  const { session, loading, signOut } = useSession();
 
   const handleLogout = useCallback(async () => {
-    await logout();
+    await signOut();
     router.replace('/login');
-  }, [logout, router]);
+  }, [signOut, router]);
 
   if (loading) {
     return (

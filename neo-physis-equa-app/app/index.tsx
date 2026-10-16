@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Redirect } from 'expo-router';
-import { getSession } from '../src/services/session';
+import { useSession } from '../src/hooks/useSession';
 
 export default function Index() {
-  const [hasToken, setHasToken] = useState<boolean | null>(null);
+  const { session, loading } = useSession();
+  const hasToken = Boolean(session?.token);
 
-  useEffect(() => {
-    getSession().then((session) => setHasToken(Boolean(session?.token)));
-  }, []);
-
-  if (hasToken === null) {
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-crema">
         <ActivityIndicator size="large" color="#17536D" />
