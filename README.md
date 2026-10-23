@@ -1,6 +1,6 @@
-# Neo-Physis-Equa 🌱♿
+# Agro Physis
 
-**Neo-Physis-Equa** es una plataforma de **inclusión agrícola accesible** diseñada para empoderar a pequeños productores y trabajadores del campo, permitiendo la **incorporación productiva de personas con discapacidad** (visual, motora, auditiva e intelectual). La plataforma utiliza técnicas de visión por computador e Inteligencia Artificial mediante la cámara del dispositivo móvil para la **predicción y diagnóstico oportuno de plagas en cultivos**.
+**Agro-Physis** es una plataforma de **inclusión agrícola accesible** diseñada para empoderar a pequeños productores y trabajadores del campo, permitiendo la **incorporación productiva de personas con discapacidad** (visual, motora, auditiva e intelectual). La plataforma utiliza técnicas de visión por computador e Inteligencia Artificial mediante la cámara del dispositivo móvil para la **predicción y diagnóstico oportuno de plagas en cultivos**.
 
 ---
 
