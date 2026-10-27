@@ -26,7 +26,7 @@ import { PestsModule } from './pests/pests.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true, // Perfecto para esta etapa de desarrollo
+        synchronize: false,
       }),
     }),
     UsersModule,
