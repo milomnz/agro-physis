@@ -31,6 +31,84 @@
 $ npm install
 ```
 
+## Base de datos y migraciones
+
+El esquema se gestiona con **migraciones de TypeORM**. `synchronize` está desactivado
+(`app.module.ts`), por lo que los cambios de entidades **no** se aplican solos.
+
+### Variables de entorno
+
+Copia `.env.example` a `.env` y ajusta los valores:
+
+```bash
+$ cp .env.example .env
+```
+
+| Variable | Descripción |
+| --- | --- |
+| `DB_HOST`, `DB_PORT` | Servidor PostgreSQL |
+| `DB_NAME` | Nombre de la base (debe existir antes de migrar) |
+| `DB_USER`, `DB_PASSWORD` | Credenciales |
+| `JWT_SECRET` | Secreto para firmar los tokens |
+
+### Scripts
+
+| Comando | Qué hace |
+| --- | --- |
+| `npm run migration:run` | Aplica las migraciones pendientes |
+| `npm run migration:revert` | Deshace la última migración |
+| `npm run migration:show` | Lista las migraciones y cuáles están aplicadas |
+| `npm run migration:generate -- src/database/migrations/Nombre` | Genera una migración con el diff entre entidades y base |
+| `npm run migration:baseline` | Marca la migración inicial como aplicada en una base ya existente |
+
+### Base de datos nueva
+
+```bash
+$ npm run migration:run
+```
+
+### Base de datos que ya existía (creada con `synchronize: true`)
+
+Esa base ya tiene las tablas pero no la tabla `migrations`, así que `migration:run`
+falla con `ya existe un tipo «user_role»`. Hay dos opciones:
+
+**1. Línea base (conserva los datos)** — recomendada:
+
+```bash
+$ npm run migration:baseline
+$ npm run migration:show
+```
+
+Debe aparecer `[X] 1 InitialSchema1793048286926`. Luego confirma que la base coincide
+con las entidades:
+
+```bash
+$ npm run migration:generate -- src/database/migrations/Check
+```
+
+Si responde `No changes in database schema were found`, está todo en orden. Si genera
+una migración, revisa el diff y aplícala como una migración nueva.
+
+**2. Empezar de cero (borra los datos locales)**:
+
+```bash
+$ psql -U postgres -d <DB_NAME> -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+$ npm run migration:run
+```
+
+### Cambios de esquema
+
+Después de modificar una entidad:
+
+```bash
+$ npm run migration:generate -- src/database/migrations/DescripcionDelCambio
+$ npm run migration:run
+```
+
+Revisa siempre el archivo generado antes de aplicarlo. Las migraciones **no** se
+ejecutan al arrancar la aplicación: en cada entorno (incluido despliegue) hay que
+correr `npm run migration:run`.
+
 ## Compile and run the project
 
 ```bash
