@@ -104,7 +104,7 @@ export default function FarmsListScreen() {
                 onChangeText={setSearch}
                 placeholder="Buscar finca por nombre o ubicación"
               />
-            ) : null
+            ) : undefined
           }
           ListEmptyComponent={
             <Text className={`p-6 text-center text-sm ${palette.sub}`}>

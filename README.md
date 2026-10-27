@@ -101,7 +101,8 @@ Edita `.env` con las credenciales de tu PostgreSQL y un `JWT_SECRET` propio, lue
     npm run build
     npm run start:dev           # API en http://localhost:8080
 
-Las tablas se crean automaticamente al arrancar (TypeORM con `synchronize`).
+El esquema se gestiona con migraciones de TypeORM (`npm run migration:run`); ver
+`neo-physis-equa-backend/README.md` para la linea base y el flujo completo.
 
 Endpoints (protegidos con JWT excepto registro/login):
 
@@ -110,7 +111,7 @@ Endpoints (protegidos con JWT excepto registro/login):
 
 Flujo de la app: Finca -> Cultivos -> Plagas (una plaga se asocia a un cultivo).
 
-### 3) App movil (React Native / Expo SDK 57)
+### 3) App movil (React Native / Expo SDK 58)
 
     cd neo-physis-equa-app
     npm install
