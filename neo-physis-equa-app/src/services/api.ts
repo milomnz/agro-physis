@@ -1,8 +1,8 @@
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
-import { clearSession } from './session';
+import { clearSession, getSession } from './session';
 
 function resolveBaseUrl(): string {
   if (process.env.EXPO_PUBLIC_API_URL) {
@@ -51,9 +51,18 @@ export function setSessionExpiredHandler(handler: SessionExpiredHandler | null):
 
 let handlingUnauthorized = false;
 
+export function isUnauthorizedError(err: unknown): boolean {
+  return err instanceof ApiError && err.status === 401;
+}
+
 async function handleUnauthorized(): Promise<void> {
   // Varias requests concurrentes pueden recibir 401 a la vez.
   if (handlingUnauthorized) return;
+
+  // Si ya no hay token, un 401 anterior ya cerró la sesión.
+  const session = await getSession();
+  if (!session?.token) return;
+
   handlingUnauthorized = true;
 
   try {
@@ -63,10 +72,6 @@ async function handleUnauthorized(): Promise<void> {
       await clearSession();
     }
     router.replace('/login');
-    Alert.alert(
-      'Sesión expirada',
-      'Tu sesión expiró. Inicia sesión de nuevo para continuar.',
-    );
   } finally {
     handlingUnauthorized = false;
   }

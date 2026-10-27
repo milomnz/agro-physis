@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { deleteFarm, getFarm, updateFarm, type Farm } from '../services/farms';
+import { isUnauthorizedError } from '../services/api';
 import { useFarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
 
@@ -33,6 +34,7 @@ export function useFarmDetail() {
                     altitude: String(data.altitude ?? ''),
                 });
             } catch (err: unknown) {
+                if (isUnauthorizedError(err)) return;
                 setScreenError(err instanceof Error ? err.message : 'Error al cargar la finca');
             } finally {
                 setLoading(false);
@@ -80,6 +82,7 @@ export function useFarmDetail() {
             });
             setSaved(true);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
         } finally {
             setSaving(false);
@@ -101,6 +104,7 @@ export function useFarmDetail() {
                             await deleteFarm(farm.id);
                             router.replace('/farms');
                         } catch (err: unknown) {
+                            if (isUnauthorizedError(err)) return;
                             Alert.alert('Error', err instanceof Error ? err.message : 'Error al eliminar la finca');
                         }
                     },
