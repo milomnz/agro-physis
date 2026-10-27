@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
+import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
 
 interface PestForm {
@@ -38,6 +39,7 @@ export function usePestDetail() {
                     severity: pest.severity,
                 });
             } catch (err: unknown) {
+                if (isUnauthorizedError(err)) return;
                 setScreenError(err instanceof Error ? err.message : 'Error al cargar la plaga');
             } finally {
                 setLoading(false);
@@ -70,6 +72,7 @@ export function usePestDetail() {
             }
             setSaved(true);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
         } finally {
             setSaving(false);
@@ -88,6 +91,7 @@ export function usePestDetail() {
                         await deletePest(id);
                         router.back();
                     } catch (err: unknown) {
+                        if (isUnauthorizedError(err)) return;
                         Alert.alert(
                             'Error',
                             err instanceof Error ? err.message : 'Error al eliminar la plaga',

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { deleteCrop, getCrop, updateCrop, type UpdateCropData } from '../services/crops';
+import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../screens/crops/validators';
 import { useRequireSession } from './useRequireSession';
 
@@ -40,6 +41,7 @@ export function useCropDetail(id: string | undefined) {
                 });
             } catch (err: unknown) {
                 if (cancelled) return;
+                if (isUnauthorizedError(err)) return;
                 setError(err instanceof Error ? err.message : 'Error al cargar el cultivo');
             } finally {
                 if (!cancelled) setLoading(false);
@@ -73,6 +75,7 @@ export function useCropDetail(id: string | undefined) {
             }
             setSaved(true);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
         }
     });
@@ -92,6 +95,7 @@ export function useCropDetail(id: string | undefined) {
                             await deleteCrop(id);
                             router.back();
                         } catch (err: unknown) {
+                            if (isUnauthorizedError(err)) return;
                             Alert.alert(
                                 'Error',
                                 err instanceof Error ? err.message : 'Error al eliminar el cultivo',
