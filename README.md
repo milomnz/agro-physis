@@ -110,7 +110,7 @@ Endpoints (protegidos con JWT excepto registro/login):
 
 Flujo de la app: Finca -> Cultivos -> Plagas (una plaga se asocia a un cultivo).
 
-### 3) App movil (React Native / Expo SDK 57)
+### 3) App movil (React Native / Expo SDK 58)
 
     cd neo-physis-equa-app
     npm install
