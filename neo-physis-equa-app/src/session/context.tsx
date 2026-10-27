@@ -6,6 +6,7 @@ import {
   type RegisterData,
 } from '../services/auth';
 import { clearSession, getSession, saveSession, type Session } from '../services/session';
+import { setSessionExpiredHandler } from '../services/api';
 
 export interface SessionContextValue {
   // null significa que no hay ningún usuario autenticado
@@ -67,6 +68,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await clearSession();
     setSession(null);
   }, []);
+
+  // La sesión también se cierra desde el cliente HTTP cuando el API responde 401.
+  useEffect(() => {
+    setSessionExpiredHandler(signOut);
+    return () => setSessionExpiredHandler(null);
+  }, [signOut]);
 
   const value = useMemo(
     () => ({ session, loading, signIn, signUp, signOut }),
