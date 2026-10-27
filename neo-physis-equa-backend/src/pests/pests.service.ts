@@ -4,31 +4,38 @@ import { Repository } from 'typeorm';
 import { Pest } from './entities/pest.entity';
 import { CreatePestDto } from './dto/create-pest.dto';
 import { UpdatePestDto } from './dto/update-pest.dto';
+import { CropsService } from '../crops/crops.service';
 
 @Injectable()
 export class PestsService {
   constructor(
     @InjectRepository(Pest)
     private readonly pestRepository: Repository<Pest>,
+    private readonly cropsService: CropsService,
   ) {}
 
-  async create(createPestDto: CreatePestDto): Promise<Pest> {
+  async create(ownerId: string, createPestDto: CreatePestDto): Promise<Pest> {
+    // Lanza 404 si el cultivo no existe o no está en una finca del usuario.
+    await this.cropsService.findOne(createPestDto.cropId, ownerId);
     const pest = this.pestRepository.create(createPestDto);
     return await this.pestRepository.save(pest);
   }
 
-  async findAll(cropId?: string): Promise<Pest[]> {
-    const where = cropId ? { cropId } : {};
+  async findAll(ownerId: string, cropId?: string): Promise<Pest[]> {
+    if (cropId) {
+      await this.cropsService.findOne(cropId, ownerId);
+    }
+    const ownedCrop = { farm: { ownerId } };
     return await this.pestRepository.find({
-      where,
+      where: cropId ? { cropId, crop: ownedCrop } : { crop: ownedCrop },
       order: { createdAt: 'DESC' },
       relations: { crop: true },
     });
   }
 
-  async findOne(id: string): Promise<Pest> {
+  async findOne(id: string, ownerId: string): Promise<Pest> {
     const pest = await this.pestRepository.findOne({
-      where: { id },
+      where: { id, crop: { farm: { ownerId } } },
       relations: { crop: true },
     });
 
@@ -39,14 +46,25 @@ export class PestsService {
     return pest;
   }
 
-  async update(id: string, updatePestDto: UpdatePestDto): Promise<Pest> {
-    const pest = await this.findOne(id);
+  async update(
+    id: string,
+    ownerId: string,
+    updatePestDto: UpdatePestDto,
+  ): Promise<Pest> {
+    const pest = await this.findOne(id, ownerId);
+    if (updatePestDto.cropId && updatePestDto.cropId !== pest.cropId) {
+      // Solo se puede mover la plaga a otro cultivo del mismo usuario.
+      pest.crop = await this.cropsService.findOne(
+        updatePestDto.cropId,
+        ownerId,
+      );
+    }
     this.pestRepository.merge(pest, updatePestDto);
     return await this.pestRepository.save(pest);
   }
 
-  async remove(id: string): Promise<void> {
-    const pest = await this.findOne(id);
+  async remove(id: string, ownerId: string): Promise<void> {
+    const pest = await this.findOne(id, ownerId);
     await this.pestRepository.remove(pest);
   }
 }

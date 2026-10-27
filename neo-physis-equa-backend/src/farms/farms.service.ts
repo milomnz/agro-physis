@@ -27,9 +27,8 @@ export class FarmsService {
     });
   }
 
-  async findOne(id: string, ownerId?: string): Promise<Farm> {
-    const whereCondition = ownerId ? { id, ownerId } : { id };
-    const farm = await this.farmRepository.findOne({ where: whereCondition });
+  async findOne(id: string, ownerId: string): Promise<Farm> {
+    const farm = await this.farmRepository.findOne({ where: { id, ownerId } });
     if (!farm) {
       throw new NotFoundException(`Finca con ID ${id} no encontrada.`);
     }

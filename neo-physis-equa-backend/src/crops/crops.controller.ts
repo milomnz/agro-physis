@@ -8,12 +8,18 @@ import {
   Delete,
   ParseUUIDPipe,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CropsService } from './crops.service';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy';
+
+interface AuthenticatedRequest extends Request {
+  user: AuthenticatedUser;
+}
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/crops')
@@ -21,27 +27,43 @@ export class CropsController {
   constructor(private readonly cropsService: CropsService) {}
 
   @Post()
-  create(@Body() createCropDto: CreateCropDto) {
-    return this.cropsService.create(createCropDto);
+  create(
+    @Req() req: AuthenticatedRequest,
+    @Body() createCropDto: CreateCropDto,
+  ) {
+    return this.cropsService.create(req.user.id, createCropDto);
   }
 
   @Get()
-  findAll(@Query('farmId') farmId?: string) {
-    return this.cropsService.findAll(farmId);
+  findAll(
+    @Req() req: AuthenticatedRequest,
+    @Query('farmId', new ParseUUIDPipe({ optional: true })) farmId?: string,
+  ) {
+    return this.cropsService.findAll(req.user.id, farmId);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.cropsService.findOne(id);
+  findOne(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.cropsService.findOne(id, req.user.id);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateCropDto: UpdateCropDto) {
-    return this.cropsService.update(id, updateCropDto);
+  update(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateCropDto: UpdateCropDto,
+  ) {
+    return this.cropsService.update(id, req.user.id, updateCropDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.cropsService.remove(id);
+  remove(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.cropsService.remove(id, req.user.id);
   }
 }
