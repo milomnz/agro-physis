@@ -1,5 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { useSession } from '../hooks/useSession';
+import { colors } from '../theme/tokens';
 
 export interface AppPalette {
   bg: string;
@@ -11,6 +12,12 @@ export interface AppPalette {
   chipBg: string;
   errorBanner: string;
   successBanner: string;
+  warningBanner: string;
+  errorText: string;
+  fieldErrorBorder: string;
+  iconError: string;
+  iconSuccess: string;
+  iconWarning: string;
   spinner: string;
 }
 
@@ -24,21 +31,33 @@ export const buildPalette = (highContrast: boolean): AppPalette =>
         sub: 'text-crema/80',
         faint: 'text-crema/60',
         chipBg: 'bg-crema text-noche',
-        errorBanner: 'bg-red-950 text-red-300',
-        successBanner: 'bg-green-950 text-green-300',
-        spinner: '#F3F4F4',
+        errorBanner: 'bg-noche border-2 border-tierra text-crema',
+        successBanner: 'bg-noche border-2 border-verde text-crema',
+        warningBanner: 'bg-noche border-2 border-lima text-crema',
+        errorText: 'text-crema',
+        fieldErrorBorder: 'border-tierra',
+        iconError: colors.crema,
+        iconSuccess: colors.verde,
+        iconWarning: colors.lima,
+        spinner: colors.crema,
       }
     : {
         bg: 'bg-crema',
-        card: 'bg-white border border-turquesa',
-        title: 'text-noche',
-        body: 'text-noche',
-        sub: 'text-turquesa',
-        faint: 'text-turquesa/70',
-        chipBg: 'bg-white text-noche',
-        errorBanner: 'bg-red-50 text-red-700',
-        successBanner: 'bg-green-50 text-green-700',
-        spinner: '#17536D',
+        card: 'bg-crema border border-turquesa',
+        title: 'text-tinta',
+        body: 'text-tinta',
+        sub: 'text-azul',
+        faint: 'text-azul/70',
+        chipBg: 'bg-crema text-tinta border border-turquesa',
+        errorBanner: 'bg-error-bg border-2 border-tierra text-tinta',
+        successBanner: 'bg-exito-bg border-2 border-verde text-tinta',
+        warningBanner: 'bg-alerta-bg border-2 border-lima text-tinta',
+        errorText: 'text-tinta',
+        fieldErrorBorder: 'border-tierra',
+        iconError: colors.tinta,
+        iconSuccess: colors.tinta,
+        iconWarning: colors.tinta,
+        spinner: colors.azul,
       };
 
 interface AccessibilityContextValue {

@@ -11,16 +11,22 @@ interface FarmCardProps {
 }
 
 export default function FarmCard({ farm, onScan, onOpen }: FarmCardProps) {
-  const { palette } = useAccessibility();
+  const { highContrast, palette } = useAccessibility();
 
   return (
     <View
       accessibilityLabel={`Finca ${farm.name}, altitud ${farm.altitude} metros sobre el nivel del mar`}
-      className={`gap-3 rounded-2xl p-4 ${palette.card}`}
+      className={`gap-3 rounded-tarjeta border-2 p-4 ${
+        highContrast ? 'border-crema bg-turquesa' : 'border-turquesa bg-crema'
+      }`}
     >
       <View className="flex-row items-center justify-between gap-2">
         <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{farm.name}</Text>
-        <Text className={`rounded-full px-2.5 py-1 text-[12px] font-inter-bold ${palette.chipBg}`}>
+        <Text
+          className={`rounded-chip border px-2.5 py-1 font-mono-medium text-[12px] ${
+            highContrast ? 'border-crema bg-crema text-tinta' : 'border-turquesa bg-turquesa text-crema'
+          }`}
+        >
           {farm.altitude} m s. n. m.
         </Text>
       </View>

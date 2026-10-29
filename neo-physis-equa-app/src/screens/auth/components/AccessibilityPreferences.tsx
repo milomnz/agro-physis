@@ -1,5 +1,7 @@
 import { Switch, Text, View } from 'react-native';
 
+import { colors } from '../../../theme/tokens';
+
 interface AccessibilityPreferencesProps {
   ttsEnabled: boolean;
   highContrast: boolean;
@@ -18,14 +20,14 @@ export default function AccessibilityPreferences({
       <Text className="mb-2 text-sm font-inter-semibold text-noche">
         Preferencias de accesibilidad
       </Text>
-      <View className="rounded-2xl border border-turquesa bg-white p-4">
+      <View className="rounded-tarjeta border border-turquesa bg-crema p-4">
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 text-sm text-noche">Lectura en voz alta</Text>
           <Switch
             value={ttsEnabled}
             onValueChange={onTtsChange}
-            trackColor={{ true: '#17536D', false: '#6B979A' }}
-            thumbColor="#F3F4F4"
+            trackColor={{ true: colors.azul, false: colors.tierra }}
+            thumbColor={colors.crema}
             accessibilityLabel="Lectura en voz alta"
           />
         </View>
@@ -35,8 +37,8 @@ export default function AccessibilityPreferences({
           <Switch
             value={highContrast}
             onValueChange={onHighContrastChange}
-            trackColor={{ true: '#17536D', false: '#6B979A' }}
-            thumbColor="#F3F4F4"
+            trackColor={{ true: colors.azul, false: colors.tierra }}
+            thumbColor={colors.crema}
             accessibilityLabel="Alto contraste"
           />
         </View>

@@ -25,23 +25,25 @@ export default function Button({
   const { highContrast } = useAccessibility();
 
   const containerClass = danger
-    ? 'border-2 border-red-500'
+    ? highContrast
+      ? 'border-2 border-tierra bg-noche'
+      : 'border-2 border-tierra bg-error-bg'
     : secondary
       ? highContrast
         ? 'border-2 border-crema'
         : 'border-2 border-turquesa'
       : highContrast
         ? 'bg-crema border-2 border-crema'
-        : 'bg-turquesa';
+        : 'bg-turquesa border-2 border-turquesa';
 
   const textClass = danger
     ? highContrast
-      ? 'text-red-300'
-      : 'text-red-600'
+      ? 'text-crema'
+      : 'text-tinta'
     : secondary
       ? highContrast
         ? 'text-crema'
-        : 'text-noche'
+        : 'text-turquesa'
       : highContrast
         ? 'text-noche'
         : 'text-crema';
@@ -53,7 +55,7 @@ export default function Button({
       accessibilityLabel={accessibilityLabel ?? text}
       accessibilityHint={accessibilityHint}
       accessibilityRole="button"
-      className={`items-center justify-center rounded-xl min-h-[48px] p-4 active:opacity-80 disabled:opacity-50 ${containerClass} ${className}`}
+      className={`min-h-12 min-w-12 items-center justify-center rounded-boton p-4 active:opacity-80 disabled:opacity-50 ${containerClass} ${className}`}
     >
       <Text className={`font-bricolage ${textClass}`}>{text}</Text>
     </Pressable>

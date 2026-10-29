@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 import {
   Controller,
@@ -30,7 +31,7 @@ export default function Select<T extends FieldValues>({
   empty,
   rules,
 }: SelectProps<T>) {
-  const { highContrast } = useAccessibility();
+  const { highContrast, palette } = useAccessibility();
 
   return (
     <Controller
@@ -56,14 +57,14 @@ export default function Select<T extends FieldValues>({
                     onPress={() => onChange(option.value)}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
-                    className={`rounded-full border-2 px-4 py-2 active:opacity-70 ${
+                    className={`min-h-12 rounded-chip border-2 px-4 py-2 active:opacity-70 ${
                       active
                         ? highContrast
                           ? 'border-crema bg-crema'
                           : 'border-turquesa bg-turquesa'
                         : highContrast
                           ? 'border-crema bg-noche'
-                          : 'border-turquesa bg-white'
+                          : 'border-turquesa bg-crema'
                     }`}
                   >
                     <Text
@@ -85,9 +86,12 @@ export default function Select<T extends FieldValues>({
             </View>
           )}
           {error?.message && (
-            <Text className={`text-xs ${highContrast ? 'text-red-400' : 'text-red-600'}`}>
-              {error.message}
-            </Text>
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="alert-circle" size={12} color={palette.iconError} />
+              <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>
+                {error.message}
+              </Text>
+            </View>
           )}
         </View>
       )}
