@@ -59,7 +59,13 @@ export default function LoginScreen() {
           disabled={loading}
         />
 
-        <Link href="/register" className="text-center text-turquesa">
+        <Link
+          href="/register"
+          className="text-center text-turquesa"
+          accessibilityLabel="¿No tienes cuenta? Regístrate"
+          accessibilityRole="link"
+          accessibilityHint="Abre la pantalla de registro"
+        >
           ¿No tienes cuenta? Regístrate
         </Link>
       </KeyboardAwareScrollView>

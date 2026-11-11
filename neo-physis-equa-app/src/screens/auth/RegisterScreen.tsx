@@ -69,6 +69,7 @@ export default function RegisterScreen() {
         <View className="mb-4">
           <Text className="mb-1 text-sm font-inter-semibold text-noche">Nombre</Text>
           <TextInput
+            accessibilityLabel="Nombre"
             className={inputClass('nombre', errors.nombre)}
             placeholder="Tu nombre completo"
             placeholderTextColor="#6B979A"
@@ -85,6 +86,7 @@ export default function RegisterScreen() {
         <View className="mb-4">
           <Text className="mb-1 text-sm font-inter-semibold text-noche">Email</Text>
           <TextInput
+            accessibilityLabel="Email"
             className={inputClass('email', errors.email)}
             placeholder="tucorreo@ejemplo.com"
             placeholderTextColor="#6B979A"
@@ -102,6 +104,7 @@ export default function RegisterScreen() {
         <View className="mb-6">
           <Text className="mb-1 text-sm font-inter-semibold text-noche">Contraseña</Text>
           <TextInput
+            accessibilityLabel="Contraseña"
             className={inputClass('password', errors.password)}
             placeholder="Mínimo 6 caracteres"
             placeholderTextColor="#6B979A"
@@ -132,7 +135,13 @@ export default function RegisterScreen() {
           disabled={loading}
         />
 
-        <Link href="/login" className="mt-4 text-center text-turquesa">
+        <Link
+          href="/login"
+          className="mt-4 text-center text-turquesa"
+          accessibilityLabel="¿Ya tienes cuenta? Inicia sesión"
+          accessibilityRole="link"
+          accessibilityHint="Abre la pantalla de inicio de sesión"
+        >
           ¿Ya tienes cuenta? Inicia sesión
         </Link>
       </KeyboardAwareScrollView>

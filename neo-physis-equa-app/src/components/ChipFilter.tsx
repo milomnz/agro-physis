@@ -38,6 +38,7 @@ export default function ChipFilter({
               <Pressable
                 key={String(option.value)}
                 onPress={() => onSelect(active ? undefined : String(option.value))}
+                accessibilityLabel={`${label}: ${option.label}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
                 className={`rounded-full border-2 px-4 py-2 active:opacity-70 ${

@@ -6,15 +6,22 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder: string;
+  label?: string;
 }
 
-export default function SearchBar({ value, onChangeText, placeholder }: SearchBarProps) {
+export default function SearchBar({
+  value,
+  onChangeText,
+  placeholder,
+  label = 'Buscar',
+}: SearchBarProps) {
   const { highContrast } = useAccessibility();
   const [focused, setFocused] = useState(false);
 
   return (
     <TextInput
-      accessibilityLabel="Buscar"
+      accessibilityLabel={label}
+      accessibilityRole="search"
       accessibilityHint={placeholder}
       value={value}
       onChangeText={onChangeText}
