@@ -35,8 +35,8 @@ export default function PestsListScreen() {
 
   return (
     <View className={`flex-1 ${palette.bg} p-6`}>
-      <View className="mb-4 flex-row items-center justify-between">
-        <View>
+      <View className="mb-4 flex-row items-center justify-between gap-3">
+        <View className="flex-1">
           <Text className={`text-2xl font-bricolage ${palette.title}`}>Plagas</Text>
           <Text className={`text-sm ${palette.sub}`}>
             {selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}

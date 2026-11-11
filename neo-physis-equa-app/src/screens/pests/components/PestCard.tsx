@@ -20,8 +20,8 @@ export default function PestCard({ pest, onPress }: PestCardProps) {
       onPress={() => onPress(pest)}
       className={`mb-3 rounded-2xl p-4 ${palette.card}`}
     >
-      <View className="flex-row items-center justify-between">
-        <Text className={`text-lg font-inter-semibold ${palette.title}`}>{pest.commonName}</Text>
+      <View className="flex-row items-center justify-between gap-2">
+         <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{pest.commonName}</Text>
         <Badge value={pest.severity} />
       </View>
       {pest.scientificName ? (

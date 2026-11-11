@@ -20,7 +20,7 @@ export default function FarmCard({ farm, onScan, onOpen }: FarmCardProps) {
     >
       <View className="flex-row items-center justify-between gap-2">
         <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{farm.name}</Text>
-        <Text className={`rounded-full px-2.5 py-1 text-[12px] font-inter-bold ${palette.chipBg}`}>
+        <Text className={`shrink rounded-full px-2.5 py-1 text-[12px] font-inter-bold ${palette.chipBg}`}>
           {farm.altitude} m s. n. m.
         </Text>
       </View>

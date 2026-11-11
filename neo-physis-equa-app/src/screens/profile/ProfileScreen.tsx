@@ -42,7 +42,7 @@ export default function ProfileScreen() {
   return (
     <ScrollView className={`flex-1 ${palette.bg}`} contentContainerClassName="p-6">
       <View className="items-center gap-2 pt-8">
-        <View className="mb-2 h-16 w-16 items-center justify-center rounded-2xl bg-turquesa">
+        <View className="mb-2 min-h-[64px] min-w-[64px] items-center justify-center rounded-2xl bg-turquesa px-2">
           <Text className="text-2xl font-bricolage text-crema">{initial}</Text>
         </View>
         <Text className={`text-2xl font-bricolage ${palette.title}`}>Hola, {session.nombre}</Text>

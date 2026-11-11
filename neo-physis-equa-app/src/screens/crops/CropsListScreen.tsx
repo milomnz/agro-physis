@@ -42,8 +42,8 @@ export default function CropsListScreen() {
 
   return (
     <View className={`flex-1 ${palette.bg} p-6`}>
-      <View className="mb-4 flex-row items-center justify-between">
-        <View>
+      <View className="mb-4 flex-row items-center justify-between gap-3">
+        <View className="flex-1">
           <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivos</Text>
           <Text className={`text-sm ${palette.sub}`}>
             {selectedFarmName ? `Finca: ${selectedFarmName}` : 'Todos tus cultivos'}
@@ -110,10 +110,10 @@ export default function CropsListScreen() {
               onPress={() => router.push(`/crops/${item.id}`)}
               className={`mb-3 rounded-2xl p-4 ${palette.card}`}
             >
-              <View className="flex-row items-center justify-between">
-                <Text className={`text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
+              <View className="flex-row items-center justify-between gap-2">
+                <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
                 <Text
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${
+                  className={`shrink rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${
                     STAGE_COLORS[item.growthStage]
                       ? highContrast
                         ? STAGE_COLORS[item.growthStage].dark
