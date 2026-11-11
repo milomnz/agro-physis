@@ -5,6 +5,7 @@ import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@e
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
 import { SessionProvider } from '../src/session/context';
+import { FeedbackProvider } from '../src/feedback/context';
 import '../global.css';
 
 function RootStack() {
@@ -59,7 +60,9 @@ export default function RootLayout() {
     <KeyboardProvider>
       <SessionProvider>
         <AccessibilityProvider>
-          <RootStack />
+          <FeedbackProvider>
+            <RootStack />
+          </FeedbackProvider>
         </AccessibilityProvider>
       </SessionProvider>
     </KeyboardProvider>
