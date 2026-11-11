@@ -32,11 +32,11 @@ function RootStack() {
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
 
       {/* 3. Pantallas de Detalle (Stack nativo con flecha de volver automática) */}
-      <Stack.Screen name="farms/[id]" options={{ title: 'Detalle de la Finca' }} />
+      <Stack.Screen name="farms/[id]" options={{ title: 'Finca' }} />
       <Stack.Screen name="crops/new" options={{ title: 'Nuevo Cultivo' }} />
-      <Stack.Screen name="crops/[id]" options={{ title: 'Detalle del Cultivo' }} />
+      <Stack.Screen name="crops/[id]" options={{ title: 'Cultivo' }} />
       <Stack.Screen name="pests/new" options={{ title: 'Nueva Plaga' }} />
-      <Stack.Screen name="pests/[id]" options={{ title: 'Detalle de la Plaga' }} />
+      <Stack.Screen name="pests/[id]" options={{ title: 'Plaga' }} />
       <Stack.Screen name="profile" options={{ title: 'Mi perfil' }} />
     </Stack>
   );

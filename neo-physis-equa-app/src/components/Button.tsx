@@ -55,7 +55,7 @@ export default function Button({
       accessibilityRole="button"
       className={`items-center justify-center rounded-xl min-h-[48px] p-4 active:opacity-80 disabled:opacity-50 ${containerClass} ${className}`}
     >
-      <Text className={`font-bricolage ${textClass}`}>{text}</Text>
+      <Text className={`text-center font-bricolage ${textClass}`}>{text}</Text>
     </Pressable>
   );
 }

@@ -29,7 +29,7 @@ function CustomDrawerContent() {
       >
         <Ionicons name={icon} size={24} color={isActive ? activeText : textColor} />
         <Text 
-          className="ml-4 text-base" 
+          className="ml-4 flex-1 text-base"
           style={{ fontFamily: 'Inter_600SemiBold', color: isActive ? activeText : textColor }}
         >
           {label}
@@ -67,7 +67,7 @@ function CustomDrawerContent() {
           className="flex-row items-center rounded-xl p-3 active:bg-turquesa/10"
         >
           <Ionicons name="home-outline" size={24} color={textColor} />
-          <Text className="ml-4 text-base" style={{ fontFamily: 'Inter_600SemiBold', color: textColor }}>
+          <Text className="ml-4 flex-1 text-base" style={{ fontFamily: 'Inter_600SemiBold', color: textColor }}>
             Volver al inicio
           </Text>
         </Pressable>

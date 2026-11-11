@@ -21,7 +21,7 @@ export default function Badge({ value }: { value: string }) {
   const entry = COLORS[value] ?? COLORS.baja;
   const color = highContrast ? entry.dark : entry.light;
   return (
-    <Text className={`self-start rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${color}`}>
+    <Text className={`shrink self-start rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${color}`}>
       {value}
     </Text>
   );
