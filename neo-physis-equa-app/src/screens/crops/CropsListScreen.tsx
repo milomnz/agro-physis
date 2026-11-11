@@ -1,6 +1,7 @@
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
@@ -58,7 +59,7 @@ export default function CropsListScreen() {
       ) : null}
 
       {farms.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-3">
+        <CenteredScroll contentClassName="gap-3">
           <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
             Aún no tienes fincas registradas
           </Text>
@@ -66,9 +67,9 @@ export default function CropsListScreen() {
             Registra tu primera finca para poder crear cultivos.
           </Text>
           <Button text="Ir a mis fincas" onPress={() => router.push('/farms')} />
-        </View>
+        </CenteredScroll>
       ) : crops.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-3">
+        <CenteredScroll contentClassName="gap-3">
           <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
             No tienes cultivos registrados
           </Text>
@@ -76,7 +77,7 @@ export default function CropsListScreen() {
             Crea tu primer cultivo para empezar a registrar plagas.
           </Text>
           <Button text="+ Registrar cultivo" onPress={() => router.push('/crops/new')} />
-        </View>
+        </CenteredScroll>
       ) : (
         <FlatList
           data={filteredCrops}

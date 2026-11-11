@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import Badge from '../../components/Badge';
@@ -40,7 +40,7 @@ export default function ProfileScreen() {
   const initial = session.nombre.trim().charAt(0).toUpperCase() || '?';
 
   return (
-    <View className={`flex-1 p-6 ${palette.bg}`}>
+    <ScrollView className={`flex-1 ${palette.bg}`} contentContainerClassName="p-6">
       <View className="items-center gap-2 pt-8">
         <View className="mb-2 h-16 w-16 items-center justify-center rounded-2xl bg-turquesa">
           <Text className="text-2xl font-bricolage text-crema">{initial}</Text>
@@ -78,6 +78,6 @@ export default function ProfileScreen() {
       <View className="mt-6 gap-3">
         <Button text="Cerrar sesión" onPress={handleLogout} danger />
       </View>
-    </View>
+    </ScrollView>
   );
 }
