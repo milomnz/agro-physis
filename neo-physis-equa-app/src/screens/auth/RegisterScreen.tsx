@@ -1,4 +1,4 @@
-import { Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Link, useRouter } from 'expo-router';
 import Button from '../../components/Button';
@@ -37,7 +37,7 @@ export default function RegisterScreen() {
   };
 
   const inputClass = (field: AuthFieldName, hasError?: string) =>
-    `rounded-xl border-2 bg-white px-4 py-3 text-base text-noche ${
+    `min-h-[48px] rounded-xl border-2 bg-white px-4 py-3 text-base text-noche ${
       hasError ? 'border-red-500' : focusedField === field ? 'border-noche' : 'border-turquesa/50'
     }`;
 
@@ -132,8 +132,15 @@ export default function RegisterScreen() {
           disabled={loading}
         />
 
-        <Link href="/login" className="mt-4 text-center text-turquesa">
-          ¿Ya tienes cuenta? Inicia sesión
+        <Link href="/login" asChild>
+          <Pressable
+            className="mt-4 min-h-[48px] items-center justify-center"
+            accessibilityLabel="¿Ya tienes cuenta? Inicia sesión"
+            accessibilityRole="link"
+            accessibilityHint="Abre la pantalla de inicio de sesión"
+          >
+            <Text className="text-center text-turquesa">¿Ya tienes cuenta? Inicia sesión</Text>
+          </Pressable>
         </Link>
       </KeyboardAwareScrollView>
     </View>

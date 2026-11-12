@@ -20,7 +20,7 @@ export default function SearchBar({ value, onChangeText, placeholder }: SearchBa
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={highContrast ? '#F3F4F480' : '#6B979A'}
-      className={`mb-4 rounded-xl border-2 p-3.5 ${
+      className={`mb-4 min-h-[48px] rounded-xl border-2 p-3.5 ${
         focused
           ? 'border-noche'
           : highContrast

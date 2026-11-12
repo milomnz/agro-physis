@@ -39,7 +39,7 @@ export default function Field<T extends FieldValues>({
             {label}
           </Text>
           <TextInput
-            className={`rounded-xl border-2 p-3.5 ${
+            className={`min-h-[48px] rounded-xl border-2 p-3.5 ${
               error
                 ? 'border-red-500'
                 : focused

@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Link, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
@@ -59,8 +59,15 @@ export default function LoginScreen() {
           disabled={loading}
         />
 
-        <Link href="/register" className="text-center text-turquesa">
-          ¿No tienes cuenta? Regístrate
+        <Link href="/register" asChild>
+          <Pressable
+            className="min-h-[48px] items-center justify-center"
+            accessibilityLabel="¿No tienes cuenta? Regístrate"
+            accessibilityRole="link"
+            accessibilityHint="Abre la pantalla de registro"
+          >
+            <Text className="text-center text-turquesa">¿No tienes cuenta? Regístrate</Text>
+          </Pressable>
         </Link>
       </KeyboardAwareScrollView>
     </View>

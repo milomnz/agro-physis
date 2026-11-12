@@ -28,7 +28,7 @@ export default function DisabilitySelector({ value, onChange }: DisabilitySelect
               onPress={() => onChange(opt.value)}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
-              className={`rounded-full border-2 px-4 py-2 ${
+              className={`min-h-[48px] min-w-[48px] items-center justify-center rounded-full border-2 px-4 py-2 ${
                 active ? 'border-turquesa bg-turquesa' : 'border-turquesa bg-white'
               }`}
             >
