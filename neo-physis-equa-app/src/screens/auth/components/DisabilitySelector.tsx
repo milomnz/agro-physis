@@ -26,6 +26,7 @@ export default function DisabilitySelector({ value, onChange }: DisabilitySelect
             <Pressable
               key={opt.value}
               onPress={() => onChange(opt.value)}
+              accessibilityLabel={`Tipo de discapacidad: ${opt.label}`}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
               className={`min-h-12 rounded-chip border-2 px-4 py-2 ${

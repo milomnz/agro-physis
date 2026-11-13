@@ -24,6 +24,7 @@ export default function Field<T extends FieldValues>({
   name,
   label,
   rules,
+  accessibilityLabel,
   ...inputProps
 }: FieldProps<T>) {
   const { highContrast, palette } = useAccessibility();
@@ -40,6 +41,8 @@ export default function Field<T extends FieldValues>({
             {label}
           </Text>
           <TextInput
+            accessibilityLabel={accessibilityLabel ?? label}
+            className={`rounded-xl border-2 p-3.5 ${
             className={`rounded-campo border-2 p-3.5 ${
               error
                 ? palette.fieldErrorBorder

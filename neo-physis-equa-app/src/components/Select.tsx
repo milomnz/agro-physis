@@ -55,6 +55,7 @@ export default function Select<T extends FieldValues>({
                   <Pressable
                     key={String(option.value)}
                     onPress={() => onChange(option.value)}
+                    accessibilityLabel={`${label}: ${option.label}`}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
                     className={`min-h-12 rounded-chip border-2 px-4 py-2 active:opacity-70 ${

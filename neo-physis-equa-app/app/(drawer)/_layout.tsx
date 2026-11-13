@@ -21,6 +21,10 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
     const isActive = pathname === path || pathname.startsWith(`${path}/`);
 
     return (
+      <Pressable 
+        onPress={() => router.push(path)}
+        className={`mb-2 flex-row items-center rounded-xl p-3 ${isActive ? 'bg-turquesa' : 'active:bg-turquesa/10'}`}
+        accessibilityLabel={label}
       <Pressable
         onPress={() => {
           onClose();
@@ -65,6 +69,11 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
 
       {/* 3. Botón inferior para volver al Home */}
       <View className="border-t p-4" style={{ borderTopColor: borderColor + '30' }}>
+        <Pressable 
+          onPress={() => router.replace('/home')}
+          className="flex-row items-center rounded-xl p-3 active:bg-turquesa/10"
+          accessibilityLabel="Volver al inicio"
+          accessibilityRole="button"d
         <Pressable
           onPress={() => {
             onClose();
@@ -108,6 +117,8 @@ export default function DrawerLayout() {
               onPress={() => navigation.toggleDrawer()} // Ahora sí funcionará nativamente
               className="min-h-12 min-w-12 justify-center pl-5 active:opacity-70"
               accessibilityLabel="Abrir menú de navegación"
+              accessibilityRole="button"
+              accessibilityHint="Despliega el menú lateral de navegación"
             >
               <Ionicons name="menu" size={28} color={colors.crema} />
             </Pressable>

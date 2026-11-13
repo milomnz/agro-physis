@@ -71,6 +71,7 @@ export default function PestsListScreen() {
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar plaga por nombre o cultivo"
+                label="Buscar plaga"
               />
               <ChipFilter
                 label="Filtrar por cultivo"
