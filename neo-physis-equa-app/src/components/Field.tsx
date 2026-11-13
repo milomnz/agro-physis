@@ -42,8 +42,7 @@ export default function Field<T extends FieldValues>({
           </Text>
           <TextInput
             accessibilityLabel={accessibilityLabel ?? label}
-            className={`rounded-xl border-2 p-3.5 ${
-            className={`rounded-campo border-2 p-3.5 ${
+            className={`min-h-12 rounded-campo border-2 p-3.5 ${
               error
                 ? palette.fieldErrorBorder
                 : focused

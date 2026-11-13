@@ -21,16 +21,13 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
     const isActive = pathname === path || pathname.startsWith(`${path}/`);
 
     return (
-      <Pressable 
-        onPress={() => router.push(path)}
-        className={`mb-2 flex-row items-center rounded-xl p-3 ${isActive ? 'bg-turquesa' : 'active:bg-turquesa/10'}`}
-        accessibilityLabel={label}
       <Pressable
         onPress={() => {
           onClose();
           router.push(path);
         }}
         className={`mb-2 min-h-12 flex-row items-center rounded-campo p-3 ${isActive ? 'bg-turquesa' : 'active:bg-turquesa/10'}`}
+        accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityState={{ selected: isActive }}
       >
@@ -69,17 +66,14 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
 
       {/* 3. Botón inferior para volver al Home */}
       <View className="border-t p-4" style={{ borderTopColor: borderColor + '30' }}>
-        <Pressable 
-          onPress={() => router.replace('/home')}
-          className="flex-row items-center rounded-xl p-3 active:bg-turquesa/10"
-          accessibilityLabel="Volver al inicio"
-          accessibilityRole="button"d
         <Pressable
           onPress={() => {
             onClose();
             router.replace('/home');
           }}
           className="min-h-12 flex-row items-center rounded-campo p-3 active:bg-turquesa/10"
+          accessibilityLabel="Volver al inicio"
+          accessibilityRole="button"
         >
           <Ionicons name="home-outline" size={24} color={textColor} />
           <Text className="ml-4 flex-1 text-base" style={{ fontFamily: 'Inter_600SemiBold', color: textColor }}>
@@ -115,7 +109,7 @@ export default function DrawerLayout() {
           headerLeft: () => (
             <Pressable
               onPress={() => navigation.toggleDrawer()} // Ahora sí funcionará nativamente
-              className="min-h-12 min-w-12 justify-center pl-5 active:opacity-70"
+              className="min-h-12 min-w-12 items-center justify-center pl-5 active:opacity-70"
               accessibilityLabel="Abrir menú de navegación"
               accessibilityRole="button"
               accessibilityHint="Despliega el menú lateral de navegación"

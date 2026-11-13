@@ -28,7 +28,7 @@ export default function SearchBar({
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
-      className={`mb-4 rounded-campo border-2 p-3.5 ${
+      className={`mb-4 min-h-12 rounded-campo border-2 p-3.5 ${
         focused
           ? 'border-noche'
           : highContrast

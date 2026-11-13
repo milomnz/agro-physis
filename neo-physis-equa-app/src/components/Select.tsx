@@ -58,7 +58,7 @@ export default function Select<T extends FieldValues>({
                     accessibilityLabel={`${label}: ${option.label}`}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
-                    className={`min-h-12 rounded-chip border-2 px-4 py-2 active:opacity-70 ${
+                    className={`min-h-12 min-w-12 items-center justify-center rounded-chip border-2 px-4 py-2 active:opacity-70 ${
                       active
                         ? highContrast
                           ? 'border-crema bg-crema'

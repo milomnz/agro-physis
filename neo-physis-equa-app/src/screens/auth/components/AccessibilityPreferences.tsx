@@ -23,24 +23,32 @@ export default function AccessibilityPreferences({
       <View className="rounded-tarjeta border border-turquesa bg-crema p-4">
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 text-sm text-noche">Lectura en voz alta</Text>
-          <Switch
-            value={ttsEnabled}
-            onValueChange={onTtsChange}
-            trackColor={{ true: colors.azul, false: colors.tierra }}
-            thumbColor={colors.crema}
-            accessibilityLabel="Lectura en voz alta"
-          />
+          <View className="min-h-12 min-w-12 items-center justify-center">
+            <Switch
+              value={ttsEnabled}
+              onValueChange={onTtsChange}
+              trackColor={{ true: colors.azul, false: colors.tierra }}
+              thumbColor={colors.crema}
+              hitSlop={10}
+              accessibilityLabel="Lectura en voz alta"
+              accessibilityRole="switch"
+            />
+          </View>
         </View>
         <View className="my-3 h-px bg-turquesa/20" />
         <View className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 text-sm text-noche">Alto contraste</Text>
-          <Switch
-            value={highContrast}
-            onValueChange={onHighContrastChange}
-            trackColor={{ true: colors.azul, false: colors.tierra }}
-            thumbColor={colors.crema}
-            accessibilityLabel="Alto contraste"
-          />
+          <View className="min-h-12 min-w-12 items-center justify-center">
+            <Switch
+              value={highContrast}
+              onValueChange={onHighContrastChange}
+              trackColor={{ true: colors.azul, false: colors.tierra }}
+              thumbColor={colors.crema}
+              hitSlop={10}
+              accessibilityLabel="Alto contraste"
+              accessibilityRole="switch"
+            />
+          </View>
         </View>
       </View>
     </View>
