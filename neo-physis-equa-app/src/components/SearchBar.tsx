@@ -1,31 +1,39 @@
 import { useState } from 'react';
 import { TextInput } from 'react-native';
 import { useAccessibility } from '../accessibility/context';
+import { colors } from '../theme/tokens';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder: string;
+  label?: string;
 }
 
-export default function SearchBar({ value, onChangeText, placeholder }: SearchBarProps) {
+export default function SearchBar({
+  value,
+  onChangeText,
+  placeholder,
+  label = 'Buscar',
+}: SearchBarProps) {
   const { highContrast } = useAccessibility();
   const [focused, setFocused] = useState(false);
 
   return (
     <TextInput
-      accessibilityLabel="Buscar"
+      accessibilityLabel={label}
+      accessibilityRole="search"
       accessibilityHint={placeholder}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      placeholderTextColor={highContrast ? '#F3F4F480' : '#6B979A'}
-      className={`mb-4 min-h-[48px] rounded-xl border-2 p-3.5 ${
+      placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
+      className={`mb-4 min-h-12 rounded-campo border-2 p-3.5 ${
         focused
           ? 'border-noche'
           : highContrast
             ? 'border-crema bg-noche text-crema'
-            : 'border-turquesa/50 bg-white text-noche'
+            : 'border-turquesa bg-crema text-noche'
       }`}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}

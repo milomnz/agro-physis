@@ -88,6 +88,7 @@ export default function CropsListScreen() {
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar cultivo por especie o finca"
+                label="Buscar cultivo"
               />
               <ChipFilter
                 label="Filtrar por finca"

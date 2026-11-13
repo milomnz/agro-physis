@@ -38,16 +38,17 @@ export default function ChipFilter({
               <Pressable
                 key={String(option.value)}
                 onPress={() => onSelect(active ? undefined : String(option.value))}
+                accessibilityLabel={`${label}: ${option.label}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                className={`min-h-[48px] min-w-[48px] items-center justify-center rounded-full border-2 px-4 py-2 active:opacity-70 ${
+                className={`min-h-12 min-w-12 items-center justify-center rounded-chip border-2 px-4 py-2 active:opacity-70 ${
                   active
                     ? highContrast
                       ? 'border-crema bg-crema'
                       : 'border-turquesa bg-turquesa'
                     : highContrast
                       ? 'border-crema bg-noche'
-                      : 'border-turquesa bg-white'
+                      : 'border-turquesa bg-crema'
                 }`}
               >
                 <Text

@@ -104,6 +104,7 @@ export default function FarmsListScreen() {
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar finca por nombre o ubicación"
+                label="Buscar finca"
               />
             ) : undefined
           }
