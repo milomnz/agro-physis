@@ -7,7 +7,10 @@ import {
   type Path,
   type RegisterOptions,
 } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
+
 import { useAccessibility } from '../accessibility/context';
+import { colors } from '../theme/tokens';
 
 interface FieldProps<T extends FieldValues> extends TextInputProps {
   control: Control<T>;
@@ -23,7 +26,7 @@ export default function Field<T extends FieldValues>({
   rules,
   ...inputProps
 }: FieldProps<T>) {
-  const { highContrast } = useAccessibility();
+  const { highContrast, palette } = useAccessibility();
   const [focused, setFocused] = useState(false);
 
   return (
@@ -33,22 +36,20 @@ export default function Field<T extends FieldValues>({
       rules={rules}
       render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
         <View className="gap-1.5">
-          <Text
-            className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}
-          >
+          <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
             {label}
           </Text>
           <TextInput
-            className={`rounded-xl border-2 p-3.5 ${
+            className={`rounded-campo border-2 p-3.5 ${
               error
-                ? 'border-red-500'
+                ? palette.fieldErrorBorder
                 : focused
                   ? 'border-noche'
                   : highContrast
                     ? 'border-crema bg-noche text-crema'
-                    : 'border-turquesa/50 bg-white text-noche'
+                    : 'border-turquesa bg-crema text-noche'
             }`}
-            placeholderTextColor={highContrast ? '#F3F4F480' : '#6B979A'}
+            placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
             value={value ?? ''}
             {...inputProps}
             onChangeText={onChange}
@@ -59,9 +60,12 @@ export default function Field<T extends FieldValues>({
             }}
           />
           {error?.message && (
-            <Text className={`text-xs ${highContrast ? 'text-red-400' : 'text-red-600'}`}>
-              {error.message}
-            </Text>
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="alert-circle" size={12} color={palette.iconError} />
+              <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>
+                {error.message}
+              </Text>
+            </View>
           )}
         </View>
       )}

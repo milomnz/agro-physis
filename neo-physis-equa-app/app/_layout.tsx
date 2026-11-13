@@ -3,23 +3,29 @@ import { ActivityIndicator, View } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { BricolageGrotesque_700Bold } from '@expo-google-fonts/bricolage-grotesque';
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from '@expo-google-fonts/jetbrains-mono';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
 import { SessionProvider } from '../src/session/context';
+import { colors } from '../src/theme/tokens';
 import '../global.css';
 
 function RootStack() {
   const { highContrast } = useAccessibility();
-  const bgColor = highContrast ? '#011824' : '#17536D';
+  const bgColor = highContrast ? colors.tinta : colors.azul;
 
   return (
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: bgColor },
-        headerTintColor: '#F3F4F4',
+        headerTintColor: colors.crema,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
         headerTitleStyle: { fontFamily: 'BricolageGrotesque_700Bold', fontSize: 18 },
-        contentStyle: { backgroundColor: highContrast ? '#011824' : '#F3F4F4' }
+        contentStyle: { backgroundColor: highContrast ? colors.tinta : colors.crema }
       }}
     >
       {/* 1. Flujo sin Header */}
@@ -44,13 +50,19 @@ function RootStack() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Inter_400Regular, Inter_600SemiBold, Inter_700Bold, BricolageGrotesque_700Bold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    BricolageGrotesque_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
   });
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F3F4F4]">
-        <ActivityIndicator size="large" color="#17536D" />
+      <View className="flex-1 items-center justify-center bg-crema">
+        <ActivityIndicator size="large" color={colors.azul} />
       </View>
     );
   }
