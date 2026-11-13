@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -40,7 +41,7 @@ export class FarmsController {
   @Get(':id')
   findOne(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<Farm> {
     return this.farmsService.findOne(id, req.user.id);
   }
@@ -48,7 +49,7 @@ export class FarmsController {
   @Patch(':id')
   update(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateFarmDto,
   ): Promise<Farm> {
     return this.farmsService.update(id, req.user.id, dto);
@@ -57,7 +58,7 @@ export class FarmsController {
   @Delete(':id')
   remove(
     @Req() req: AuthenticatedRequest,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<{ message: string }> {
     return this.farmsService.remove(id, req.user.id);
   }

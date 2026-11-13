@@ -1,6 +1,7 @@
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
 import Button from '../../components/Button';
+import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
@@ -34,8 +35,8 @@ export default function PestsListScreen() {
 
   return (
     <View className={`flex-1 ${palette.bg} p-6`}>
-      <View className="mb-4 flex-row items-center justify-between">
-        <View>
+      <View className="mb-4 flex-row items-center justify-between gap-3">
+        <View className="flex-1">
           <Text className={`text-2xl font-bricolage ${palette.title}`}>Plagas</Text>
           <Text className={`text-sm ${palette.sub}`}>
             {selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}
@@ -51,7 +52,7 @@ export default function PestsListScreen() {
       ) : null}
 
       {crops.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-3">
+        <CenteredScroll contentClassName="gap-3">
           <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
             Aún no tienes cultivos registrados
           </Text>
@@ -59,7 +60,7 @@ export default function PestsListScreen() {
             Crea tu primer cultivo para poder registrar plagas.
           </Text>
           <Button text="Ir a mis cultivos" onPress={goToCrops} />
-        </View>
+        </CenteredScroll>
       ) : (
         <FlatList
           data={filteredPests}

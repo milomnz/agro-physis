@@ -2,6 +2,7 @@ import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
+import CenteredScroll from '../../components/CenteredScroll';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmList } from '../../hooks/useFarmList';
@@ -85,13 +86,13 @@ export default function FarmsListScreen() {
           </View>
         </KeyboardAwareScrollView>
       ) : farms.length === 0 ? (
-        <View className={`flex-1 items-center justify-center gap-3 rounded-2xl p-6 ${palette.card}`}>
+        <CenteredScroll className={`rounded-2xl ${palette.card}`} contentClassName="gap-3 p-6">
           <Text className={`text-lg font-inter-semibold ${palette.title}`}>No tienes fincas registradas</Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
             Registra tu primera finca para vincularla al diagnóstico de plagas.
           </Text>
           <Button text="+ Registrar finca" onPress={() => setShowForm(true)} />
-        </View>
+        </CenteredScroll>
       ) : (
         <FlatList
           data={filteredFarms}

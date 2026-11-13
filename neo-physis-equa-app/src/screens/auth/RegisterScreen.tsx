@@ -1,14 +1,19 @@
 import { Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Link, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/Button';
+import Notice from '../../components/Notice';
 import AuthHeader from './components/AuthHeader';
 import DisabilitySelector from './components/DisabilitySelector';
 import AccessibilityPreferences from './components/AccessibilityPreferences';
+import { useAccessibility } from '../../accessibility/context';
+import { colors } from '../../theme/tokens';
 import { useRegister, type AuthFieldName } from '../../hooks/useRegister';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { palette } = useAccessibility();
   const {
     nombre,
     setNombre,
@@ -37,9 +42,17 @@ export default function RegisterScreen() {
   };
 
   const inputClass = (field: AuthFieldName, hasError?: string) =>
-    `rounded-xl border-2 bg-white px-4 py-3 text-base text-noche ${
-      hasError ? 'border-red-500' : focusedField === field ? 'border-noche' : 'border-turquesa/50'
+    `rounded-campo border-2 bg-crema px-4 py-3 text-base text-noche ${
+      hasError ? palette.fieldErrorBorder : focusedField === field ? 'border-noche' : 'border-turquesa'
     }`;
+
+  const fieldError = (message?: string) =>
+    message ? (
+      <View className="mt-1 flex-row items-center gap-1">
+        <Ionicons name="alert-circle" size={12} color={palette.iconError} />
+        <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>{message}</Text>
+      </View>
+    ) : null;
 
   return (
     <View className="flex-1 bg-crema">
@@ -61,9 +74,9 @@ export default function RegisterScreen() {
         />
 
         {error && (
-          <View className="mb-4 rounded-xl border-2 border-red-500 bg-red-50 p-3">
-            <Text className="text-center text-sm text-red-600">{error}</Text>
-          </View>
+          <Notice variant="error" className="mb-4">
+            {error}
+          </Notice>
         )}
 
         <View className="mb-4">
@@ -72,7 +85,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Nombre"
             className={inputClass('nombre', errors.nombre)}
             placeholder="Tu nombre completo"
-            placeholderTextColor="#6B979A"
+            placeholderTextColor={colors.azul}
             value={nombre}
             onChangeText={setNombre}
             autoCapitalize="words"
@@ -80,7 +93,7 @@ export default function RegisterScreen() {
             onFocus={() => setFocusedField('nombre')}
             onBlur={() => setFocusedField(null)}
           />
-          {errors.nombre && <Text className="mt-1 text-xs text-red-600">{errors.nombre}</Text>}
+          {fieldError(errors.nombre)}
         </View>
 
         <View className="mb-4">
@@ -89,7 +102,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Email"
             className={inputClass('email', errors.email)}
             placeholder="tucorreo@ejemplo.com"
-            placeholderTextColor="#6B979A"
+            placeholderTextColor={colors.azul}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -98,7 +111,7 @@ export default function RegisterScreen() {
             onFocus={() => setFocusedField('email')}
             onBlur={() => setFocusedField(null)}
           />
-          {errors.email && <Text className="mt-1 text-xs text-red-600">{errors.email}</Text>}
+          {fieldError(errors.email)}
         </View>
 
         <View className="mb-6">
@@ -107,7 +120,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Contraseña"
             className={inputClass('password', errors.password)}
             placeholder="Mínimo 6 caracteres"
-            placeholderTextColor="#6B979A"
+            placeholderTextColor={colors.azul}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -115,9 +128,7 @@ export default function RegisterScreen() {
             onFocus={() => setFocusedField('password')}
             onBlur={() => setFocusedField(null)}
           />
-          {errors.password && (
-            <Text className="mt-1 text-xs text-red-600">{errors.password}</Text>
-          )}
+          {fieldError(errors.password)}
         </View>
 
         <DisabilitySelector value={disability} onChange={setDisability} />
