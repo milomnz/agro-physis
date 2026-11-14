@@ -13,6 +13,7 @@ import {
   JetBrainsMono_700Bold,
 } from '@expo-google-fonts/jetbrains-mono';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
+import { FeedbackProvider } from '../src/feedback/context';
 import { useSession } from '../src/hooks/useSession';
 import { SessionProvider } from '../src/session/context';
 import { colors } from '../src/theme/tokens';
@@ -96,9 +97,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <KeyboardProvider>
           <SessionProvider>
-            <AccessibilityProvider>
-              <RootStack />
-            </AccessibilityProvider>
+              <AccessibilityProvider>
+                <FeedbackProvider>
+                  <RootStack />
+                </FeedbackProvider>
+              </AccessibilityProvider>
           </SessionProvider>
         </KeyboardProvider>
       </SafeAreaProvider>

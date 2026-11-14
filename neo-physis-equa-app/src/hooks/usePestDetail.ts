@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context';
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -18,7 +19,7 @@ export function usePestDetail() {
     const id = typeof params.id === 'string' && params.id ? params.id : undefined;
     const router = useRouter();
     const sessionReady = useRequireSession();
-
+    const { notifySuccess } = useActionFeedback();
     const [loading, setLoading] = useState(true);
     const [pest, setPest] = useState<Awaited<ReturnType<typeof getPest>> | null>(null);
     const [saving, setSaving] = useState(false);
@@ -87,6 +88,7 @@ export function usePestDetail() {
                 setPest(updated);
             }
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente');
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -95,11 +97,10 @@ export function usePestDetail() {
         }
     });
 
-    const requestDelete = () => {
+     const requestDelete = () => {
         if (!id) return;
         setConfirmingDelete(true);
     };
-
     const cancelDelete = () => {
         if (deleting) return;
         setConfirmingDelete(false);
@@ -111,6 +112,7 @@ export function usePestDetail() {
         setScreenError('');
         try {
             await deletePest(id);
+            notifySuccess('Plaga eliminada correctamente');
             setConfirmingDelete(false);
             if (router.canGoBack()) {
                 router.back();

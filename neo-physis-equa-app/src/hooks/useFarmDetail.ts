@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { deleteFarm, getFarm, updateFarm, type Farm } from '../services/farms';
 import { isUnauthorizedError } from '../services/api';
+import { useActionFeedback } from '../feedback/context';
 import { useFarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
 
@@ -11,6 +12,7 @@ export function useFarmDetail() {
     const id = typeof params.id === 'string' && params.id ? params.id : undefined;
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();
 
     const [farm, setFarm] = useState<Farm | null>(null);
     const [loading, setLoading] = useState(true);
@@ -85,6 +87,7 @@ export function useFarmDetail() {
                     altitude: data.altitude,
                 });
                 setSaved(true);
+                notifySuccess('Cambios guardados correctamente');
                 return;
             }
 
@@ -97,6 +100,7 @@ export function useFarmDetail() {
                 altitude: String(updated.altitude ?? ''),
             });
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente'); 
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -115,12 +119,13 @@ export function useFarmDetail() {
         setConfirmingDelete(false);
     };
 
-    const confirmDelete = async () => {
+     const confirmDelete = async () => {
         if (!farm) return;
         setDeleting(true);
         setScreenError('');
         try {
             await deleteFarm(farm.id);
+            notifySuccess('Finca eliminada correctamente');  
             setConfirmingDelete(false);
             router.replace('/farms');
         } catch (err: unknown) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context';
 import { getCrops, type Crop } from '../services/crops';
 import { createPest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
@@ -20,6 +21,7 @@ export function useNewPest() {
     const params = useLocalSearchParams<{ cropId?: string }>();
     const initialCropId = typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined;
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback(); 
     const [crops, setCrops] = useState<Crop[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -76,6 +78,7 @@ export function useNewPest() {
                     .map((s) => s.trim())
                     .filter(Boolean),
             });
+            notifySuccess('Plaga registrada correctamente');
             router.replace(`/pests?cropId=${pest.cropId}`);
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;

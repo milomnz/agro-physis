@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 
+import { useActionFeedback } from '../feedback/context'; 
 import { createFarm, getFarms, type Farm } from '../services/farms';
 import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
@@ -10,6 +11,7 @@ import { useRequireSession } from './useRequireSession';
 export function useFarmList() {
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();  
 
     const [farms, setFarms] = useState<Farm[]>([]);
     const [loading, setLoading] = useState(true);
@@ -84,6 +86,7 @@ export function useFarmList() {
             reset({ name: '', vereda: '', municipio: '', altitude: '' });
             setShowForm(false);
             setSuccess('Finca registrada correctamente.');
+            notifySuccess('Finca registrada correctamente.');
             await fetchFarms();
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;

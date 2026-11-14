@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context'; 
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
 import { isUnauthorizedError } from '../services/api';
@@ -13,6 +14,7 @@ export function useNewCrop() {
     const params = useLocalSearchParams<{ farmId?: string }>();
     const initialFarmId = typeof params.farmId === 'string' && params.farmId ? params.farmId : undefined;
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();  
     const [farms, setFarms] = useState<Farm[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
@@ -65,6 +67,7 @@ export function useNewCrop() {
                 plantedDate: (data.plantedDate ?? '').trim() || null,
                 notes: (data.notes ?? '').trim() || null,
             });
+            notifySuccess('Cultivo registrado correctamente');
             router.replace(`/crops?farmId=${crop.farmId}`);
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;

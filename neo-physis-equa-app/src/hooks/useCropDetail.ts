@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context';
 import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
 import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../utils/crop-validators';
@@ -10,6 +11,7 @@ import { useRequireSession } from './useRequireSession';
 export function useCropDetail(id: string | undefined) {
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();
     const [loading, setLoading] = useState(true);
     const [crop, setCrop] = useState<Crop | null>(null);
     const [saved, setSaved] = useState(false);
@@ -82,6 +84,7 @@ export function useCropDetail(id: string | undefined) {
                 setCrop(updated);
             }
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente');
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -104,6 +107,7 @@ export function useCropDetail(id: string | undefined) {
         setError('');
         try {
             await deleteCrop(id);
+            notifySuccess('Cultivo eliminado correctamente');
             setConfirmingDelete(false);
             if (router.canGoBack()) {
                 router.back();
