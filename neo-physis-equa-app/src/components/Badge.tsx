@@ -4,20 +4,7 @@ import { Text, View } from 'react-native';
 import { useAccessibility } from '../accessibility/context';
 import { colors } from '../theme/tokens';
 
-interface BadgeColor {
-  light: string;
-  dark: string;
-}
-
-// Estados generales (perfil, preferencias): se mantienen sin cambios.
-const COLORS: Record<string, BadgeColor> = {
-  activo: { light: 'bg-blue-50 text-blue-700', dark: 'bg-blue-950 text-blue-300' },
-  inactivo: { light: 'bg-neutral-100 text-neutral-600', dark: 'bg-turquesa text-crema' },
-  pendiente: { light: 'bg-amber-50 text-amber-700', dark: 'bg-amber-950 text-amber-300' },
-  resuelto: { light: 'bg-green-50 text-green-700', dark: 'bg-green-950 text-green-300' },
-};
-
-interface SeverityStyle {
+interface BadgeStyle {
   container: string;
   text: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -27,9 +14,17 @@ interface SeverityStyle {
   hcIconColor: string;
 }
 
-// Severidad: paleta del manual, siempre color + ícono + texto.
-// Verde Agro y Lima solo como relleno con texto Tinta (5.8:1 y 9.2:1).
-const SEVERITY: Record<string, SeverityStyle> = {
+const DEFAULT_STYLE: BadgeStyle = {
+  container: 'bg-crema border border-turquesa',
+  text: 'text-tinta',
+  icon: 'information-circle-outline',
+  iconColor: colors.tinta,
+  hcContainer: 'bg-turquesa border border-crema',
+  hcText: 'text-crema',
+  hcIconColor: colors.crema,
+};
+
+const BADGE_STYLES: Record<string, BadgeStyle> = {
   baja: {
     container: 'bg-verde',
     text: 'text-tinta',
@@ -57,33 +52,94 @@ const SEVERITY: Record<string, SeverityStyle> = {
     hcText: 'text-tinta',
     hcIconColor: colors.tinta,
   },
+  activo: {
+    container: 'bg-azul',
+    text: 'text-crema',
+    icon: 'checkmark-done-circle',
+    iconColor: colors.crema,
+    hcContainer: 'bg-crema',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  inactivo: {
+    container: 'bg-crema border border-turquesa',
+    text: 'text-tinta',
+    icon: 'remove-circle-outline',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-turquesa border border-crema',
+    hcText: 'text-crema',
+    hcIconColor: colors.crema,
+  },
+  pendiente: {
+    container: 'bg-alerta-bg border border-lima',
+    text: 'text-tinta',
+    icon: 'time-outline',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-lima',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  resuelto: {
+    container: 'bg-exito-bg border border-verde',
+    text: 'text-tinta',
+    icon: 'checkmark-circle',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-verde',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  vegetativo: {
+    container: 'bg-exito-bg border border-verde',
+    text: 'text-tinta',
+    icon: 'leaf',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-verde',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  'floración': {
+    container: 'bg-alerta-bg border border-lima',
+    text: 'text-tinta',
+    icon: 'flower',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-lima',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  'fructificación': {
+    container: 'bg-lima',
+    text: 'text-tinta',
+    icon: 'nutrition',
+    iconColor: colors.tinta,
+    hcContainer: 'bg-lima',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
+  'producción': {
+    container: 'bg-azul',
+    text: 'text-crema',
+    icon: 'trending-up',
+    iconColor: colors.crema,
+    hcContainer: 'bg-crema',
+    hcText: 'text-tinta',
+    hcIconColor: colors.tinta,
+  },
 };
 
 export default function Badge({ value }: { value: string }) {
   const { highContrast } = useAccessibility();
-  const severity = SEVERITY[value];
+  const style = BADGE_STYLES[value] ?? DEFAULT_STYLE;
+  const container = highContrast ? style.hcContainer : style.container;
+  const text = highContrast ? style.hcText : style.text;
+  const iconColor = highContrast ? style.hcIconColor : style.iconColor;
 
-  if (severity) {
-    const container = highContrast ? severity.hcContainer : severity.container;
-    const text = highContrast ? severity.hcText : severity.text;
-    const iconColor = highContrast ? severity.hcIconColor : severity.iconColor;
-
-    return (
-      <View
-        accessibilityLabel={`Severidad ${value}`}
-        className={`shrink flex-row items-center gap-1 self-start rounded-chip px-2.5 py-1 ${container}`}
-      >
-        <Ionicons name={severity.icon} size={12} color={iconColor} />
-        <Text className={`text-[10px] font-inter-bold ${text}`}>{value}</Text>
-      </View>
-    );
-  }
-
-  const entry = COLORS[value] ?? COLORS.inactivo;
-  const color = highContrast ? entry.dark : entry.light;
   return (
-    <Text className={`shrink self-start rounded-chip px-2.5 py-1 text-[10px] font-inter-bold ${color}`}>
-      {value}
-    </Text>
+    <View
+      accessibilityLabel={`Estado ${value}`}
+      className={`shrink flex-row items-center gap-1 self-start rounded-chip px-2.5 py-1 ${container}`}
+    >
+      <Ionicons name={style.icon} size={12} color={iconColor} />
+      <Text className={`text-[10px] font-inter-bold ${text}`}>{value}</Text>
+    </View>
   );
 }

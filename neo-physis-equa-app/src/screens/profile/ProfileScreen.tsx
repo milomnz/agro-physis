@@ -5,11 +5,13 @@ import { useRouter } from 'expo-router';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { useAccessibility } from '../../accessibility/context';
+import { useRequireSession } from '../../hooks/useRequireSession';
 import { useSession } from '../../hooks/useSession';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { palette } = useAccessibility();
+  const sessionReady = useRequireSession();
   const { session, loading, signOut } = useSession();
 
   const handleLogout = useCallback(async () => {
@@ -17,16 +19,12 @@ export default function ProfileScreen() {
     router.replace('/login');
   }, [signOut, router]);
 
-  if (loading) {
+  if (loading || !sessionReady || !session?.token) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
         <ActivityIndicator color={palette.spinner} />
       </View>
     );
-  }
-
-  if (!session || !session.token) {
-    return <ActivityIndicator />;
   }
 
   const profile = session.accessibilityProfile ?? {};

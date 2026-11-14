@@ -14,6 +14,9 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // JSON para la app: sin ETag ni respuestas 304 condicionales.
+  app.getHttpAdapter().getInstance().disable('etag');
+
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') || 8080;
 

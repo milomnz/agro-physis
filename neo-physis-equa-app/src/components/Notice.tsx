@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { useAccessibility } from '../accessibility/context';
+import { colors } from '../theme/tokens';
 
 export type NoticeVariant = 'error' | 'success' | 'warning';
 
@@ -15,11 +17,30 @@ interface NoticeProps {
   variant: NoticeVariant;
   children: string;
   className?: string;
+  onDismiss?: () => void;
+  autoDismissMs?: number;
 }
 
 // Aviso con la misma regla del Badge: color + ícono + texto, nunca color solo.
-export default function Notice({ variant, children, className = '' }: NoticeProps) {
-  const { palette } = useAccessibility();
+export default function Notice({
+  variant,
+  children,
+  className = '',
+  onDismiss,
+  autoDismissMs,
+}: NoticeProps) {
+  const { highContrast, palette } = useAccessibility();
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+  const hasDismiss = Boolean(onDismiss);
+
+  useEffect(() => {
+    if (!autoDismissMs || !hasDismiss) return;
+    const timerId = setTimeout(() => {
+      onDismissRef.current?.();
+    }, autoDismissMs);
+    return () => clearTimeout(timerId);
+  }, [autoDismissMs, children, hasDismiss]);
 
   const container =
     variant === 'error'
@@ -35,6 +56,8 @@ export default function Notice({ variant, children, className = '' }: NoticeProp
         ? palette.iconSuccess
         : palette.iconWarning;
 
+  const closeColor = highContrast ? colors.crema : colors.tinta;
+
   return (
     <View
       accessibilityRole="alert"
@@ -42,6 +65,16 @@ export default function Notice({ variant, children, className = '' }: NoticeProp
     >
       <Ionicons name={ICONS[variant]} size={18} color={iconColor} />
       <Text className={`flex-1 text-sm font-inter-semibold ${palette.errorText}`}>{children}</Text>
+      {onDismiss ? (
+        <Pressable
+          onPress={onDismiss}
+          accessibilityRole="button"
+          accessibilityLabel="Cerrar aviso"
+          className="-my-2 -mr-2 min-h-12 min-w-12 items-center justify-center rounded-boton active:opacity-70"
+        >
+          <Ionicons name="close" size={18} color={closeColor} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }

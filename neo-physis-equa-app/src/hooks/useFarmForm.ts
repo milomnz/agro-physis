@@ -10,6 +10,7 @@ export interface FarmForm {
 export const farmFormRules: { [K in keyof FarmForm]: RegisterOptions<FarmForm> } = {
     name: {
         required: 'El nombre de la finca es obligatorio',
+        minLength: { value: 3, message: 'El nombre debe tener al menos 3 caracteres' },
         maxLength: { value: 100, message: 'El nombre debe tener máximo 100 caracteres' },
     },
     vereda: {
@@ -32,8 +33,16 @@ export function useFarmForm() {
         handleSubmit,
         reset,
         setError,
+        clearErrors,
         formState: { errors },
-    } = useForm<FarmForm>();
+    } = useForm<FarmForm>({
+        defaultValues: {
+            name: '',
+            vereda: '',
+            municipio: '',
+            altitude: '',
+        },
+    });
 
-    return { control, handleSubmit, reset, setError, errors };
+    return { control, handleSubmit, reset, setError, clearErrors, errors };
 }

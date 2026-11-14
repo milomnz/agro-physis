@@ -1,5 +1,6 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Button from '../../components/Button';
@@ -11,7 +12,7 @@ import { useLogin } from '../../hooks/useLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { loading, error, login } = useLogin();
+  const { loading, error, login, dismissError } = useLogin();
 
   const { control, handleSubmit } = useForm<LoginForm>();
 
@@ -22,7 +23,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-crema">
+    <SafeAreaView style={{ flex: 1 }} className="bg-crema">
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
@@ -30,7 +31,11 @@ export default function LoginScreen() {
       >
         <AuthHeader title="Neo Physis Equa" subtitle="Inicia sesión en tu cuenta" />
 
-        {error && <Notice variant="error">{error}</Notice>}
+        {error && (
+          <Notice variant="error" onDismiss={dismissError}>
+            {error}
+          </Notice>
+        )}
 
         <Field
           control={control}
@@ -69,6 +74,6 @@ export default function LoginScreen() {
           </Pressable>
         </Link>
       </KeyboardAwareScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

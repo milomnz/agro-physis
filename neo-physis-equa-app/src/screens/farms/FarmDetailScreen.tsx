@@ -2,6 +2,8 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
+import ConfirmModal from '../../components/ConfirmModal';
+import Notice from '../../components/Notice';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmDetail } from '../../hooks/useFarmDetail';
 import FarmFormFields from './components/FarmFormFields';
@@ -14,12 +16,19 @@ export default function FarmDetailScreen() {
     saving,
     saved,
     screenError,
+    confirmingDelete,
+    deleting,
     control,
     errors,
     onSubmit,
-    handleDelete,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
     goToCrops,
     goToFarms,
+    dismissSaved,
+    dismissScreenError,
+    dismissRootError,
   } = useFarmDetail();
 
   if (loading) {
@@ -35,9 +44,9 @@ export default function FarmDetailScreen() {
       <View className={`flex-1 items-center justify-center gap-4 p-6 ${palette.bg}`}>
         <Text className={`text-lg font-inter-semibold ${palette.title}`}>No se pudo cargar la finca</Text>
         {screenError ? (
-          <Text className={`rounded-lg p-3 text-center text-sm ${palette.errorBanner}`}>
+          <Notice variant="error" onDismiss={dismissScreenError}>
             {screenError}
-          </Text>
+          </Notice>
         ) : null}
         <Button text="Volver a mis fincas" onPress={goToFarms} />
       </View>
@@ -55,21 +64,19 @@ export default function FarmDetailScreen() {
       <Text className={`mb-5 text-sm ${palette.sub}`}>Gestiona los datos de tu terreno agrícola</Text>
 
       {saved ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.successBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">
-            Cambios guardados correctamente
-          </Text>
-        </View>
+        <Notice variant="success" className="mb-4" onDismiss={dismissSaved} autoDismissMs={5000}>
+          Cambios guardados correctamente
+        </Notice>
       ) : null}
       {screenError ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{screenError}</Text>
-        </View>
+        <Notice variant="error" className="mb-4" onDismiss={dismissScreenError}>
+          {screenError}
+        </Notice>
       ) : null}
       {errors.root?.message ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{errors.root.message}</Text>
-        </View>
+        <Notice variant="error" className="mb-4" onDismiss={dismissRootError}>
+          {errors.root.message}
+        </Notice>
       ) : null}
 
       <View className={`mb-6 gap-5 rounded-2xl p-4 ${palette.card}`}>
@@ -99,11 +106,21 @@ export default function FarmDetailScreen() {
 
       <Button
         text="Eliminar finca"
-        onPress={handleDelete}
+        onPress={requestDelete}
         secondary
+        disabled={deleting}
         accessibilityHint="Elimina la finca y todos sus datos asociados"
       />
       </KeyboardAwareScrollView>
+
+      <ConfirmModal
+        visible={confirmingDelete}
+        title="Eliminar finca"
+        message={`¿Seguro que deseas eliminar la finca "${farm.name}"? Esta acción eliminará también sus cultivos y plagas asociadas.`}
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </View>
   );
 }

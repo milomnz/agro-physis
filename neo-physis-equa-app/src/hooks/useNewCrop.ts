@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
-import type { NewCropFormValues } from '../screens/crops/validators';
+import { isUnauthorizedError } from '../services/api';
+import type { NewCropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
 
 export function useNewCrop() {
     const router = useRouter();
+    const params = useLocalSearchParams<{ farmId?: string }>();
+    const initialFarmId = typeof params.farmId === 'string' && params.farmId ? params.farmId : undefined;
     const sessionReady = useRequireSession();
     const [farms, setFarms] = useState<Farm[]>([]);
     const [loading, setLoading] = useState(true);
@@ -18,9 +21,16 @@ export function useNewCrop() {
         control,
         handleSubmit,
         setError,
+        clearErrors,
         formState: { errors, isSubmitting },
     } = useForm<NewCropFormValues>({
-        defaultValues: { growthStage: 'vegetativo' },
+        defaultValues: {
+            farmId: initialFarmId ?? '',
+            species: '',
+            growthStage: 'vegetativo',
+            plantedDate: '',
+            notes: '',
+        },
     });
 
     useEffect(() => {
@@ -34,7 +44,7 @@ export function useNewCrop() {
                 const data = await getFarms();
                 if (!cancelled) setFarms(data);
             } catch (err: unknown) {
-                if (cancelled) return;
+                if (cancelled || isUnauthorizedError(err)) return;
                 setLoadError(err instanceof Error ? err.message : 'Error al cargar las fincas');
             } finally {
                 if (!cancelled) setLoading(false);
@@ -50,13 +60,14 @@ export function useNewCrop() {
         try {
             const crop = await createCrop({
                 farmId: data.farmId,
-                species: data.species.trim(),
+                species: (data.species ?? '').trim(),
                 growthStage: data.growthStage,
-                plantedDate: data.plantedDate.trim() || null,
-                notes: data.notes.trim() || null,
+                plantedDate: (data.plantedDate ?? '').trim() || null,
+                notes: (data.notes ?? '').trim() || null,
             });
             router.replace(`/crops?farmId=${crop.farmId}`);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error inesperado del servidor',
@@ -75,5 +86,7 @@ export function useNewCrop() {
         rootError: errors.root?.message,
         onSubmit,
         goToFarms,
+        dismissRootError: () => clearErrors('root'),
+        dismissLoadError: () => setLoadError(''),
     };
 }

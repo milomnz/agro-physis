@@ -1,92 +1,73 @@
 import { useState } from 'react';
+import { useForm, type Control } from 'react-hook-form';
 import { type RegisterData } from '../services/auth';
-import { validateRegisterForm, type RegisterFieldErrors } from '../utils/auth-validators';
+import { type RegisterForm } from '../utils/auth-validators';
 import { useSession } from './useSession';
 
-export type AuthFieldName = 'nombre' | 'email' | 'password';
-
 interface UseRegisterResult {
-  nombre: string;
-  setNombre: (value: string) => void;
-  email: string;
-  setEmail: (value: string) => void;
-  password: string;
-  setPassword: (value: string) => void;
+  control: Control<RegisterForm>;
   disability: string;
   setDisability: (value: string) => void;
   ttsEnabled: boolean;
   setTtsEnabled: (value: boolean) => void;
   highContrast: boolean;
   setHighContrast: (value: boolean) => void;
-  focusedField: AuthFieldName | null;
-  setFocusedField: (field: AuthFieldName | null) => void;
-  errors: RegisterFieldErrors;
   loading: boolean;
   error: string | null;
-  submit: () => Promise<boolean>;
+  submit: (onSuccess: () => void) => () => Promise<void>;
+  dismissError: () => void;
 }
 
 export function useRegister(): UseRegisterResult {
   const { signUp } = useSession();
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [disability, setDisability] = useState('ninguna');
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
-  const [focusedField, setFocusedField] = useState<AuthFieldName | null>(null);
-  const [errors, setErrors] = useState<RegisterFieldErrors>({});
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const submit = async (): Promise<boolean> => {
-    const next = validateRegisterForm({ nombre, email, password });
-    if (Object.keys(next).length > 0) {
-      setErrors(next);
-      return false;
-    }
-    setErrors({});
-    setLoading(true);
-    setError(null);
-    try {
-      const payload: RegisterData = {
-        name: nombre.trim(),
-        email: email.trim(),
-        password,
-        disabilityType: disability === 'ninguna' ? null : disability,
-        accessibilityProfile: { ttsEnabled, highContrast },
-      };
-      await signUp(payload);
-      setNombre('');
-      setEmail('');
-      setPassword('');
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error inesperado del servidor');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<RegisterForm>({
+    defaultValues: {
+      nombre: '',
+      email: '',
+      password: '',
+    },
+  });
+
+  const submit = (onSuccess: () => void) =>
+    handleSubmit(async (data) => {
+      setError(null);
+      try {
+        const payload: RegisterData = {
+          name: (data.nombre ?? '').trim(),
+          email: (data.email ?? '').trim(),
+          password: data.password,
+          disabilityType: disability === 'ninguna' ? null : disability,
+          accessibilityProfile: { ttsEnabled, highContrast },
+        };
+        await signUp(payload);
+        reset({ nombre: '', email: '', password: '' });
+        onSuccess();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error inesperado del servidor');
+      }
+    });
 
   return {
-    nombre,
-    setNombre,
-    email,
-    setEmail,
-    password,
-    setPassword,
+    control,
     disability,
     setDisability,
     ttsEnabled,
     setTtsEnabled,
     highContrast,
     setHighContrast,
-    focusedField,
-    setFocusedField,
-    errors,
-    loading,
+    loading: isSubmitting,
     error,
     submit,
+    dismissError: () => setError(null),
   };
 }

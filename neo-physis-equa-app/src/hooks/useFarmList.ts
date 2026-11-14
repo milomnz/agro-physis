@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { createFarm, getFarms, type Farm } from '../services/farms';
+import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useFarmForm, type FarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
@@ -16,17 +16,19 @@ export function useFarmList() {
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
     const [success, setSuccess] = useState('');
+    const [scannerNotice, setScannerNotice] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const debouncedSearch = useDebouncedValue(search, 300);
 
-    const { control, handleSubmit, reset, setError, errors } = useFarmForm();
+    const { control, handleSubmit, reset, setError, clearErrors, errors } = useFarmForm();
 
     const fetchFarms = useCallback(async () => {
         try {
             const data = await getFarms();
             setFarms(data);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error al cargar las fincas',
@@ -48,7 +50,7 @@ export function useFarmList() {
                     if (cancelled) return;
                     setFarms(data);
                 } catch (err: unknown) {
-                    if (cancelled) return;
+                    if (cancelled || isUnauthorizedError(err)) return;
                     setError('root', {
                         type: 'manual',
                         message: err instanceof Error ? err.message : 'Error al cargar las fincas',
@@ -61,6 +63,8 @@ export function useFarmList() {
 
             return () => {
                 cancelled = true;
+                setSuccess('');
+                setScannerNotice('');
             };
         }, [sessionReady, setError]),
     );
@@ -70,10 +74,10 @@ export function useFarmList() {
         setSuccess('');
         try {
             await createFarm({
-                name: data.name.trim(),
+                name: (data.name ?? '').trim(),
                 location: {
-                    vereda: data.vereda.trim() || undefined,
-                    municipio: data.municipio.trim() || undefined,
+                    vereda: (data.vereda ?? '').trim() || undefined,
+                    municipio: (data.municipio ?? '').trim() || undefined,
                 },
                 altitude: parseFloat(data.altitude),
             });
@@ -82,6 +86,7 @@ export function useFarmList() {
             setSuccess('Finca registrada correctamente.');
             await fetchFarms();
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error al registrar la finca',
@@ -105,7 +110,7 @@ export function useFarmList() {
     const goToDetail = (id: string) => router.push(`/farms/${id}`);
 
     const openScanner = (farm: Farm) =>
-        Alert.alert('Escáner', `Preparando la cámara para analizar plagas en ${farm.name}…`);
+        setScannerNotice(`Preparando la cámara para analizar plagas en ${farm.name}…`);
 
     return {
         farms,
@@ -116,6 +121,7 @@ export function useFarmList() {
         search,
         setSearch,
         success,
+        scannerNotice,
         submitting,
         control,
         errors,
@@ -123,5 +129,8 @@ export function useFarmList() {
         onSubmit,
         goToDetail,
         openScanner,
+        dismissSuccess: () => setSuccess(''),
+        dismissScannerNotice: () => setScannerNotice(''),
+        dismissError: () => clearErrors('root'),
     };
 }

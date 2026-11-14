@@ -19,6 +19,15 @@ export default function SearchBar({
   const { highContrast } = useAccessibility();
   const [focused, setFocused] = useState(false);
 
+  const surfaceClass = highContrast ? 'bg-noche text-crema' : 'bg-crema text-noche';
+  const borderClass = focused
+    ? highContrast
+      ? 'border-lima'
+      : 'border-noche'
+    : highContrast
+      ? 'border-crema'
+      : 'border-turquesa';
+
   return (
     <TextInput
       accessibilityLabel={label}
@@ -28,13 +37,7 @@ export default function SearchBar({
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
-      className={`mb-4 min-h-12 rounded-campo border-2 p-3.5 ${
-        focused
-          ? 'border-noche'
-          : highContrast
-            ? 'border-crema bg-noche text-crema'
-            : 'border-turquesa bg-crema text-noche'
-      }`}
+      className={`mb-4 min-h-12 rounded-campo border-2 p-3.5 ${surfaceClass} ${borderClass}`}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
     />

@@ -1,5 +1,4 @@
-import { apiClient } from './api';
-import { getSession } from './session';
+import { apiClient, getAuthHeaders } from './api';
 
 export interface LocationDetails {
   vereda?: string;
@@ -31,16 +30,6 @@ export interface UpdateFarmData {
   name?: string;
   location?: LocationDetails;
   altitude?: number;
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const session = await getSession();
-  if (!session || !session.token) {
-    throw new Error('No hay sesión activa');
-  }
-  return {
-    Authorization: `Bearer ${session.token}`,
-  };
 }
 
 export async function getFarms(): Promise<Farm[]> {
