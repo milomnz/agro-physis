@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { createFarm, getFarms, type Farm } from '../services/farms';
+import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useFarmForm, type FarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
@@ -27,6 +28,7 @@ export function useFarmList() {
             const data = await getFarms();
             setFarms(data);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error al cargar las fincas',
@@ -48,7 +50,7 @@ export function useFarmList() {
                     if (cancelled) return;
                     setFarms(data);
                 } catch (err: unknown) {
-                    if (cancelled) return;
+                    if (cancelled || isUnauthorizedError(err)) return;
                     setError('root', {
                         type: 'manual',
                         message: err instanceof Error ? err.message : 'Error al cargar las fincas',
@@ -70,10 +72,10 @@ export function useFarmList() {
         setSuccess('');
         try {
             await createFarm({
-                name: data.name.trim(),
+                name: (data.name ?? '').trim(),
                 location: {
-                    vereda: data.vereda.trim() || undefined,
-                    municipio: data.municipio.trim() || undefined,
+                    vereda: (data.vereda ?? '').trim() || undefined,
+                    municipio: (data.municipio ?? '').trim() || undefined,
                 },
                 altitude: parseFloat(data.altitude),
             });
@@ -82,6 +84,7 @@ export function useFarmList() {
             setSuccess('Finca registrada correctamente.');
             await fetchFarms();
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error al registrar la finca',

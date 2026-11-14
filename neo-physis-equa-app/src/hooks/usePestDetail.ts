@@ -20,6 +20,7 @@ export function usePestDetail() {
     const sessionReady = useRequireSession();
 
     const [loading, setLoading] = useState(true);
+    const [pest, setPest] = useState<Awaited<ReturnType<typeof getPest>> | null>(null);
     const [saving, setSaving] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -36,46 +37,54 @@ export function usePestDetail() {
             return;
         }
 
+        let cancelled = false;
+
         (async () => {
             try {
-                const pest = await getPest(id);
+                const loadedPest = await getPest(id);
+                if (cancelled) return;
+                setPest(loadedPest);
                 reset({
-                    commonName: pest.commonName,
-                    scientificName: pest.scientificName ?? '',
-                    symptoms: pest.symptoms.join(', '),
-                    severity: pest.severity,
+                    commonName: loadedPest.commonName,
+                    scientificName: loadedPest.scientificName ?? '',
+                    symptoms: loadedPest.symptoms.join(', '),
+                    severity: loadedPest.severity,
                 });
             } catch (err: unknown) {
-                if (isUnauthorizedError(err)) return;
+                if (cancelled || isUnauthorizedError(err)) return;
                 setScreenError(err instanceof Error ? err.message : 'Error al cargar la plaga');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         })();
+
+        return () => {
+            cancelled = true;
+        };
     }, [id, sessionReady, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
-        if (!id) return;
+        if (!id || !pest) return;
         setSaving(true);
         setSaved(false);
         setScreenError('');
 
         try {
-            const current = await getPest(id);
             const patch: Record<string, unknown> = {};
-            const commonName = data.commonName.trim();
-            const scientificName = data.scientificName.trim() || null;
-            const symptoms = data.symptoms
+            const commonName = (data.commonName ?? '').trim();
+            const scientificName = (data.scientificName ?? '').trim() || null;
+            const symptoms = (data.symptoms ?? '')
                 .split(',')
                 .map((s) => s.trim())
                 .filter(Boolean);
-            if (commonName !== current.commonName) patch.commonName = commonName;
-            if (scientificName !== current.scientificName) patch.scientificName = scientificName;
-            if (data.severity !== current.severity) patch.severity = data.severity;
-            if (symptoms.join('|') !== current.symptoms.join('|')) patch.symptoms = symptoms;
+            if (commonName !== pest.commonName) patch.commonName = commonName;
+            if (scientificName !== pest.scientificName) patch.scientificName = scientificName;
+            if (data.severity !== pest.severity) patch.severity = data.severity;
+            if (symptoms.join('|') !== pest.symptoms.join('|')) patch.symptoms = symptoms;
 
             if (Object.keys(patch).length > 0) {
-                await updatePest(id, patch);
+                const updated = await updatePest(id, patch);
+                setPest(updated);
             }
             setSaved(true);
         } catch (err: unknown) {

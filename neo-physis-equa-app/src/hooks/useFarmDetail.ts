@@ -30,9 +30,12 @@ export function useFarmDetail() {
             return;
         }
 
+        let cancelled = false;
+
         (async () => {
             try {
                 const data = await getFarm(id);
+                if (cancelled) return;
                 setFarm(data);
                 reset({
                     name: data.name,
@@ -41,12 +44,16 @@ export function useFarmDetail() {
                     altitude: String(data.altitude ?? ''),
                 });
             } catch (err: unknown) {
-                if (isUnauthorizedError(err)) return;
+                if (cancelled || isUnauthorizedError(err)) return;
                 setScreenError(err instanceof Error ? err.message : 'Error al cargar la finca');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         })();
+
+        return () => {
+            cancelled = true;
+        };
     }, [id, sessionReady, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
@@ -57,13 +64,15 @@ export function useFarmDetail() {
 
         try {
             const patch: Record<string, unknown> = {};
-            const name = data.name.trim();
+            const name = (data.name ?? '').trim();
+            const vereda = (data.vereda ?? '').trim();
+            const municipio = (data.municipio ?? '').trim();
             const parsedAltitude = parseFloat(data.altitude);
             if (name !== farm.name) patch.name = name;
 
             const newLocation: Record<string, string> = {};
-            if (data.vereda.trim() !== (farm.location?.vereda ?? '')) newLocation.vereda = data.vereda.trim();
-            if (data.municipio.trim() !== (farm.location?.municipio ?? '')) newLocation.municipio = data.municipio.trim();
+            if (vereda !== (farm.location?.vereda ?? '')) newLocation.vereda = vereda;
+            if (municipio !== (farm.location?.municipio ?? '')) newLocation.municipio = municipio;
             if (Object.keys(newLocation).length > 0) patch.location = { ...(farm.location ?? {}), ...newLocation };
 
             if (parsedAltitude !== farm.altitude) patch.altitude = parsedAltitude;
@@ -71,8 +80,8 @@ export function useFarmDetail() {
             if (Object.keys(patch).length === 0) {
                 reset({
                     name,
-                    vereda: data.vereda.trim(),
-                    municipio: data.municipio.trim(),
+                    vereda,
+                    municipio,
                     altitude: data.altitude,
                 });
                 setSaved(true);

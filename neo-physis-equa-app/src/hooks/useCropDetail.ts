@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
-import { deleteCrop, getCrop, updateCrop, type UpdateCropData } from '../services/crops';
+import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
 import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../screens/crops/validators';
 import { useRequireSession } from './useRequireSession';
@@ -11,6 +11,7 @@ export function useCropDetail(id: string | undefined) {
     const router = useRouter();
     const sessionReady = useRequireSession();
     const [loading, setLoading] = useState(true);
+    const [crop, setCrop] = useState<Crop | null>(null);
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState('');
     const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -37,13 +38,14 @@ export function useCropDetail(id: string | undefined) {
 
         (async () => {
             try {
-                const crop = await getCrop(id);
+                const loadedCrop = await getCrop(id);
                 if (cancelled) return;
+                setCrop(loadedCrop);
                 reset({
-                    species: crop.species,
-                    plantedDate: crop.plantedDate ? crop.plantedDate.slice(0, 10) : '',
-                    growthStage: crop.growthStage,
-                    notes: crop.notes ?? '',
+                    species: loadedCrop.species,
+                    plantedDate: loadedCrop.plantedDate ? loadedCrop.plantedDate.slice(0, 10) : '',
+                    growthStage: loadedCrop.growthStage,
+                    notes: loadedCrop.notes ?? '',
                 });
             } catch (err: unknown) {
                 if (cancelled) return;
@@ -60,24 +62,24 @@ export function useCropDetail(id: string | undefined) {
     }, [id, sessionReady, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
-        if (!id) return;
+        if (!id || !crop) return;
         setSaved(false);
         setError('');
 
         try {
-            const current = await getCrop(id);
             const patch: UpdateCropData = {};
-            const species = data.species.trim();
-            const plantedDate = data.plantedDate.trim() || null;
-            const notes = data.notes.trim() || null;
-            const currentDate = current.plantedDate ? current.plantedDate.slice(0, 10) : null;
-            if (species !== current.species) patch.species = species;
-            if (data.growthStage !== current.growthStage) patch.growthStage = data.growthStage;
+            const species = (data.species ?? '').trim();
+            const plantedDate = (data.plantedDate ?? '').trim() || null;
+            const notes = (data.notes ?? '').trim() || null;
+            const currentDate = crop.plantedDate ? crop.plantedDate.slice(0, 10) : null;
+            if (species !== crop.species) patch.species = species;
+            if (data.growthStage !== crop.growthStage) patch.growthStage = data.growthStage;
             if (plantedDate !== currentDate) patch.plantedDate = plantedDate;
-            if (notes !== current.notes) patch.notes = notes;
+            if (notes !== crop.notes) patch.notes = notes;
 
             if (Object.keys(patch).length > 0) {
-                await updateCrop(id, patch);
+                const updated = await updateCrop(id, patch);
+                setCrop(updated);
             }
             setSaved(true);
         } catch (err: unknown) {

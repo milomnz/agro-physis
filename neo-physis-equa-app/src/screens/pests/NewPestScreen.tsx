@@ -11,7 +11,7 @@ import { useNewPest } from '../../hooks/useNewPest';
 
 export default function NewPestScreen() {
   const { palette } = useAccessibility();
-  const { control, crops, loading, rootError, onSubmit, goToCrops } = useNewPest();
+  const { control, crops, loading, submitting, rootError, onSubmit, goToCrops } = useNewPest();
 
   if (loading) {
     return (
@@ -112,7 +112,11 @@ export default function NewPestScreen() {
               }}
             />
 
-            <Button text="Registrar plaga" onPress={onSubmit} />
+            <Button
+              text={submitting ? 'Registrando…' : 'Registrar plaga'}
+              onPress={onSubmit}
+              disabled={submitting}
+            />
           </>
         )}
       </KeyboardAwareScrollView>

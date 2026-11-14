@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
+import { isUnauthorizedError } from '../services/api';
 import type { NewCropFormValues } from '../screens/crops/validators';
 import { useRequireSession } from './useRequireSession';
 
@@ -23,8 +24,11 @@ export function useNewCrop() {
         formState: { errors, isSubmitting },
     } = useForm<NewCropFormValues>({
         defaultValues: {
+            farmId: initialFarmId ?? '',
+            species: '',
             growthStage: 'vegetativo',
-            ...(initialFarmId ? { farmId: initialFarmId } : {}),
+            plantedDate: '',
+            notes: '',
         },
     });
 
@@ -39,7 +43,7 @@ export function useNewCrop() {
                 const data = await getFarms();
                 if (!cancelled) setFarms(data);
             } catch (err: unknown) {
-                if (cancelled) return;
+                if (cancelled || isUnauthorizedError(err)) return;
                 setLoadError(err instanceof Error ? err.message : 'Error al cargar las fincas');
             } finally {
                 if (!cancelled) setLoading(false);
@@ -55,13 +59,14 @@ export function useNewCrop() {
         try {
             const crop = await createCrop({
                 farmId: data.farmId,
-                species: data.species.trim(),
+                species: (data.species ?? '').trim(),
                 growthStage: data.growthStage,
-                plantedDate: data.plantedDate.trim() || null,
-                notes: data.notes.trim() || null,
+                plantedDate: (data.plantedDate ?? '').trim() || null,
+                notes: (data.notes ?? '').trim() || null,
             });
             router.replace(`/crops?farmId=${crop.farmId}`);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error inesperado del servidor',
