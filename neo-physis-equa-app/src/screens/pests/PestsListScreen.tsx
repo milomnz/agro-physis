@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
+import Notice from '../../components/Notice';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { usePestList } from '../../hooks/usePestList';
@@ -15,6 +16,7 @@ export default function PestsListScreen() {
     crops,
     loading,
     error,
+    warning,
     search,
     setSearch,
     selectedCrop,
@@ -46,9 +48,14 @@ export default function PestsListScreen() {
       </View>
 
       {error ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{error}</Text>
-        </View>
+        <Notice variant="error" className="mb-4">
+          {error}
+        </Notice>
+      ) : null}
+      {warning ? (
+        <Notice variant="warning" className="mb-4">
+          {warning}
+        </Notice>
       ) : null}
 
       {crops.length === 0 ? (

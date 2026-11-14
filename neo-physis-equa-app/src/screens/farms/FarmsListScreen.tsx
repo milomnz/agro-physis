@@ -3,6 +3,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
+import Notice from '../../components/Notice';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmList } from '../../hooks/useFarmList';
@@ -20,6 +21,7 @@ export default function FarmsListScreen() {
     search,
     setSearch,
     success,
+    scannerNotice,
     submitting,
     control,
     errors,
@@ -57,14 +59,19 @@ export default function FarmsListScreen() {
       </View>
 
       {success ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.successBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{success}</Text>
-        </View>
+        <Notice variant="success" className="mb-4">
+          {success}
+        </Notice>
       ) : null}
       {errors.root?.message ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{errors.root.message}</Text>
-        </View>
+        <Notice variant="error" className="mb-4">
+          {errors.root.message}
+        </Notice>
+      ) : null}
+      {scannerNotice ? (
+        <Notice variant="warning" className="mb-4">
+          {scannerNotice}
+        </Notice>
       ) : null}
 
       {showForm ? (

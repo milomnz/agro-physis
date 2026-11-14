@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { createFarm, getFarms, type Farm } from '../services/farms';
@@ -16,6 +15,7 @@ export function useFarmList() {
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
     const [success, setSuccess] = useState('');
+    const [scannerNotice, setScannerNotice] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const debouncedSearch = useDebouncedValue(search, 300);
@@ -105,7 +105,7 @@ export function useFarmList() {
     const goToDetail = (id: string) => router.push(`/farms/${id}`);
 
     const openScanner = (farm: Farm) =>
-        Alert.alert('Escáner', `Preparando la cámara para analizar plagas en ${farm.name}…`);
+        setScannerNotice(`Preparando la cámara para analizar plagas en ${farm.name}…`);
 
     return {
         farms,
@@ -116,6 +116,7 @@ export function useFarmList() {
         search,
         setSearch,
         success,
+        scannerNotice,
         submitting,
         control,
         errors,

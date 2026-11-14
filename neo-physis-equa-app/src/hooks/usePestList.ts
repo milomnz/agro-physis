@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { getPests, type Pest } from '../services/pests';
@@ -19,6 +18,7 @@ export function usePestList() {
     const [search, setSearch] = useState('');
     const [selectedCrop, setSelectedCrop] = useState<string | undefined>(initialCropId);
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
 
     const debouncedSearch = useDebouncedValue(search, 300);
 
@@ -41,6 +41,7 @@ export function usePestList() {
                     setPests(pestsData);
                     setCrops(cropsData);
                     setError('');
+                    setWarning('');
                 } catch (err: unknown) {
                     if (cancelled) return;
                     setError(err instanceof Error ? err.message : 'Error al cargar las plagas');
@@ -71,14 +72,7 @@ export function usePestList() {
 
     const goToNew = () => {
         if (crops.length === 0) {
-            Alert.alert(
-                'Registra un cultivo primero',
-                'Para crear una plaga necesitas tener al menos un cultivo registrado.',
-                [
-                    { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Ir a mis cultivos', onPress: () => router.push('/crops') },
-                ],
-            );
+            setWarning('Para crear una plaga necesitas tener al menos un cultivo registrado.');
             return;
         }
         const query = selectedCrop ? `?cropId=${encodeURIComponent(selectedCrop)}` : '';
@@ -95,6 +89,7 @@ export function usePestList() {
         filteredPests,
         loading,
         error,
+        warning,
         search,
         setSearch,
         selectedCrop,
