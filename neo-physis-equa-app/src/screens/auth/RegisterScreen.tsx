@@ -1,5 +1,6 @@
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/Button';
@@ -55,7 +56,7 @@ export default function RegisterScreen() {
     ) : null;
 
   return (
-    <View className="flex-1 bg-crema">
+    <SafeAreaView style={{ flex: 1 }} className="bg-crema">
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -157,6 +158,6 @@ export default function RegisterScreen() {
           </Pressable>
         </Link>
       </KeyboardAwareScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

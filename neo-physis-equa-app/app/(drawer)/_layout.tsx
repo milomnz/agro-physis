@@ -1,5 +1,6 @@
 import { Drawer } from 'expo-router/drawer';
 import { View, Text, Pressable, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname, type Href } from 'expo-router';
 import { useAccessibility } from '../../src/accessibility/context';
@@ -11,6 +12,7 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
   const { signOut } = useSession();
   const router = useRouter();
   const pathname = usePathname(); // Nos permite saber en qué pantalla estamos
+  const insets = useSafeAreaInsets();
 
   const textColor = highContrast ? colors.crema : colors.tinta;
   const borderColor = highContrast ? colors.crema : colors.azul;
@@ -54,8 +56,11 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: highContrast ? colors.tinta : colors.crema }}>
-      {/* 1. Cabecera Visual (Con un margen superior para la barra de estado) */}
-      <View className="mb-4 mt-12 border-b p-6 pb-4" style={{ borderBottomColor: borderColor + '30' }}>
+      {/* 1. Cabecera Visual (Respetando el inset superior de la barra de estado) */}
+      <View
+        className="mb-4 border-b px-6 pb-4"
+        style={{ paddingTop: insets.top + 16, borderBottomColor: borderColor + '30' }}
+      >
         <Text
           className="text-2xl"
           style={{ fontFamily: 'BricolageGrotesque_700Bold', color: highContrast ? colors.crema : colors.azul }}
@@ -77,7 +82,10 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
       </ScrollView>
 
       {/* 3. Botón inferior para cerrar sesión */}
-      <View className="border-t p-4" style={{ borderTopColor: borderColor + '30' }}>
+      <View
+        className="border-t px-4 pt-4"
+        style={{ paddingBottom: Math.max(insets.bottom, 16), borderTopColor: borderColor + '30' }}
+      >
         <Pressable
           onPress={async () => {
             onClose();

@@ -1,5 +1,6 @@
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAccessibility } from '../src/accessibility/context';
 import { useSession } from '../src/hooks/useSession';
 
@@ -10,9 +11,9 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-crema">
+      <SafeAreaView style={{ flex: 1 }} className={`items-center justify-center ${palette.bg}`}>
         <ActivityIndicator size="large" color={palette.spinner} />
-      </View>
+      </SafeAreaView>
     );
   }
 
