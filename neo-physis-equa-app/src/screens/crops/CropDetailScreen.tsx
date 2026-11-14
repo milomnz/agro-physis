@@ -2,6 +2,8 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import ConfirmModal from '../../components/ConfirmModal';
+import Notice from '../../components/Notice';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropDetail } from '../../hooks/useCropDetail';
 import CropFormFields from './CropFormFields';
@@ -12,7 +14,19 @@ export default function CropDetailScreen() {
   const router = useRouter();
   const { palette } = useAccessibility();
 
-  const { control, loading, saving, saved, error, onSubmit, confirmDelete } = useCropDetail(id);
+  const {
+    control,
+    loading,
+    saving,
+    saved,
+    error,
+    confirmingDelete,
+    deleting,
+    onSubmit,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+  } = useCropDetail(id);
 
   if (loading) {
     return (
@@ -35,16 +49,14 @@ export default function CropDetailScreen() {
         </Text>
 
         {saved ? (
-          <View className={`mb-4 rounded-lg p-3 ${palette.successBanner}`}>
-            <Text className="text-center text-sm font-inter-semibold">
-              Cambios guardados correctamente
-            </Text>
-          </View>
+          <Notice variant="success" className="mb-4">
+            Cambios guardados correctamente
+          </Notice>
         ) : null}
         {error ? (
-          <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-            <Text className="text-center text-sm font-inter-semibold">{error}</Text>
-          </View>
+          <Notice variant="error" className="mb-4">
+            {error}
+          </Notice>
         ) : null}
 
         <View className={`mb-6 rounded-2xl p-5 ${palette.card}`}>
@@ -67,8 +79,17 @@ export default function CropDetailScreen() {
           <Button text="Ver / registrar plagas →" onPress={() => router.push(`/pests?cropId=${id}`)} />
         </View>
 
-        <Button text="Eliminar cultivo" danger onPress={confirmDelete} />
+        <Button text="Eliminar cultivo" danger onPress={requestDelete} disabled={deleting} />
       </KeyboardAwareScrollView>
+
+      <ConfirmModal
+        visible={confirmingDelete}
+        title="Eliminar cultivo"
+        message="¿Seguro que deseas eliminar este cultivo? También se eliminarán las plagas asociadas."
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </View>
   );
 }
