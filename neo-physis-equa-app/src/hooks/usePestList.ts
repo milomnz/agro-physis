@@ -3,6 +3,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { getPests, type Pest } from '../services/pests';
 import { getCrops, type Crop } from '../services/crops';
+import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useRequireSession } from './useRequireSession';
 
@@ -43,7 +44,7 @@ export function usePestList() {
                     setError('');
                     setWarning('');
                 } catch (err: unknown) {
-                    if (cancelled) return;
+                    if (cancelled || isUnauthorizedError(err)) return;
                     setError(err instanceof Error ? err.message : 'Error al cargar las plagas');
                 } finally {
                     // Only the first load shows the spinner; refocus reloads are silent.

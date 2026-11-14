@@ -3,6 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 
 import { getCrops, type Crop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
+import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useRequireSession } from './useRequireSession';
 
@@ -40,7 +41,7 @@ export function useCropList(initialFarmId?: string) {
                     setError('');
                     setWarning('');
                 } catch (err: unknown) {
-                    if (cancelled) return;
+                    if (cancelled || isUnauthorizedError(err)) return;
                     setError(err instanceof Error ? err.message : 'Error al cargar los cultivos');
                 } finally {
                     // Only the first load shows the spinner; refocus reloads are silent.

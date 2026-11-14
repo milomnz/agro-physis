@@ -1,5 +1,4 @@
-import { apiClient } from './api';
-import { getSession } from './session';
+import { apiClient, getAuthHeaders } from './api';
 
 export const SEVERITIES = ['baja', 'media', 'alta'] as const;
 export type Severity = (typeof SEVERITIES)[number];
@@ -38,16 +37,6 @@ export interface UpdatePestData {
   severity?: Severity;
   affectedCrops?: string[];
   imageReferences?: string[];
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const session = await getSession();
-  if (!session || !session.token) {
-    throw new Error('No hay sesión activa');
-  }
-  return {
-    Authorization: `Bearer ${session.token}`,
-  };
 }
 
 export async function getPests(cropId?: string): Promise<Pest[]> {

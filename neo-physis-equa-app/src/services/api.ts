@@ -88,17 +88,43 @@ function hasAuthorizationHeader(headers: HeadersInit | undefined): boolean {
   return Object.keys(headers).some((key) => key.toLowerCase() === 'authorization');
 }
 
+const REQUEST_TIMEOUT_MS = 15000;
+
+export async function getAuthHeaders(): Promise<Record<string, string>> {
+  const session = await getSession();
+  if (!session || !session.token) {
+    throw new Error('No hay sesión activa');
+  }
+  return {
+    Authorization: `Bearer ${session.token}`,
+  };
+}
+
 export async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options;
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...rest,
+      signal: rest.signal ?? controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new ApiError(408, 'No se pudo conectar con el servidor. Verifica tu conexión.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const data = await response.json().catch(() => null);
 
