@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context'; 
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
 import type { NewCropFormValues } from '../screens/crops/validators';
@@ -10,6 +11,7 @@ import { useRequireSession } from './useRequireSession';
 export function useNewCrop() {
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();  
     const [farms, setFarms] = useState<Farm[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
@@ -55,6 +57,7 @@ export function useNewCrop() {
                 plantedDate: data.plantedDate.trim() || null,
                 notes: data.notes.trim() || null,
             });
+            notifySuccess('Cultivo registrado correctamente');
             router.replace(`/crops?farmId=${crop.farmId}`);
         } catch (err: unknown) {
             setError('root', {

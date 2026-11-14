@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context'; 
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -18,7 +19,7 @@ export function usePestDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const sessionReady = useRequireSession();
-
+    const { notifySuccess } = useActionFeedback();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [screenError, setScreenError] = useState('');
@@ -71,6 +72,7 @@ export function usePestDetail() {
                 await updatePest(id, patch);
             }
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente');
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -89,6 +91,7 @@ export function usePestDetail() {
                 onPress: async () => {
                     try {
                         await deletePest(id);
+                        notifySuccess('Plaga eliminada correctamente');  
                         router.back();
                     } catch (err: unknown) {
                         if (isUnauthorizedError(err)) return;

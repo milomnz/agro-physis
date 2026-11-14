@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context'; 
 import { deleteCrop, getCrop, updateCrop, type UpdateCropData } from '../services/crops';
 import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../screens/crops/validators';
@@ -11,6 +12,7 @@ import { useRequireSession } from './useRequireSession';
 export function useCropDetail(id: string | undefined) {
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback(); 
     const [loading, setLoading] = useState(true);
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState('');
@@ -74,6 +76,7 @@ export function useCropDetail(id: string | undefined) {
                 await updateCrop(id, patch);
             }
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente');  
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -93,6 +96,7 @@ export function useCropDetail(id: string | undefined) {
                     onPress: async () => {
                         try {
                             await deleteCrop(id);
+                            notifySuccess('Cultivo eliminado correctamente'); 
                             router.back();
                         } catch (err: unknown) {
                             if (isUnauthorizedError(err)) return;

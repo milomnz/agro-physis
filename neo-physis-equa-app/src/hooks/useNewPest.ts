@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
+import { useActionFeedback } from '../feedback/context';
 import { getCrops, type Crop } from '../services/crops';
 import { createPest, type Severity } from '../services/pests';
 import { useRequireSession } from './useRequireSession';
@@ -17,6 +18,7 @@ interface PestForm {
 export function useNewPest() {
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback(); 
     const [crops, setCrops] = useState<Crop[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -59,6 +61,7 @@ export function useNewPest() {
                     .map((s) => s.trim())
                     .filter(Boolean),
             });
+            notifySuccess('Plaga registrada correctamente');
             router.replace(`/pests?cropId=${pest.cropId}`);
         } catch (err: unknown) {
             setError('root', {

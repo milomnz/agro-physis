@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { deleteFarm, getFarm, updateFarm, type Farm } from '../services/farms';
 import { isUnauthorizedError } from '../services/api';
+import { useActionFeedback } from '../feedback/context';
 import { useFarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
 
@@ -11,6 +12,7 @@ export function useFarmDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const sessionReady = useRequireSession();
+    const { notifySuccess } = useActionFeedback();
 
     const [farm, setFarm] = useState<Farm | null>(null);
     const [loading, setLoading] = useState(true);
@@ -69,6 +71,7 @@ export function useFarmDetail() {
                     altitude: data.altitude,
                 });
                 setSaved(true);
+                notifySuccess('Cambios guardados correctamente');
                 return;
             }
 
@@ -81,6 +84,7 @@ export function useFarmDetail() {
                 altitude: String(updated.altitude ?? ''),
             });
             setSaved(true);
+            notifySuccess('Cambios guardados correctamente'); 
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setScreenError(err instanceof Error ? err.message : 'Error al guardar los cambios');
@@ -102,6 +106,7 @@ export function useFarmDetail() {
                     onPress: async () => {
                         try {
                             await deleteFarm(farm.id);
+                            notifySuccess('Finca eliminada correctamente'); 
                             router.replace('/farms');
                         } catch (err: unknown) {
                             if (isUnauthorizedError(err)) return;

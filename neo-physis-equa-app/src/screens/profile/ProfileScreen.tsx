@@ -7,9 +7,10 @@ import Button from '../../components/Button';
 import { useAccessibility } from '../../accessibility/context';
 import { useSession } from '../../hooks/useSession';
 
+
 export default function ProfileScreen() {
   const router = useRouter();
-  const { palette } = useAccessibility();
+  const { palette, actionFeedback } = useAccessibility();
   const { session, loading, signOut } = useSession();
 
   const handleLogout = useCallback(async () => {
@@ -71,6 +72,9 @@ export default function ProfileScreen() {
           </Text>
           <Text className={`text-xs ${palette.sub}`}>
             Alto contraste: {highContrast ? 'Activado' : 'Desactivado'}
+          </Text>
+          <Text className={`text-xs ${palette.sub}`}>
+            Vibración y alertas visuales: {actionFeedback ? 'Activadas' : 'Desactivadas'}
           </Text>
         </View>
       </View>
