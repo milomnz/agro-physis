@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
-import { useActionFeedback } from '../feedback/context'; 
-import { deleteCrop, getCrop, updateCrop, type UpdateCropData } from '../services/crops';
+import { useActionFeedback } from '../feedback/context';
+import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
 import { isUnauthorizedError } from '../services/api';
-import type { CropFormValues } from '../screens/crops/validators';
+import type { CropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
 
 export function useCropDetail(id: string | undefined) {
     const router = useRouter();
     const sessionReady = useRequireSession();
-    const { notifySuccess } = useActionFeedback(); 
+    const { notifySuccess } = useActionFeedback();
     const [loading, setLoading] = useState(true);
+    const [crop, setCrop] = useState<Crop | null>(null);
     const [saved, setSaved] = useState(false);
     const [error, setError] = useState('');
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const {
         control,
@@ -25,7 +27,12 @@ export function useCropDetail(id: string | undefined) {
     } = useForm<CropFormValues>();
 
     useEffect(() => {
-        if (!sessionReady || !id) return;
+        if (!sessionReady) return;
+        if (!id) {
+            setError('Identificador de cultivo no válido');
+            setLoading(false);
+            return;
+        }
 
         // Ignore the response if `id` changes or the screen unmounts mid-request.
         let cancelled = false;
@@ -33,13 +40,14 @@ export function useCropDetail(id: string | undefined) {
 
         (async () => {
             try {
-                const crop = await getCrop(id);
+                const loadedCrop = await getCrop(id);
                 if (cancelled) return;
+                setCrop(loadedCrop);
                 reset({
-                    species: crop.species,
-                    plantedDate: crop.plantedDate ? crop.plantedDate.slice(0, 10) : '',
-                    growthStage: crop.growthStage,
-                    notes: crop.notes ?? '',
+                    species: loadedCrop.species,
+                    plantedDate: loadedCrop.plantedDate ? loadedCrop.plantedDate.slice(0, 10) : '',
+                    growthStage: loadedCrop.growthStage,
+                    notes: loadedCrop.notes ?? '',
                 });
             } catch (err: unknown) {
                 if (cancelled) return;
@@ -56,60 +64,78 @@ export function useCropDetail(id: string | undefined) {
     }, [id, sessionReady, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
-        if (!id) return;
+        if (!id || !crop) return;
         setSaved(false);
         setError('');
 
         try {
-            const current = await getCrop(id);
             const patch: UpdateCropData = {};
-            const species = data.species.trim();
-            const plantedDate = data.plantedDate.trim() || null;
-            const notes = data.notes.trim() || null;
-            const currentDate = current.plantedDate ? current.plantedDate.slice(0, 10) : null;
-            if (species !== current.species) patch.species = species;
-            if (data.growthStage !== current.growthStage) patch.growthStage = data.growthStage;
+            const species = (data.species ?? '').trim();
+            const plantedDate = (data.plantedDate ?? '').trim() || null;
+            const notes = (data.notes ?? '').trim() || null;
+            const currentDate = crop.plantedDate ? crop.plantedDate.slice(0, 10) : null;
+            if (species !== crop.species) patch.species = species;
+            if (data.growthStage !== crop.growthStage) patch.growthStage = data.growthStage;
             if (plantedDate !== currentDate) patch.plantedDate = plantedDate;
-            if (notes !== current.notes) patch.notes = notes;
+            if (notes !== crop.notes) patch.notes = notes;
 
             if (Object.keys(patch).length > 0) {
-                await updateCrop(id, patch);
+                const updated = await updateCrop(id, patch);
+                setCrop(updated);
             }
             setSaved(true);
-            notifySuccess('Cambios guardados correctamente');  
+            notifySuccess('Cambios guardados correctamente');
         } catch (err: unknown) {
             if (isUnauthorizedError(err)) return;
             setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
         }
     });
 
-    const confirmDelete = () => {
+    const requestDelete = () => {
         if (!id) return;
-        Alert.alert(
-            'Eliminar cultivo',
-            '¿Seguro que deseas eliminar este cultivo? También se eliminarán las plagas asociadas.',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Eliminar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteCrop(id);
-                            notifySuccess('Cultivo eliminado correctamente'); 
-                            router.back();
-                        } catch (err: unknown) {
-                            if (isUnauthorizedError(err)) return;
-                            Alert.alert(
-                                'Error',
-                                err instanceof Error ? err.message : 'Error al eliminar el cultivo',
-                            );
-                        }
-                    },
-                },
-            ],
-        );
+        setConfirmingDelete(true);
     };
 
-    return { control, loading, saving: isSubmitting, saved, error, onSubmit, confirmDelete };
+    const cancelDelete = () => {
+        if (deleting) return;
+        setConfirmingDelete(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!id) return;
+        setDeleting(true);
+        setError('');
+        try {
+            await deleteCrop(id);
+            notifySuccess('Cultivo eliminado correctamente');
+            setConfirmingDelete(false);
+            if (router.canGoBack()) {
+                router.back();
+            } else {
+                router.replace('/crops');
+            }
+        } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
+            setConfirmingDelete(false);
+            setError(err instanceof Error ? err.message : 'Error al eliminar el cultivo');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return {
+        control,
+        loading,
+        saving: isSubmitting,
+        saved,
+        error,
+        confirmingDelete,
+        deleting,
+        onSubmit,
+        requestDelete,
+        cancelDelete,
+        confirmDelete,
+        dismissSaved: () => setSaved(false),
+        dismissError: () => setError(''),
+    };
 }

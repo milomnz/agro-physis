@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
 import { getCrops, type Crop } from '../services/crops';
 import { createPest, type Severity } from '../services/pests';
+import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
 
 interface PestForm {
@@ -17,6 +18,8 @@ interface PestForm {
 
 export function useNewPest() {
     const router = useRouter();
+    const params = useLocalSearchParams<{ cropId?: string }>();
+    const initialCropId = typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined;
     const sessionReady = useRequireSession();
     const { notifySuccess } = useActionFeedback(); 
     const [crops, setCrops] = useState<Crop[]>([]);
@@ -26,37 +29,51 @@ export function useNewPest() {
         control,
         handleSubmit,
         setError,
-        formState: { errors },
+        clearErrors,
+        formState: { errors, isSubmitting },
     } = useForm<PestForm>({
-        defaultValues: { severity: 'media' },
+        defaultValues: {
+            cropId: initialCropId ?? '',
+            commonName: '',
+            scientificName: '',
+            symptoms: '',
+            severity: 'media',
+        },
     });
 
     useEffect(() => {
         if (!sessionReady) return;
+        let cancelled = false;
 
         (async () => {
             try {
                 const data = await getCrops();
+                if (cancelled) return;
                 setCrops(data);
             } catch (err: unknown) {
+                if (cancelled || isUnauthorizedError(err)) return;
                 setError('root', {
                     type: 'manual',
                     message: err instanceof Error ? err.message : 'Error al cargar los cultivos',
                 });
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         })();
+
+        return () => {
+            cancelled = true;
+        };
     }, [sessionReady, setError]);
 
     const onSubmit = handleSubmit(async (data) => {
         try {
             const pest = await createPest({
                 cropId: data.cropId,
-                commonName: data.commonName.trim(),
-                scientificName: data.scientificName.trim() || null,
+                commonName: (data.commonName ?? '').trim(),
+                scientificName: (data.scientificName ?? '').trim() || null,
                 severity: data.severity,
-                symptoms: data.symptoms
+                symptoms: (data.symptoms ?? '')
                     .split(',')
                     .map((s) => s.trim())
                     .filter(Boolean),
@@ -64,6 +81,7 @@ export function useNewPest() {
             notifySuccess('Plaga registrada correctamente');
             router.replace(`/pests?cropId=${pest.cropId}`);
         } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
             setError('root', {
                 type: 'manual',
                 message: err instanceof Error ? err.message : 'Error inesperado del servidor',
@@ -77,8 +95,10 @@ export function useNewPest() {
         control,
         crops,
         loading,
+        submitting: isSubmitting,
         rootError: errors.root?.message,
         onSubmit,
         goToCrops,
+        dismissRootError: () => clearErrors('root'),
     };
 }

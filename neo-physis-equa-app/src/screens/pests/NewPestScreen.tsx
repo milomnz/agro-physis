@@ -3,6 +3,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import Field from '../../components/Field';
+import Notice from '../../components/Notice';
 import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
@@ -10,7 +11,8 @@ import { useNewPest } from '../../hooks/useNewPest';
 
 export default function NewPestScreen() {
   const { palette } = useAccessibility();
-  const { control, crops, loading, rootError, onSubmit, goToCrops } = useNewPest();
+  const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
+    useNewPest();
 
   if (loading) {
     return (
@@ -44,9 +46,9 @@ export default function NewPestScreen() {
         ) : (
           <>
             {rootError && (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
+              <Notice variant="error" onDismiss={dismissRootError}>
                 {rootError}
-              </Text>
+              </Notice>
             )}
 
             <Select
@@ -115,7 +117,11 @@ export default function NewPestScreen() {
               }}
             />
 
-            <Button text="Registrar plaga" onPress={onSubmit} />
+            <Button
+              text={submitting ? 'Registrando…' : 'Registrar plaga'}
+              onPress={onSubmit}
+              disabled={submitting}
+            />
           </>
         )}
       </KeyboardAwareScrollView>

@@ -2,16 +2,27 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import type { Control } from 'react-hook-form';
 import Button from '../../components/Button';
+import Notice from '../../components/Notice';
 import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { useNewCrop } from '../../hooks/useNewCrop';
 import CropFormFields from './CropFormFields';
-import { FARM_FIELD_RULES, type CropFormValues } from './validators';
+import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
 
 export default function NewCropScreen() {
   const { palette } = useAccessibility();
-  const { control, farms, loading, loadError, submitting, rootError, onSubmit, goToFarms } =
-    useNewCrop();
+  const {
+    control,
+    farms,
+    loading,
+    loadError,
+    submitting,
+    rootError,
+    onSubmit,
+    goToFarms,
+    dismissRootError,
+    dismissLoadError,
+  } = useNewCrop();
 
   if (loading) {
     return (
@@ -45,14 +56,14 @@ export default function NewCropScreen() {
         ) : (
           <>
             {rootError && (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
+              <Notice variant="error" onDismiss={dismissRootError}>
                 {rootError}
-              </Text>
+              </Notice>
             )}
             {loadError ? (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
+              <Notice variant="error" onDismiss={dismissLoadError}>
                 {loadError}
-              </Text>
+              </Notice>
             ) : null}
 
             <Select

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
-import { useActionFeedback } from '../feedback/context'; 
+import { useActionFeedback } from '../feedback/context';
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -16,60 +15,77 @@ interface PestForm {
 }
 
 export function usePestDetail() {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const params = useLocalSearchParams<{ id?: string }>();
+    const id = typeof params.id === 'string' && params.id ? params.id : undefined;
     const router = useRouter();
     const sessionReady = useRequireSession();
     const { notifySuccess } = useActionFeedback();
     const [loading, setLoading] = useState(true);
+    const [pest, setPest] = useState<Awaited<ReturnType<typeof getPest>> | null>(null);
     const [saving, setSaving] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [screenError, setScreenError] = useState('');
     const [saved, setSaved] = useState(false);
 
     const { control, handleSubmit, reset } = useForm<PestForm>();
 
     useEffect(() => {
-        if (!sessionReady || !id) return;
+        if (!sessionReady) return;
+        if (!id) {
+            setScreenError('Identificador de plaga no válido');
+            setLoading(false);
+            return;
+        }
+
+        let cancelled = false;
 
         (async () => {
             try {
-                const pest = await getPest(id);
+                const loadedPest = await getPest(id);
+                if (cancelled) return;
+                setPest(loadedPest);
                 reset({
-                    commonName: pest.commonName,
-                    scientificName: pest.scientificName ?? '',
-                    symptoms: pest.symptoms.join(', '),
-                    severity: pest.severity,
+                    commonName: loadedPest.commonName,
+                    scientificName: loadedPest.scientificName ?? '',
+                    symptoms: loadedPest.symptoms.join(', '),
+                    severity: loadedPest.severity,
                 });
             } catch (err: unknown) {
-                if (isUnauthorizedError(err)) return;
+                if (cancelled || isUnauthorizedError(err)) return;
                 setScreenError(err instanceof Error ? err.message : 'Error al cargar la plaga');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         })();
+
+        return () => {
+            cancelled = true;
+        };
     }, [id, sessionReady, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
-        if (!id) return;
+        if (!id || !pest) return;
         setSaving(true);
         setSaved(false);
         setScreenError('');
 
         try {
-            const current = await getPest(id);
             const patch: Record<string, unknown> = {};
-            const commonName = data.commonName.trim();
-            const scientificName = data.scientificName.trim() || null;
-            const symptoms = data.symptoms
+            const commonName = (data.commonName ?? '').trim();
+            const scientificName = (data.scientificName ?? '').trim() || null;
+            const symptoms = (data.symptoms ?? '')
                 .split(',')
                 .map((s) => s.trim())
                 .filter(Boolean);
-            if (commonName !== current.commonName) patch.commonName = commonName;
-            if (scientificName !== current.scientificName) patch.scientificName = scientificName;
-            if (data.severity !== current.severity) patch.severity = data.severity;
-            if (symptoms.join('|') !== current.symptoms.join('|')) patch.symptoms = symptoms;
+            if (commonName !== pest.commonName) patch.commonName = commonName;
+            if (scientificName !== pest.scientificName) patch.scientificName = scientificName;
+            if (data.severity !== pest.severity) patch.severity = data.severity;
+            if (symptoms.join('|') !== pest.symptoms.join('|')) patch.symptoms = symptoms;
 
             if (Object.keys(patch).length > 0) {
-                await updatePest(id, patch);
+                const updated = await updatePest(id, patch);
+                setPest(updated);
             }
             setSaved(true);
             notifySuccess('Cambios guardados correctamente');
@@ -81,29 +97,50 @@ export function usePestDetail() {
         }
     });
 
-    const handleDelete = () => {
+     const requestDelete = () => {
         if (!id) return;
-        Alert.alert('Eliminar plaga', '¿Seguro que deseas eliminar este registro de plaga?', [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-                text: 'Eliminar',
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await deletePest(id);
-                        notifySuccess('Plaga eliminada correctamente');  
-                        router.back();
-                    } catch (err: unknown) {
-                        if (isUnauthorizedError(err)) return;
-                        Alert.alert(
-                            'Error',
-                            err instanceof Error ? err.message : 'Error al eliminar la plaga',
-                        );
-                    }
-                },
-            },
-        ]);
+        setConfirmingDelete(true);
+    };
+    const cancelDelete = () => {
+        if (deleting) return;
+        setConfirmingDelete(false);
     };
 
-    return { control, loading, saving, saved, screenError, onSubmit, handleDelete };
+    const confirmDelete = async () => {
+        if (!id) return;
+        setDeleting(true);
+        setScreenError('');
+        try {
+            await deletePest(id);
+            notifySuccess('Plaga eliminada correctamente');
+            setConfirmingDelete(false);
+            if (router.canGoBack()) {
+                router.back();
+            } else {
+                router.replace('/pests');
+            }
+        } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
+            setConfirmingDelete(false);
+            setScreenError(err instanceof Error ? err.message : 'Error al eliminar la plaga');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return {
+        control,
+        loading,
+        saving,
+        saved,
+        screenError,
+        confirmingDelete,
+        deleting,
+        onSubmit,
+        requestDelete,
+        cancelDelete,
+        confirmDelete,
+        dismissSaved: () => setSaved(false),
+        dismissError: () => setScreenError(''),
+    };
 }

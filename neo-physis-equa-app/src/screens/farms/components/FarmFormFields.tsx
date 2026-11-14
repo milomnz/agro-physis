@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import { type Control } from 'react-hook-form';
 
 import Field from '../../../components/Field';
@@ -10,7 +11,7 @@ interface FarmFormFieldsProps {
 
 export default function FarmFormFields({ control, withPlaceholders }: FarmFormFieldsProps) {
   return (
-    <>
+    <View className="gap-5">
       <Field
         control={control}
         name="name"
@@ -43,6 +44,6 @@ export default function FarmFormFields({ control, withPlaceholders }: FarmFormFi
         placeholder={withPlaceholders ? 'ej. 1650' : undefined}
         rules={farmFormRules.altitude}
       />
-    </>
+    </View>
   );
 }

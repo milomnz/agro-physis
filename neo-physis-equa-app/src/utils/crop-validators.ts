@@ -1,5 +1,5 @@
 import type { RegisterOptions } from 'react-hook-form';
-import type { GrowthStage } from '../../services/crops';
+import type { GrowthStage } from '../services/crops';
 
 export interface CropFormValues {
   species: string;

@@ -1,48 +1,34 @@
-import { Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import Field from '../../components/Field';
+import Notice from '../../components/Notice';
 import AuthHeader from './components/AuthHeader';
 import DisabilitySelector from './components/DisabilitySelector';
 import AccessibilityPreferences from './components/AccessibilityPreferences';
-import { useRegister, type AuthFieldName } from '../../hooks/useRegister';
+import { REGISTER_FIELD_RULES } from '../../utils/auth-validators';
+import { useRegister } from '../../hooks/useRegister';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const {
-    nombre,
-    setNombre,
-    email,
-    setEmail,
-    password,
-    setPassword,
+    control,
     disability,
     setDisability,
     ttsEnabled,
     setTtsEnabled,
     highContrast,
     setHighContrast,
-    focusedField,
-    setFocusedField,
-    errors,
     loading,
     error,
     submit,
+    dismissError,
   } = useRegister();
 
-  const handleSubmit = async () => {
-    if (await submit()) {
-      router.replace('/login');
-    }
-  };
-
-  const inputClass = (field: AuthFieldName, hasError?: string) =>
-    `rounded-xl border-2 bg-white px-4 py-3 text-base text-noche ${
-      hasError ? 'border-red-500' : focusedField === field ? 'border-noche' : 'border-turquesa/50'
-    }`;
-
   return (
-    <View className="flex-1 bg-crema">
+    <SafeAreaView style={{ flex: 1 }} className="bg-crema">
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -61,60 +47,40 @@ export default function RegisterScreen() {
         />
 
         {error && (
-          <View className="mb-4 rounded-xl border-2 border-red-500 bg-red-50 p-3">
-            <Text className="text-center text-sm text-red-600">{error}</Text>
-          </View>
+          <Notice variant="error" className="mb-4" onDismiss={dismissError}>
+            {error}
+          </Notice>
         )}
 
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Nombre</Text>
-          <TextInput
-            className={inputClass('nombre', errors.nombre)}
+        <View className="mb-6 gap-5">
+          <Field
+            control={control}
+            name="nombre"
+            label="Nombre"
             placeholder="Tu nombre completo"
-            placeholderTextColor="#6B979A"
-            value={nombre}
-            onChangeText={setNombre}
             autoCapitalize="words"
             autoCorrect={false}
-            onFocus={() => setFocusedField('nombre')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.nombre}
           />
-          {errors.nombre && <Text className="mt-1 text-xs text-red-600">{errors.nombre}</Text>}
-        </View>
-
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Email</Text>
-          <TextInput
-            className={inputClass('email', errors.email)}
+          <Field
+            control={control}
+            name="email"
+            label="Email"
             placeholder="tucorreo@ejemplo.com"
-            placeholderTextColor="#6B979A"
-            value={email}
-            onChangeText={setEmail}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
-            onFocus={() => setFocusedField('email')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.email}
           />
-          {errors.email && <Text className="mt-1 text-xs text-red-600">{errors.email}</Text>}
-        </View>
-
-        <View className="mb-6">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Contraseña</Text>
-          <TextInput
-            className={inputClass('password', errors.password)}
+          <Field
+            control={control}
+            name="password"
+            label="Contraseña"
             placeholder="Mínimo 6 caracteres"
-            placeholderTextColor="#6B979A"
-            value={password}
-            onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
-            onFocus={() => setFocusedField('password')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.password}
           />
-          {errors.password && (
-            <Text className="mt-1 text-xs text-red-600">{errors.password}</Text>
-          )}
         </View>
 
         <DisabilitySelector value={disability} onChange={setDisability} />
@@ -128,14 +94,21 @@ export default function RegisterScreen() {
 
         <Button
           text={loading ? 'Registrando…' : 'Registrarse'}
-          onPress={handleSubmit}
+          onPress={submit(() => router.replace('/login'))}
           disabled={loading}
         />
 
-        <Link href="/login" className="mt-4 text-center text-turquesa">
-          ¿Ya tienes cuenta? Inicia sesión
+        <Link href="/login" asChild>
+          <Pressable
+            className="mt-4 min-h-12 items-center justify-center"
+            accessibilityLabel="¿Ya tienes cuenta? Inicia sesión"
+            accessibilityRole="link"
+            accessibilityHint="Abre la pantalla de inicio de sesión"
+          >
+            <Text className="text-center text-turquesa">¿Ya tienes cuenta? Inicia sesión</Text>
+          </Pressable>
         </Link>
       </KeyboardAwareScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,4 @@
-import { apiClient } from './api';
-import { getSession } from './session';
+import { apiClient, getAuthHeaders } from './api';
 
 export const GROWTH_STAGES = ['vegetativo', 'floración', 'fructificación', 'producción'] as const;
 export type GrowthStage = (typeof GROWTH_STAGES)[number];
@@ -32,16 +31,6 @@ export interface UpdateCropData {
   plantedDate?: string | null;
   growthStage?: GrowthStage;
   notes?: string | null;
-}
-
-async function getAuthHeaders(): Promise<Record<string, string>> {
-  const session = await getSession();
-  if (!session || !session.token) {
-    throw new Error('No hay sesión activa');
-  }
-  return {
-    Authorization: `Bearer ${session.token}`,
-  };
 }
 
 export async function getCrops(farmId?: string): Promise<Crop[]> {

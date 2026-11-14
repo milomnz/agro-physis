@@ -1,3 +1,5 @@
-# Copias de respaldo locales (no versionar)
-/Respaldo/
+# Copias de respaldo y compilaciones locales (no versionar)
+Respaldo/
 *.zip
+AUDITORIA_PROYECTO.pdf
+neo-physis-equa-backend/dist/

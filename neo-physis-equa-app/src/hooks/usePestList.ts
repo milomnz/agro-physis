@@ -1,27 +1,31 @@
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { getPests, type Pest } from '../services/pests';
 import { getCrops, type Crop } from '../services/crops';
+import { isUnauthorizedError } from '../services/api';
 import { useDebouncedValue } from './useDebouncedValue';
 import { useRequireSession } from './useRequireSession';
 
 export function usePestList() {
     const router = useRouter();
     const params = useLocalSearchParams<{ cropId?: string }>();
+    const initialCropId = typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined;
     const sessionReady = useRequireSession();
 
     const [pests, setPests] = useState<Pest[]>([]);
     const [crops, setCrops] = useState<Crop[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [selectedCrop, setSelectedCrop] = useState<string | undefined>(
-        typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined,
-    );
+    const [selectedCrop, setSelectedCrop] = useState<string | undefined>(initialCropId);
     const [error, setError] = useState('');
+    const [warning, setWarning] = useState('');
 
     const debouncedSearch = useDebouncedValue(search, 300);
+
+    useEffect(() => {
+        setSelectedCrop(initialCropId);
+    }, [initialCropId]);
 
     // Reload on every focus: the list stays mounted while other screens are open.
     useFocusEffect(
@@ -38,8 +42,9 @@ export function usePestList() {
                     setPests(pestsData);
                     setCrops(cropsData);
                     setError('');
+                    setWarning('');
                 } catch (err: unknown) {
-                    if (cancelled) return;
+                    if (cancelled || isUnauthorizedError(err)) return;
                     setError(err instanceof Error ? err.message : 'Error al cargar las plagas');
                 } finally {
                     // Only the first load shows the spinner; refocus reloads are silent.
@@ -49,6 +54,7 @@ export function usePestList() {
 
             return () => {
                 cancelled = true;
+                setWarning('');
             };
         }, [sessionReady]),
     );
@@ -68,17 +74,11 @@ export function usePestList() {
 
     const goToNew = () => {
         if (crops.length === 0) {
-            Alert.alert(
-                'Registra un cultivo primero',
-                'Para crear una plaga necesitas tener al menos un cultivo registrado.',
-                [
-                    { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Ir a mis cultivos', onPress: () => router.push('/crops') },
-                ],
-            );
+            setWarning('Para crear una plaga necesitas tener al menos un cultivo registrado.');
             return;
         }
-        router.push('/pests/new');
+        const query = selectedCrop ? `?cropId=${encodeURIComponent(selectedCrop)}` : '';
+        router.push(`/pests/new${query}`);
     };
 
     const goToDetail = (id: string) => router.push(`/pests/${id}`);
@@ -91,6 +91,7 @@ export function usePestList() {
         filteredPests,
         loading,
         error,
+        warning,
         search,
         setSearch,
         selectedCrop,
@@ -99,5 +100,7 @@ export function usePestList() {
         goToNew,
         goToDetail,
         goToCrops,
+        dismissError: () => setError(''),
+        dismissWarning: () => setWarning(''),
     };
 }

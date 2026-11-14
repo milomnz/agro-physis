@@ -1,8 +1,10 @@
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
+import Notice from '../../components/Notice';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { usePestList } from '../../hooks/usePestList';
@@ -10,11 +12,13 @@ import PestCard from './components/PestCard';
 
 export default function PestsListScreen() {
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     filteredPests,
     crops,
     loading,
     error,
+    warning,
     search,
     setSearch,
     selectedCrop,
@@ -23,6 +27,8 @@ export default function PestsListScreen() {
     goToNew,
     goToDetail,
     goToCrops,
+    dismissError,
+    dismissWarning,
   } = usePestList();
 
   if (loading) {
@@ -46,9 +52,19 @@ export default function PestsListScreen() {
       </View>
 
       {error ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{error}</Text>
-        </View>
+        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
+          {error}
+        </Notice>
+      ) : null}
+      {warning ? (
+        <Notice
+          variant="warning"
+          className="mb-4"
+          onDismiss={dismissWarning}
+          autoDismissMs={5000}
+        >
+          {warning}
+        </Notice>
       ) : null}
 
       {crops.length === 0 ? (
@@ -65,12 +81,15 @@ export default function PestsListScreen() {
         <FlatList
           data={filteredPests}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
               <SearchBar
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar plaga por nombre o cultivo"
+                label="Buscar plaga"
               />
               <ChipFilter
                 label="Filtrar por cultivo"

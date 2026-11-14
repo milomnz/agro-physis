@@ -33,6 +33,10 @@ yarn-error.*
 # local env files
 .env*.local
 
+# assets locales sin usar en el build
+/assets/app-icon.jpeg
+/assets/logo-general.jpeg
+
 # typescript
 *.tsbuildinfo
 

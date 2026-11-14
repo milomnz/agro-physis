@@ -1,35 +1,41 @@
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
+import Notice from '../../components/Notice';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropList } from '../../hooks/useCropList';
 
-const STAGE_COLORS: Record<string, { light: string; dark: string }> = {
-  vegetativo: { light: 'bg-green-50 text-green-700', dark: 'bg-green-950 text-green-300' },
-  'floración': { light: 'bg-sky-50 text-sky-700', dark: 'bg-sky-950 text-sky-300' },
-  'fructificación': { light: 'bg-amber-50 text-amber-700', dark: 'bg-amber-950 text-amber-300' },
-  'producción': { light: 'bg-violet-50 text-violet-700', dark: 'bg-violet-950 text-violet-300' },
-};
+function formatPlantedDate(isoDate: string): string {
+  const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
+  if (!year || !month || !day) return isoDate;
+  return new Date(year, month - 1, day).toLocaleDateString();
+}
 
 export default function CropsListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ farmId?: string }>();
-  const { palette, highContrast } = useAccessibility();
+  const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     crops,
     farms,
     filteredCrops,
     loading,
     error,
+    warning,
     search,
     setSearch,
     selectedFarm,
     setSelectedFarm,
     selectedFarmName,
     goToNew,
+    dismissError,
+    dismissWarning,
   } = useCropList(typeof params.farmId === 'string' ? params.farmId : undefined);
 
   if (loading) {
@@ -53,9 +59,19 @@ export default function CropsListScreen() {
       </View>
 
       {error ? (
-        <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-          <Text className="text-center text-sm font-inter-semibold">{error}</Text>
-        </View>
+        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
+          {error}
+        </Notice>
+      ) : null}
+      {warning ? (
+        <Notice
+          variant="warning"
+          className="mb-4"
+          onDismiss={dismissWarning}
+          autoDismissMs={5000}
+        >
+          {warning}
+        </Notice>
       ) : null}
 
       {farms.length === 0 ? (
@@ -76,18 +92,21 @@ export default function CropsListScreen() {
           <Text className={`text-center text-sm ${palette.sub}`}>
             Crea tu primer cultivo para empezar a registrar plagas.
           </Text>
-          <Button text="+ Registrar cultivo" onPress={() => router.push('/crops/new')} />
+          <Button text="+ Registrar cultivo" onPress={goToNew} />
         </CenteredScroll>
       ) : (
         <FlatList
           data={filteredCrops}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
               <SearchBar
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Buscar cultivo por especie o finca"
+                label="Buscar cultivo"
               />
               <ChipFilter
                 label="Filtrar por finca"
@@ -112,26 +131,14 @@ export default function CropsListScreen() {
             >
               <View className="flex-row items-center justify-between gap-2">
                 <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
-                <Text
-                  className={`shrink rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${
-                    STAGE_COLORS[item.growthStage]
-                      ? highContrast
-                        ? STAGE_COLORS[item.growthStage].dark
-                        : STAGE_COLORS[item.growthStage].light
-                      : highContrast
-                        ? 'bg-turquesa text-crema'
-                        : 'bg-neutral-100 text-neutral-600'
-                  }`}
-                >
-                  {item.growthStage}
-                </Text>
+                <Badge value={item.growthStage} />
               </View>
               <Text className={`mt-1 text-sm ${palette.sub}`}>
                 Finca: {item.farm?.name ?? 'No asociada'}
               </Text>
               {item.plantedDate ? (
                 <Text className={`mt-0.5 text-xs ${palette.faint}`}>
-                  Sembrado: {new Date(item.plantedDate).toLocaleDateString()}
+                  Sembrado: {formatPlantedDate(item.plantedDate)}
                 </Text>
               ) : null}
               {item.notes ? (

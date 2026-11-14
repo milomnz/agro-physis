@@ -7,7 +7,10 @@ import {
   type Path,
   type RegisterOptions,
 } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
+
 import { useAccessibility } from '../accessibility/context';
+import { colors } from '../theme/tokens';
 
 interface FieldProps<T extends FieldValues> extends TextInputProps {
   control: Control<T>;
@@ -21,9 +24,10 @@ export default function Field<T extends FieldValues>({
   name,
   label,
   rules,
+  accessibilityLabel,
   ...inputProps
 }: FieldProps<T>) {
-  const { highContrast } = useAccessibility();
+  const { highContrast, palette } = useAccessibility();
   const [focused, setFocused] = useState(false);
 
   return (
@@ -31,40 +35,48 @@ export default function Field<T extends FieldValues>({
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-        <View className="gap-1.5">
-          <Text
-            className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}
-          >
-            {label}
-          </Text>
-          <TextInput
-            className={`rounded-xl border-2 p-3.5 ${
-              error
-                ? 'border-red-500'
-                : focused
-                  ? 'border-noche'
-                  : highContrast
-                    ? 'border-crema bg-noche text-crema'
-                    : 'border-turquesa/50 bg-white text-noche'
-            }`}
-            placeholderTextColor={highContrast ? '#F3F4F480' : '#6B979A'}
-            value={value ?? ''}
-            {...inputProps}
-            onChangeText={onChange}
-            onFocus={() => setFocused(true)}
-            onBlur={() => {
-              setFocused(false);
-              onBlur();
-            }}
-          />
-          {error?.message && (
-            <Text className={`text-xs ${highContrast ? 'text-red-400' : 'text-red-600'}`}>
-              {error.message}
+      render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => {
+        const surfaceClass = highContrast ? 'bg-noche text-crema' : 'bg-crema text-noche';
+        const borderClass = error
+          ? palette.fieldErrorBorder
+          : focused
+            ? highContrast
+              ? 'border-lima'
+              : 'border-noche'
+            : highContrast
+              ? 'border-crema'
+              : 'border-turquesa';
+
+        return (
+          <View className="gap-1.5">
+            <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
+              {label}
             </Text>
-          )}
-        </View>
-      )}
+            <TextInput
+              accessibilityLabel={accessibilityLabel ?? label}
+              textAlignVertical={inputProps.multiline ? 'top' : 'center'}
+              className={`${inputProps.multiline ? 'min-h-24' : 'min-h-12'} rounded-campo border-2 p-3.5 ${surfaceClass} ${borderClass}`}
+              placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
+              value={value ?? ''}
+              {...inputProps}
+              onChangeText={onChange}
+              onFocus={() => setFocused(true)}
+              onBlur={() => {
+                setFocused(false);
+                onBlur();
+              }}
+            />
+            {error?.message && (
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="alert-circle" size={12} color={palette.iconError} />
+                <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>
+                  {error.message}
+                </Text>
+              </View>
+            )}
+          </View>
+        );
+      }}
     />
   );
 }

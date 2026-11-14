@@ -6,6 +6,7 @@ interface UseLoginResult {
   loading: boolean;
   error: string | null;
   login: (data: LoginData) => Promise<boolean>;
+  dismissError: () => void;
 }
 
 export function useLogin(): UseLoginResult {
@@ -27,5 +28,5 @@ export function useLogin(): UseLoginResult {
     }
   };
 
-  return { loading, error, login };
+  return { loading, error, login, dismissError: () => setError(null) };
 }
