@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
 import { isUnauthorizedError } from '../services/api';
-import type { NewCropFormValues } from '../screens/crops/validators';
+import type { NewCropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
 
 export function useNewCrop() {

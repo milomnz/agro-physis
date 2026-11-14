@@ -3,7 +3,7 @@ import type { Control } from 'react-hook-form';
 import Field from '../../components/Field';
 import Select from '../../components/Select';
 import { GROWTH_STAGES } from '../../services/crops';
-import { CROP_FIELD_RULES, type CropFormValues } from './validators';
+import { CROP_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
 
 interface CropFormFieldsProps {
   control: Control<CropFormValues>;

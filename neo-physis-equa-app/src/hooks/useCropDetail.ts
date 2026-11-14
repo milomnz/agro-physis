@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
 import { isUnauthorizedError } from '../services/api';
-import type { CropFormValues } from '../screens/crops/validators';
+import type { CropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
 
 export function useCropDetail(id: string | undefined) {

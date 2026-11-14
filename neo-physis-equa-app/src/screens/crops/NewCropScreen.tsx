@@ -7,7 +7,7 @@ import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { useNewCrop } from '../../hooks/useNewCrop';
 import CropFormFields from './CropFormFields';
-import { FARM_FIELD_RULES, type CropFormValues } from './validators';
+import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
 
 export default function NewCropScreen() {
   const { palette } = useAccessibility();
