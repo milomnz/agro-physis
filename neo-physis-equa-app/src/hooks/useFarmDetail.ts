@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { deleteFarm, getFarm, updateFarm, type Farm } from '../services/farms';
@@ -16,6 +15,8 @@ export function useFarmDetail() {
     const [farm, setFarm] = useState<Farm | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [screenError, setScreenError] = useState('');
     const [saved, setSaved] = useState(false);
 
@@ -95,28 +96,31 @@ export function useFarmDetail() {
         }
     });
 
-    const handleDelete = () => {
+    const requestDelete = () => {
         if (!farm) return;
-        Alert.alert(
-            'Eliminar finca',
-            `¿Seguro que deseas eliminar la finca "${farm.name}"? Esta acción eliminará también sus cultivos y plagas asociadas.`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Eliminar',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteFarm(farm.id);
-                            router.replace('/farms');
-                        } catch (err: unknown) {
-                            if (isUnauthorizedError(err)) return;
-                            Alert.alert('Error', err instanceof Error ? err.message : 'Error al eliminar la finca');
-                        }
-                    },
-                },
-            ],
-        );
+        setConfirmingDelete(true);
+    };
+
+    const cancelDelete = () => {
+        if (deleting) return;
+        setConfirmingDelete(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!farm) return;
+        setDeleting(true);
+        setScreenError('');
+        try {
+            await deleteFarm(farm.id);
+            setConfirmingDelete(false);
+            router.replace('/farms');
+        } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
+            setConfirmingDelete(false);
+            setScreenError(err instanceof Error ? err.message : 'Error al eliminar la finca');
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const goToCrops = () => {
@@ -130,10 +134,14 @@ export function useFarmDetail() {
         saving,
         saved,
         screenError,
+        confirmingDelete,
+        deleting,
         control,
         errors,
         onSubmit,
-        handleDelete,
+        requestDelete,
+        cancelDelete,
+        confirmDelete,
         goToCrops,
         goToFarms: () => router.replace('/farms'),
     };
