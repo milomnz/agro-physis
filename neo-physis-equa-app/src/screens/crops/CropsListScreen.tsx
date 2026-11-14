@@ -1,5 +1,6 @@
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
@@ -8,17 +9,10 @@ import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropList } from '../../hooks/useCropList';
 
-const STAGE_COLORS: Record<string, { light: string; dark: string }> = {
-  vegetativo: { light: 'bg-green-50 text-green-700', dark: 'bg-green-950 text-green-300' },
-  'floración': { light: 'bg-sky-50 text-sky-700', dark: 'bg-sky-950 text-sky-300' },
-  'fructificación': { light: 'bg-amber-50 text-amber-700', dark: 'bg-amber-950 text-amber-300' },
-  'producción': { light: 'bg-violet-50 text-violet-700', dark: 'bg-violet-950 text-violet-300' },
-};
-
 export default function CropsListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ farmId?: string }>();
-  const { palette, highContrast } = useAccessibility();
+  const { palette } = useAccessibility();
   const {
     crops,
     farms,
@@ -120,19 +114,7 @@ export default function CropsListScreen() {
             >
               <View className="flex-row items-center justify-between gap-2">
                 <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
-                <Text
-                  className={`shrink rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${
-                    STAGE_COLORS[item.growthStage]
-                      ? highContrast
-                        ? STAGE_COLORS[item.growthStage].dark
-                        : STAGE_COLORS[item.growthStage].light
-                      : highContrast
-                        ? 'bg-turquesa text-crema'
-                        : 'bg-neutral-100 text-neutral-600'
-                  }`}
-                >
-                  {item.growthStage}
-                </Text>
+                <Badge value={item.growthStage} />
               </View>
               <Text className={`mt-1 text-sm ${palette.sub}`}>
                 Finca: {item.farm?.name ?? 'No asociada'}
