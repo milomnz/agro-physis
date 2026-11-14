@@ -1,59 +1,30 @@
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/Button';
+import Field from '../../components/Field';
 import Notice from '../../components/Notice';
 import AuthHeader from './components/AuthHeader';
 import DisabilitySelector from './components/DisabilitySelector';
 import AccessibilityPreferences from './components/AccessibilityPreferences';
-import { useAccessibility } from '../../accessibility/context';
-import { colors } from '../../theme/tokens';
-import { useRegister, type AuthFieldName } from '../../hooks/useRegister';
+import { REGISTER_FIELD_RULES } from '../../utils/auth-validators';
+import { useRegister } from '../../hooks/useRegister';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { palette } = useAccessibility();
   const {
-    nombre,
-    setNombre,
-    email,
-    setEmail,
-    password,
-    setPassword,
+    control,
     disability,
     setDisability,
     ttsEnabled,
     setTtsEnabled,
     highContrast,
     setHighContrast,
-    focusedField,
-    setFocusedField,
-    errors,
     loading,
     error,
     submit,
   } = useRegister();
-
-  const handleSubmit = async () => {
-    if (await submit()) {
-      router.replace('/login');
-    }
-  };
-
-  const inputClass = (field: AuthFieldName, hasError?: string) =>
-    `min-h-12 rounded-campo border-2 bg-crema px-4 py-3 text-base text-noche ${
-      hasError ? palette.fieldErrorBorder : focusedField === field ? 'border-noche' : 'border-turquesa'
-    }`;
-
-  const fieldError = (message?: string) =>
-    message ? (
-      <View className="mt-1 flex-row items-center gap-1">
-        <Ionicons name="alert-circle" size={12} color={palette.iconError} />
-        <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>{message}</Text>
-      </View>
-    ) : null;
 
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-crema">
@@ -80,56 +51,35 @@ export default function RegisterScreen() {
           </Notice>
         )}
 
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Nombre</Text>
-          <TextInput
-            accessibilityLabel="Nombre"
-            className={inputClass('nombre', errors.nombre)}
+        <View className="mb-6 gap-5">
+          <Field
+            control={control}
+            name="nombre"
+            label="Nombre"
             placeholder="Tu nombre completo"
-            placeholderTextColor={colors.azul}
-            value={nombre}
-            onChangeText={setNombre}
             autoCapitalize="words"
             autoCorrect={false}
-            onFocus={() => setFocusedField('nombre')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.nombre}
           />
-          {fieldError(errors.nombre)}
-        </View>
-
-        <View className="mb-4">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Email</Text>
-          <TextInput
-            accessibilityLabel="Email"
-            className={inputClass('email', errors.email)}
+          <Field
+            control={control}
+            name="email"
+            label="Email"
             placeholder="tucorreo@ejemplo.com"
-            placeholderTextColor={colors.azul}
-            value={email}
-            onChangeText={setEmail}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
-            onFocus={() => setFocusedField('email')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.email}
           />
-          {fieldError(errors.email)}
-        </View>
-
-        <View className="mb-6">
-          <Text className="mb-1 text-sm font-inter-semibold text-noche">Contraseña</Text>
-          <TextInput
-            accessibilityLabel="Contraseña"
-            className={inputClass('password', errors.password)}
+          <Field
+            control={control}
+            name="password"
+            label="Contraseña"
             placeholder="Mínimo 6 caracteres"
-            placeholderTextColor={colors.azul}
-            value={password}
-            onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
-            onFocus={() => setFocusedField('password')}
-            onBlur={() => setFocusedField(null)}
+            rules={REGISTER_FIELD_RULES.password}
           />
-          {fieldError(errors.password)}
         </View>
 
         <DisabilitySelector value={disability} onChange={setDisability} />
@@ -143,7 +93,7 @@ export default function RegisterScreen() {
 
         <Button
           text={loading ? 'Registrando…' : 'Registrarse'}
-          onPress={handleSubmit}
+          onPress={submit(() => router.replace('/login'))}
           disabled={loading}
         />
 
