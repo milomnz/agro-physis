@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
@@ -11,6 +12,7 @@ import PestCard from './components/PestCard';
 
 export default function PestsListScreen() {
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     filteredPests,
     crops,
@@ -72,6 +74,8 @@ export default function PestsListScreen() {
         <FlatList
           data={filteredPests}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
               <SearchBar

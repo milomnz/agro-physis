@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
@@ -9,10 +10,17 @@ import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropList } from '../../hooks/useCropList';
 
+function formatPlantedDate(isoDate: string): string {
+  const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
+  if (!year || !month || !day) return isoDate;
+  return new Date(year, month - 1, day).toLocaleDateString();
+}
+
 export default function CropsListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ farmId?: string }>();
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     crops,
     farms,
@@ -83,6 +91,8 @@ export default function CropsListScreen() {
         <FlatList
           data={filteredCrops}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
               <SearchBar
@@ -121,7 +131,7 @@ export default function CropsListScreen() {
               </Text>
               {item.plantedDate ? (
                 <Text className={`mt-0.5 text-xs ${palette.faint}`}>
-                  Sembrado: {new Date(item.plantedDate).toLocaleDateString()}
+                  Sembrado: {formatPlantedDate(item.plantedDate)}
                 </Text>
               ) : null}
               {item.notes ? (

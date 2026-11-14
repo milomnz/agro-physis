@@ -54,7 +54,8 @@ export default function Field<T extends FieldValues>({
             </Text>
             <TextInput
               accessibilityLabel={accessibilityLabel ?? label}
-              className={`min-h-12 rounded-campo border-2 p-3.5 ${surfaceClass} ${borderClass}`}
+              textAlignVertical={inputProps.multiline ? 'top' : 'center'}
+              className={`${inputProps.multiline ? 'min-h-24' : 'min-h-12'} rounded-campo border-2 p-3.5 ${surfaceClass} ${borderClass}`}
               placeholderTextColor={highContrast ? colors.crema + '80' : colors.azul}
               value={value ?? ''}
               {...inputProps}

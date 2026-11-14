@@ -59,8 +59,8 @@ export default function CropDetailScreen() {
           </Notice>
         ) : null}
 
-        <View className={`mb-6 rounded-2xl p-5 ${palette.card}`}>
-          <Text className={`mb-4 text-lg font-bricolage ${palette.title}`}>Editar datos</Text>
+        <View className={`mb-6 gap-5 rounded-2xl p-5 ${palette.card}`}>
+          <Text className={`text-lg font-bricolage ${palette.title}`}>Editar datos</Text>
 
           <CropFormFields control={control} />
 

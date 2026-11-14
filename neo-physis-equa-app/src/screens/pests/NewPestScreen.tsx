@@ -3,6 +3,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
 import Field from '../../components/Field';
+import Notice from '../../components/Notice';
 import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
@@ -43,11 +44,7 @@ export default function NewPestScreen() {
           </View>
         ) : (
           <>
-            {rootError && (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
-                {rootError}
-              </Text>
-            )}
+            {rootError && <Notice variant="error">{rootError}</Notice>}
 
             <Select
               control={control}

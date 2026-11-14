@@ -2,6 +2,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import type { Control } from 'react-hook-form';
 import Button from '../../components/Button';
+import Notice from '../../components/Notice';
 import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { useNewCrop } from '../../hooks/useNewCrop';
@@ -44,16 +45,8 @@ export default function NewCropScreen() {
           </View>
         ) : (
           <>
-            {rootError && (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
-                {rootError}
-              </Text>
-            )}
-            {loadError ? (
-              <Text className={`rounded-lg p-3 text-center ${palette.errorBanner}`}>
-                {loadError}
-              </Text>
-            ) : null}
+            {rootError && <Notice variant="error">{rootError}</Notice>}
+            {loadError ? <Notice variant="error">{loadError}</Notice> : null}
 
             <Select
               control={control}

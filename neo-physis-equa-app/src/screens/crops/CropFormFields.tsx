@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import type { Control } from 'react-hook-form';
 import Field from '../../components/Field';
 import Select from '../../components/Select';
@@ -11,7 +12,7 @@ interface CropFormFieldsProps {
 
 export default function CropFormFields({ control, optionalHints = false }: CropFormFieldsProps) {
   return (
-    <>
+    <View className="gap-5">
       <Field
         control={control}
         name="species"
@@ -45,6 +46,6 @@ export default function CropFormFields({ control, optionalHints = false }: CropF
         numberOfLines={3}
         rules={CROP_FIELD_RULES.notes}
       />
-    </>
+    </View>
   );
 }
