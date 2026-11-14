@@ -70,8 +70,8 @@ async function handleUnauthorized(): Promise<void> {
       await sessionExpiredHandler();
     } else {
       await clearSession();
+      router.replace('/login');
     }
-    router.replace('/login');
   } finally {
     handlingUnauthorized = false;
   }

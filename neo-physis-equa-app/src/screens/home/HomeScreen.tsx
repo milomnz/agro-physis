@@ -4,23 +4,21 @@ import { useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import { useAccessibility } from '../../accessibility/context';
+import { useRequireSession } from '../../hooks/useRequireSession';
 import { useSession } from '../../hooks/useSession';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { palette } = useAccessibility();
+  const sessionReady = useRequireSession();
   const { session, loading } = useSession();
 
-  if (loading) {
+  if (loading || !sessionReady || !session?.token) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
         <ActivityIndicator color={palette.spinner} />
       </View>
     );
-  }
-
-  if (!session || !session.token) {
-    return <ActivityIndicator />;
   }
 
   return (
