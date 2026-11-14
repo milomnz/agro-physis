@@ -11,8 +11,18 @@ import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validato
 
 export default function NewCropScreen() {
   const { palette } = useAccessibility();
-  const { control, farms, loading, loadError, submitting, rootError, onSubmit, goToFarms } =
-    useNewCrop();
+  const {
+    control,
+    farms,
+    loading,
+    loadError,
+    submitting,
+    rootError,
+    onSubmit,
+    goToFarms,
+    dismissRootError,
+    dismissLoadError,
+  } = useNewCrop();
 
   if (loading) {
     return (
@@ -45,8 +55,16 @@ export default function NewCropScreen() {
           </View>
         ) : (
           <>
-            {rootError && <Notice variant="error">{rootError}</Notice>}
-            {loadError ? <Notice variant="error">{loadError}</Notice> : null}
+            {rootError && (
+              <Notice variant="error" onDismiss={dismissRootError}>
+                {rootError}
+              </Notice>
+            )}
+            {loadError ? (
+              <Notice variant="error" onDismiss={dismissLoadError}>
+                {loadError}
+              </Notice>
+            ) : null}
 
             <Select
               control={control}

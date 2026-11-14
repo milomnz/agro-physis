@@ -24,6 +24,7 @@ export default function RegisterScreen() {
     loading,
     error,
     submit,
+    dismissError,
   } = useRegister();
 
   return (
@@ -46,7 +47,7 @@ export default function RegisterScreen() {
         />
 
         {error && (
-          <Notice variant="error" className="mb-4">
+          <Notice variant="error" className="mb-4" onDismiss={dismissError}>
             {error}
           </Notice>
         )}

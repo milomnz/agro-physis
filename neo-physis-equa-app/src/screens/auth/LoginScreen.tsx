@@ -12,7 +12,7 @@ import { useLogin } from '../../hooks/useLogin';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { loading, error, login } = useLogin();
+  const { loading, error, login, dismissError } = useLogin();
 
   const { control, handleSubmit } = useForm<LoginForm>();
 
@@ -31,7 +31,11 @@ export default function LoginScreen() {
       >
         <AuthHeader title="Neo Physis Equa" subtitle="Inicia sesión en tu cuenta" />
 
-        {error && <Notice variant="error">{error}</Notice>}
+        {error && (
+          <Notice variant="error" onDismiss={dismissError}>
+            {error}
+          </Notice>
+        )}
 
         <Field
           control={control}

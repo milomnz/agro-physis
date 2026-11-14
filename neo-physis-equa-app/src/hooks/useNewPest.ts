@@ -27,6 +27,7 @@ export function useNewPest() {
         control,
         handleSubmit,
         setError,
+        clearErrors,
         formState: { errors, isSubmitting },
     } = useForm<PestForm>({
         defaultValues: {
@@ -95,5 +96,6 @@ export function useNewPest() {
         rootError: errors.root?.message,
         onSubmit,
         goToCrops,
+        dismissRootError: () => clearErrors('root'),
     };
 }

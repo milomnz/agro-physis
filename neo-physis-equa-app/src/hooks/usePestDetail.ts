@@ -138,5 +138,7 @@ export function usePestDetail() {
         requestDelete,
         cancelDelete,
         confirmDelete,
+        dismissSaved: () => setSaved(false),
+        dismissError: () => setScreenError(''),
     };
 }

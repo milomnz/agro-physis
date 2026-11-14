@@ -20,7 +20,7 @@ export function useFarmDetail() {
     const [screenError, setScreenError] = useState('');
     const [saved, setSaved] = useState(false);
 
-    const { control, handleSubmit, reset, errors } = useFarmForm();
+    const { control, handleSubmit, reset, clearErrors, errors } = useFarmForm();
 
     useEffect(() => {
         if (!sessionReady) return;
@@ -153,5 +153,8 @@ export function useFarmDetail() {
         confirmDelete,
         goToCrops,
         goToFarms: () => router.replace('/farms'),
+        dismissSaved: () => setSaved(false),
+        dismissScreenError: () => setScreenError(''),
+        dismissRootError: () => clearErrors('root'),
     };
 }

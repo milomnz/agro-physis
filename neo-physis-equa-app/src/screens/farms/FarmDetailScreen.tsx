@@ -26,6 +26,9 @@ export default function FarmDetailScreen() {
     confirmDelete,
     goToCrops,
     goToFarms,
+    dismissSaved,
+    dismissScreenError,
+    dismissRootError,
   } = useFarmDetail();
 
   if (loading) {
@@ -40,7 +43,11 @@ export default function FarmDetailScreen() {
     return (
       <View className={`flex-1 items-center justify-center gap-4 p-6 ${palette.bg}`}>
         <Text className={`text-lg font-inter-semibold ${palette.title}`}>No se pudo cargar la finca</Text>
-        {screenError ? <Notice variant="error">{screenError}</Notice> : null}
+        {screenError ? (
+          <Notice variant="error" onDismiss={dismissScreenError}>
+            {screenError}
+          </Notice>
+        ) : null}
         <Button text="Volver a mis fincas" onPress={goToFarms} />
       </View>
     );
@@ -57,17 +64,17 @@ export default function FarmDetailScreen() {
       <Text className={`mb-5 text-sm ${palette.sub}`}>Gestiona los datos de tu terreno agrícola</Text>
 
       {saved ? (
-        <Notice variant="success" className="mb-4">
+        <Notice variant="success" className="mb-4" onDismiss={dismissSaved} autoDismissMs={5000}>
           Cambios guardados correctamente
         </Notice>
       ) : null}
       {screenError ? (
-        <Notice variant="error" className="mb-4">
+        <Notice variant="error" className="mb-4" onDismiss={dismissScreenError}>
           {screenError}
         </Notice>
       ) : null}
       {errors.root?.message ? (
-        <Notice variant="error" className="mb-4">
+        <Notice variant="error" className="mb-4" onDismiss={dismissRootError}>
           {errors.root.message}
         </Notice>
       ) : null}

@@ -11,7 +11,8 @@ import { useNewPest } from '../../hooks/useNewPest';
 
 export default function NewPestScreen() {
   const { palette } = useAccessibility();
-  const { control, crops, loading, submitting, rootError, onSubmit, goToCrops } = useNewPest();
+  const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
+    useNewPest();
 
   if (loading) {
     return (
@@ -44,7 +45,11 @@ export default function NewPestScreen() {
           </View>
         ) : (
           <>
-            {rootError && <Notice variant="error">{rootError}</Notice>}
+            {rootError && (
+              <Notice variant="error" onDismiss={dismissRootError}>
+                {rootError}
+              </Notice>
+            )}
 
             <Select
               control={control}

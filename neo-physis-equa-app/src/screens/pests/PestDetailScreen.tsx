@@ -24,6 +24,8 @@ export default function PestDetailScreen() {
         requestDelete,
         cancelDelete,
         confirmDelete,
+        dismissSaved,
+        dismissError,
     } = usePestDetail();
 
     if (loading) {
@@ -45,13 +47,18 @@ export default function PestDetailScreen() {
                 <Text className={`mb-5 text-sm ${palette.sub}`}>Edita los datos del registro de plaga</Text>
 
                 {saved ? (
-                    <Notice variant="success" className="mb-4">
+                    <Notice
+                        variant="success"
+                        className="mb-4"
+                        onDismiss={dismissSaved}
+                        autoDismissMs={5000}
+                    >
                         Cambios guardados correctamente
                     </Notice>
                 ) : null}
 
                 {screenError ? (
-                    <Notice variant="error" className="mb-4">
+                    <Notice variant="error" className="mb-4" onDismiss={dismissError}>
                         {screenError}
                     </Notice>
                 ) : null}

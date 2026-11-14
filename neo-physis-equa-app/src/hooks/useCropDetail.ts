@@ -131,5 +131,7 @@ export function useCropDetail(id: string | undefined) {
         requestDelete,
         cancelDelete,
         confirmDelete,
+        dismissSaved: () => setSaved(false),
+        dismissError: () => setError(''),
     };
 }

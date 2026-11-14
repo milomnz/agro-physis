@@ -15,6 +15,7 @@ interface UseRegisterResult {
   loading: boolean;
   error: string | null;
   submit: (onSuccess: () => void) => () => Promise<void>;
+  dismissError: () => void;
 }
 
 export function useRegister(): UseRegisterResult {
@@ -67,5 +68,6 @@ export function useRegister(): UseRegisterResult {
     loading: isSubmitting,
     error,
     submit,
+    dismissError: () => setError(null),
   };
 }

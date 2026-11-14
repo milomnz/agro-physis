@@ -21,6 +21,7 @@ export function useNewCrop() {
         control,
         handleSubmit,
         setError,
+        clearErrors,
         formState: { errors, isSubmitting },
     } = useForm<NewCropFormValues>({
         defaultValues: {
@@ -85,5 +86,7 @@ export function useNewCrop() {
         rootError: errors.root?.message,
         onSubmit,
         goToFarms,
+        dismissRootError: () => clearErrors('root'),
+        dismissLoadError: () => setLoadError(''),
     };
 }

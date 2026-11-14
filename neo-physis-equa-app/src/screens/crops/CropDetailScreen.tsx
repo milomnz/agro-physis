@@ -26,6 +26,8 @@ export default function CropDetailScreen() {
     requestDelete,
     cancelDelete,
     confirmDelete,
+    dismissSaved,
+    dismissError,
   } = useCropDetail(id);
 
   if (loading) {
@@ -49,12 +51,12 @@ export default function CropDetailScreen() {
         </Text>
 
         {saved ? (
-          <Notice variant="success" className="mb-4">
+          <Notice variant="success" className="mb-4" onDismiss={dismissSaved} autoDismissMs={5000}>
             Cambios guardados correctamente
           </Notice>
         ) : null}
         {error ? (
-          <Notice variant="error" className="mb-4">
+          <Notice variant="error" className="mb-4" onDismiss={dismissError}>
             {error}
           </Notice>
         ) : null}
