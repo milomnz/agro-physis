@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
@@ -22,6 +21,8 @@ export function usePestDetail() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [screenError, setScreenError] = useState('');
     const [saved, setSaved] = useState(false);
 
@@ -85,32 +86,48 @@ export function usePestDetail() {
         }
     });
 
-    const handleDelete = () => {
+    const requestDelete = () => {
         if (!id) return;
-        Alert.alert('Eliminar plaga', '¿Seguro que deseas eliminar este registro de plaga?', [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-                text: 'Eliminar',
-                style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await deletePest(id);
-                        if (router.canGoBack()) {
-                            router.back();
-                        } else {
-                            router.replace('/pests');
-                        }
-                    } catch (err: unknown) {
-                        if (isUnauthorizedError(err)) return;
-                        Alert.alert(
-                            'Error',
-                            err instanceof Error ? err.message : 'Error al eliminar la plaga',
-                        );
-                    }
-                },
-            },
-        ]);
+        setConfirmingDelete(true);
     };
 
-    return { control, loading, saving, saved, screenError, onSubmit, handleDelete };
+    const cancelDelete = () => {
+        if (deleting) return;
+        setConfirmingDelete(false);
+    };
+
+    const confirmDelete = async () => {
+        if (!id) return;
+        setDeleting(true);
+        setScreenError('');
+        try {
+            await deletePest(id);
+            setConfirmingDelete(false);
+            if (router.canGoBack()) {
+                router.back();
+            } else {
+                router.replace('/pests');
+            }
+        } catch (err: unknown) {
+            if (isUnauthorizedError(err)) return;
+            setConfirmingDelete(false);
+            setScreenError(err instanceof Error ? err.message : 'Error al eliminar la plaga');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return {
+        control,
+        loading,
+        saving,
+        saved,
+        screenError,
+        confirmingDelete,
+        deleting,
+        onSubmit,
+        requestDelete,
+        cancelDelete,
+        confirmDelete,
+    };
 }

@@ -2,7 +2,9 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import Button from '../../components/Button';
+import ConfirmModal from '../../components/ConfirmModal';
 import Field from '../../components/Field';
+import Notice from '../../components/Notice';
 import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
@@ -10,8 +12,19 @@ import { usePestDetail } from '../../hooks/usePestDetail';
 
 export default function PestDetailScreen() {
     const { palette } = useAccessibility();
-    const { control, loading, saving, saved, screenError, onSubmit, handleDelete } =
-        usePestDetail();
+    const {
+        control,
+        loading,
+        saving,
+        saved,
+        screenError,
+        confirmingDelete,
+        deleting,
+        onSubmit,
+        requestDelete,
+        cancelDelete,
+        confirmDelete,
+    } = usePestDetail();
 
     if (loading) {
         return (
@@ -32,17 +45,15 @@ export default function PestDetailScreen() {
                 <Text className={`mb-5 text-sm ${palette.sub}`}>Edita los datos del registro de plaga</Text>
 
                 {saved ? (
-                    <View className={`mb-4 rounded-lg p-3 ${palette.successBanner}`}>
-                        <Text className="text-center text-sm font-inter-semibold">
-                            Cambios guardados correctamente
-                        </Text>
-                    </View>
+                    <Notice variant="success" className="mb-4">
+                        Cambios guardados correctamente
+                    </Notice>
                 ) : null}
 
                 {screenError ? (
-                    <View className={`mb-4 rounded-lg p-3 ${palette.errorBanner}`}>
-                        <Text className="text-center text-sm font-inter-semibold">{screenError}</Text>
-                    </View>
+                    <Notice variant="error" className="mb-4">
+                        {screenError}
+                    </Notice>
                 ) : null}
 
                 <View className={`mb-6 rounded-2xl p-5 ${palette.card}`}>
@@ -107,9 +118,18 @@ export default function PestDetailScreen() {
 
                 </View>
 
-                <Button text="Eliminar plaga" danger onPress={handleDelete} />
+                <Button text="Eliminar plaga" danger onPress={requestDelete} disabled={deleting} />
 
             </KeyboardAwareScrollView>
+
+            <ConfirmModal
+                visible={confirmingDelete}
+                title="Eliminar plaga"
+                message="¿Seguro que deseas eliminar este registro de plaga?"
+                loading={deleting}
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+            />
         </View>
     );
 }
