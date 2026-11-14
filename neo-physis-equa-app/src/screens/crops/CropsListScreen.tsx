@@ -76,7 +76,7 @@ export default function CropsListScreen() {
           <Text className={`text-center text-sm ${palette.sub}`}>
             Crea tu primer cultivo para empezar a registrar plagas.
           </Text>
-          <Button text="+ Registrar cultivo" onPress={() => router.push('/crops/new')} />
+          <Button text="+ Registrar cultivo" onPress={goToNew} />
         </CenteredScroll>
       ) : (
         <FlatList

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -10,18 +10,21 @@ import { useRequireSession } from './useRequireSession';
 export function usePestList() {
     const router = useRouter();
     const params = useLocalSearchParams<{ cropId?: string }>();
+    const initialCropId = typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined;
     const sessionReady = useRequireSession();
 
     const [pests, setPests] = useState<Pest[]>([]);
     const [crops, setCrops] = useState<Crop[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [selectedCrop, setSelectedCrop] = useState<string | undefined>(
-        typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined,
-    );
+    const [selectedCrop, setSelectedCrop] = useState<string | undefined>(initialCropId);
     const [error, setError] = useState('');
 
     const debouncedSearch = useDebouncedValue(search, 300);
+
+    useEffect(() => {
+        setSelectedCrop(initialCropId);
+    }, [initialCropId]);
 
     // Reload on every focus: the list stays mounted while other screens are open.
     useFocusEffect(
@@ -78,7 +81,8 @@ export function usePestList() {
             );
             return;
         }
-        router.push('/pests/new');
+        const query = selectedCrop ? `?cropId=${encodeURIComponent(selectedCrop)}` : '';
+        router.push(`/pests/new${query}`);
     };
 
     const goToDetail = (id: string) => router.push(`/pests/${id}`);

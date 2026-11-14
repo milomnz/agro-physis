@@ -15,7 +15,8 @@ interface PestForm {
 }
 
 export function usePestDetail() {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const params = useLocalSearchParams<{ id?: string }>();
+    const id = typeof params.id === 'string' && params.id ? params.id : undefined;
     const router = useRouter();
     const sessionReady = useRequireSession();
 
@@ -27,7 +28,12 @@ export function usePestDetail() {
     const { control, handleSubmit, reset } = useForm<PestForm>();
 
     useEffect(() => {
-        if (!sessionReady || !id) return;
+        if (!sessionReady) return;
+        if (!id) {
+            setScreenError('Identificador de plaga no válido');
+            setLoading(false);
+            return;
+        }
 
         (async () => {
             try {
@@ -89,7 +95,11 @@ export function usePestDetail() {
                 onPress: async () => {
                     try {
                         await deletePest(id);
-                        router.back();
+                        if (router.canGoBack()) {
+                            router.back();
+                        } else {
+                            router.replace('/pests');
+                        }
                     } catch (err: unknown) {
                         if (isUnauthorizedError(err)) return;
                         Alert.alert(

@@ -23,7 +23,12 @@ export function useCropDetail(id: string | undefined) {
     } = useForm<CropFormValues>();
 
     useEffect(() => {
-        if (!sessionReady || !id) return;
+        if (!sessionReady) return;
+        if (!id) {
+            setError('Identificador de cultivo no válido');
+            setLoading(false);
+            return;
+        }
 
         // Ignore the response if `id` changes or the screen unmounts mid-request.
         let cancelled = false;
@@ -93,7 +98,11 @@ export function useCropDetail(id: string | undefined) {
                     onPress: async () => {
                         try {
                             await deleteCrop(id);
-                            router.back();
+                            if (router.canGoBack()) {
+                                router.back();
+                            } else {
+                                router.replace('/crops');
+                            }
                         } catch (err: unknown) {
                             if (isUnauthorizedError(err)) return;
                             Alert.alert(

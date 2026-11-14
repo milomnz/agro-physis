@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 
@@ -18,6 +18,10 @@ export function useCropList(initialFarmId?: string) {
     const [error, setError] = useState('');
 
     const debouncedSearch = useDebouncedValue(search, 300);
+
+    useEffect(() => {
+        setSelectedFarm(initialFarmId || undefined);
+    }, [initialFarmId]);
 
     // Reload on every focus: the list stays mounted while other screens are open.
     useFocusEffect(
@@ -73,7 +77,8 @@ export function useCropList(initialFarmId?: string) {
             );
             return;
         }
-        router.push('/crops/new');
+        const query = selectedFarm ? `?farmId=${encodeURIComponent(selectedFarm)}` : '';
+        router.push(`/crops/new${query}`);
     };
 
     return {

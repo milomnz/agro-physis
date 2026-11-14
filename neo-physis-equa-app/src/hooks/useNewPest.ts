@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { getCrops, type Crop } from '../services/crops';
@@ -16,6 +16,8 @@ interface PestForm {
 
 export function useNewPest() {
     const router = useRouter();
+    const params = useLocalSearchParams<{ cropId?: string }>();
+    const initialCropId = typeof params.cropId === 'string' && params.cropId ? params.cropId : undefined;
     const sessionReady = useRequireSession();
     const [crops, setCrops] = useState<Crop[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +28,10 @@ export function useNewPest() {
         setError,
         formState: { errors },
     } = useForm<PestForm>({
-        defaultValues: { severity: 'media' },
+        defaultValues: {
+            severity: 'media',
+            ...(initialCropId ? { cropId: initialCropId } : {}),
+        },
     });
 
     useEffect(() => {

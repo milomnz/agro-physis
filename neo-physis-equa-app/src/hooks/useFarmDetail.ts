@@ -8,7 +8,8 @@ import { useFarmForm } from './useFarmForm';
 import { useRequireSession } from './useRequireSession';
 
 export function useFarmDetail() {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const params = useLocalSearchParams<{ id?: string }>();
+    const id = typeof params.id === 'string' && params.id ? params.id : undefined;
     const router = useRouter();
     const sessionReady = useRequireSession();
 
@@ -21,7 +22,12 @@ export function useFarmDetail() {
     const { control, handleSubmit, reset, errors } = useFarmForm();
 
     useEffect(() => {
-        if (!sessionReady || !id) return;
+        if (!sessionReady) return;
+        if (!id) {
+            setScreenError('Identificador de finca no válido');
+            setLoading(false);
+            return;
+        }
 
         (async () => {
             try {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { createCrop } from '../services/crops';
@@ -9,6 +9,8 @@ import { useRequireSession } from './useRequireSession';
 
 export function useNewCrop() {
     const router = useRouter();
+    const params = useLocalSearchParams<{ farmId?: string }>();
+    const initialFarmId = typeof params.farmId === 'string' && params.farmId ? params.farmId : undefined;
     const sessionReady = useRequireSession();
     const [farms, setFarms] = useState<Farm[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,7 +22,10 @@ export function useNewCrop() {
         setError,
         formState: { errors, isSubmitting },
     } = useForm<NewCropFormValues>({
-        defaultValues: { growthStage: 'vegetativo' },
+        defaultValues: {
+            growthStage: 'vegetativo',
+            ...(initialFarmId ? { farmId: initialFarmId } : {}),
+        },
     });
 
     useEffect(() => {
