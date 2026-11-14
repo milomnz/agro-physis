@@ -34,6 +34,8 @@ export default function CropsListScreen() {
     setSelectedFarm,
     selectedFarmName,
     goToNew,
+    dismissError,
+    dismissWarning,
   } = useCropList(typeof params.farmId === 'string' ? params.farmId : undefined);
 
   if (loading) {
@@ -57,12 +59,17 @@ export default function CropsListScreen() {
       </View>
 
       {error ? (
-        <Notice variant="error" className="mb-4">
+        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
           {error}
         </Notice>
       ) : null}
       {warning ? (
-        <Notice variant="warning" className="mb-4">
+        <Notice
+          variant="warning"
+          className="mb-4"
+          onDismiss={dismissWarning}
+          autoDismissMs={5000}
+        >
           {warning}
         </Notice>
       ) : null}

@@ -27,6 +27,8 @@ export default function PestsListScreen() {
     goToNew,
     goToDetail,
     goToCrops,
+    dismissError,
+    dismissWarning,
   } = usePestList();
 
   if (loading) {
@@ -50,12 +52,17 @@ export default function PestsListScreen() {
       </View>
 
       {error ? (
-        <Notice variant="error" className="mb-4">
+        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
           {error}
         </Notice>
       ) : null}
       {warning ? (
-        <Notice variant="warning" className="mb-4">
+        <Notice
+          variant="warning"
+          className="mb-4"
+          onDismiss={dismissWarning}
+          autoDismissMs={5000}
+        >
           {warning}
         </Notice>
       ) : null}

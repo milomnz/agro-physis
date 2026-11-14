@@ -54,6 +54,7 @@ export function usePestList() {
 
             return () => {
                 cancelled = true;
+                setWarning('');
             };
         }, [sessionReady]),
     );
@@ -99,5 +100,7 @@ export function usePestList() {
         goToNew,
         goToDetail,
         goToCrops,
+        dismissError: () => setError(''),
+        dismissWarning: () => setWarning(''),
     };
 }

@@ -31,6 +31,9 @@ export default function FarmsListScreen() {
     onSubmit,
     goToDetail,
     openScanner,
+    dismissSuccess,
+    dismissScannerNotice,
+    dismissError,
   } = useFarmList();
 
   if (loading) {
@@ -61,17 +64,27 @@ export default function FarmsListScreen() {
       </View>
 
       {success ? (
-        <Notice variant="success" className="mb-4">
+        <Notice
+          variant="success"
+          className="mb-4"
+          onDismiss={dismissSuccess}
+          autoDismissMs={5000}
+        >
           {success}
         </Notice>
       ) : null}
       {errors.root?.message ? (
-        <Notice variant="error" className="mb-4">
+        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
           {errors.root.message}
         </Notice>
       ) : null}
       {scannerNotice ? (
-        <Notice variant="warning" className="mb-4">
+        <Notice
+          variant="warning"
+          className="mb-4"
+          onDismiss={dismissScannerNotice}
+          autoDismissMs={5000}
+        >
           {scannerNotice}
         </Notice>
       ) : null}

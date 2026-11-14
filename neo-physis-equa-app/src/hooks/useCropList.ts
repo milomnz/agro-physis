@@ -51,6 +51,7 @@ export function useCropList(initialFarmId?: string) {
 
             return () => {
                 cancelled = true;
+                setWarning('');
             };
         }, [sessionReady]),
     );
@@ -89,5 +90,7 @@ export function useCropList(initialFarmId?: string) {
         setSelectedFarm,
         selectedFarmName,
         goToNew,
+        dismissError: () => setError(''),
+        dismissWarning: () => setWarning(''),
     };
 }

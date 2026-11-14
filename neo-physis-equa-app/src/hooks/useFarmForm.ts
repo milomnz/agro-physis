@@ -33,6 +33,7 @@ export function useFarmForm() {
         handleSubmit,
         reset,
         setError,
+        clearErrors,
         formState: { errors },
     } = useForm<FarmForm>({
         defaultValues: {
@@ -43,5 +44,5 @@ export function useFarmForm() {
         },
     });
 
-    return { control, handleSubmit, reset, setError, errors };
+    return { control, handleSubmit, reset, setError, clearErrors, errors };
 }

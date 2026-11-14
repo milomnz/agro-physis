@@ -21,7 +21,7 @@ export function useFarmList() {
 
     const debouncedSearch = useDebouncedValue(search, 300);
 
-    const { control, handleSubmit, reset, setError, errors } = useFarmForm();
+    const { control, handleSubmit, reset, setError, clearErrors, errors } = useFarmForm();
 
     const fetchFarms = useCallback(async () => {
         try {
@@ -63,6 +63,8 @@ export function useFarmList() {
 
             return () => {
                 cancelled = true;
+                setSuccess('');
+                setScannerNotice('');
             };
         }, [sessionReady, setError]),
     );
@@ -127,5 +129,8 @@ export function useFarmList() {
         onSubmit,
         goToDetail,
         openScanner,
+        dismissSuccess: () => setSuccess(''),
+        dismissScannerNotice: () => setScannerNotice(''),
+        dismissError: () => clearErrors('root'),
     };
 }
