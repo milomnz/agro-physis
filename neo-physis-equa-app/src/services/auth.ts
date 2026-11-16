@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { getSession } from './session';
 
 export interface AuthResponse {
   token: string | null;
@@ -24,6 +25,25 @@ export interface LoginData {
   password: string;
 }
 
+export interface UpdateProfilePayload {
+  nombre?: string;
+  accessibilityProfile?: {
+    ttsEnabled?: boolean;
+    highContrast?: boolean;
+  };
+  disabilityType?: string;
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const session = await getSession();
+  if (!session || !session.token) {
+    throw new Error('No hay sesión activa');
+  }
+  return {
+    Authorization: `Bearer ${session.token}`,
+  };
+}
+
 export async function register(data: RegisterData): Promise<AuthResponse> {
   return apiClient<AuthResponse>('/api/auth/registro', {
     method: 'POST',
@@ -46,5 +66,14 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       email: data.email,
       password: data.password,
     },
+  });
+}
+
+export async function updateProfile(payload: UpdateProfilePayload): Promise<AuthResponse> {
+  const headers = await getAuthHeaders();
+  return apiClient<AuthResponse>('/api/auth/me', {
+    method: 'PATCH',
+    headers,
+    body: payload,
   });
 }

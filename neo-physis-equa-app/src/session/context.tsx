@@ -2,8 +2,10 @@ import { createContext, useCallback, useEffect, useMemo, useState, type ReactNod
 import {
   login as loginRequest,
   register as registerRequest,
+  updateProfile as updateProfileRequest,
   type LoginData,
   type RegisterData,
+  type UpdateProfilePayload,
 } from '../services/auth';
 import { clearSession, getSession, saveSession, type Session } from '../services/session';
 import { setSessionExpiredHandler } from '../services/api';
@@ -15,6 +17,7 @@ export interface SessionContextValue {
   signIn: (data: LoginData) => Promise<void>;
   signUp: (data: RegisterData) => Promise<void>;
   signOut: () => Promise<void>;
+  updateSessionProfile: (payload: UpdateProfilePayload) => Promise<void>;
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null);
@@ -59,10 +62,44 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSession(next);
   }, []);
 
-  // El registro no inicia sesión: la pantalla redirige al login
   const signUp = useCallback(async (data: RegisterData) => {
-    await registerRequest(data);
+    const response = await registerRequest(data);
+    if (response.token) {
+      const next: Session = {
+        token: response.token,
+        id: response.id,
+        nombre: response.nombre,
+        email: response.email,
+        role: response.role,
+        accessibilityProfile: response.accessibilityProfile,
+        disabilityType: response.disabilityType,
+      };
+      await saveSession(next);
+      setSession(next);
+    }
   }, []);
+
+  const updateSessionProfile = useCallback(
+    async (payload: UpdateProfilePayload) => {
+      const current = session ?? (await getSession());
+      if (!current || !current.token) {
+        throw new Error('No hay sesión activa');
+      }
+      const response = await updateProfileRequest(payload);
+      const next: Session = {
+        token: response.token ?? current.token,
+        id: response.id ?? current.id,
+        nombre: response.nombre,
+        email: response.email,
+        role: response.role ?? current.role,
+        accessibilityProfile: response.accessibilityProfile,
+        disabilityType: response.disabilityType,
+      };
+      await saveSession(next);
+      setSession(next);
+    },
+    [session],
+  );
 
   const signOut = useCallback(async () => {
     await clearSession();
@@ -76,8 +113,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [signOut]);
 
   const value = useMemo(
-    () => ({ session, loading, signIn, signUp, signOut }),
-    [session, loading, signIn, signUp, signOut],
+    () => ({ session, loading, signIn, signUp, signOut, updateSessionProfile }),
+    [session, loading, signIn, signUp, signOut, updateSessionProfile],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
