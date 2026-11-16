@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { AuthResponse } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +69,20 @@ export class AuthService {
       nombre: user.name,
       email: user.email,
       mensaje: 'Usuario autenticado',
+      role: user.role,
+      accessibilityProfile: user.accessibilityProfile,
+      disabilityType: user.disabilityType,
+    };
+  }
+
+  async actualizarPerfil(userId: string, dto: UpdateProfileDto): Promise<AuthResponse> {
+    const user = await this.usersService.updateProfile(userId, dto);
+    return {
+      token: null,
+      id: user.id,
+      nombre: user.name,
+      email: user.email,
+      mensaje: 'Perfil actualizado',
       role: user.role,
       accessibilityProfile: user.accessibilityProfile,
       disabilityType: user.disabilityType,

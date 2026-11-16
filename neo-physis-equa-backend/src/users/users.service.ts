@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
 import { RegisterDto } from '../auth/dto/register.dto';
+import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
@@ -30,5 +31,29 @@ export class UsersService {
 
   findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
+  }
+
+  async updateProfile(id: string, dto: UpdateProfileDto): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    if (dto.nombre !== undefined) {
+      user.name = dto.nombre.trim();
+    }
+
+    if (dto.disabilityType !== undefined) {
+      user.disabilityType = dto.disabilityType;
+    }
+
+    if (dto.accessibilityProfile !== undefined) {
+      user.accessibilityProfile = {
+        ...(user.accessibilityProfile ?? {}),
+        ...dto.accessibilityProfile,
+      };
+    }
+
+    return this.userRepository.save(user);
   }
 }

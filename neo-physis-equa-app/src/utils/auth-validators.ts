@@ -17,6 +17,17 @@ export const LOGIN_FIELD_RULES: Record<keyof LoginForm, RegisterOptions<LoginFor
   },
 };
 
+export function validateNombre(nombre: string): string | undefined {
+  const trimmed = nombre.trim();
+  if (!trimmed) {
+    return 'El nombre es obligatorio';
+  }
+  if (trimmed.length < 2 || trimmed.length > 100) {
+    return 'El nombre debe tener entre 2 y 100 caracteres';
+  }
+  return undefined;
+}
+
 export interface RegisterForm {
   nombre: string;
   email: string;
@@ -26,14 +37,7 @@ export interface RegisterForm {
 export const REGISTER_FIELD_RULES: Record<keyof RegisterForm, RegisterOptions<RegisterForm>> = {
   nombre: {
     required: 'El nombre es obligatorio',
-    validate: (value) => {
-      const trimmed = (value ?? '').trim();
-      if (!trimmed) return 'El nombre es obligatorio';
-      if (trimmed.length < 2 || trimmed.length > 100) {
-        return 'El nombre debe tener entre 2 y 100 caracteres';
-      }
-      return true;
-    },
+    validate: (value) => validateNombre(value ?? '') ?? true,
   },
   email: {
     required: 'El email es obligatorio',

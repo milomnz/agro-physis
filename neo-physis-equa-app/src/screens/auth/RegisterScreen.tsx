@@ -83,13 +83,14 @@ export default function RegisterScreen() {
           />
         </View>
 
-        <DisabilitySelector value={disability} onChange={setDisability} />
+        <DisabilitySelector value={disability} onChange={setDisability} highContrast={false} />
 
         <AccessibilityPreferences
           ttsEnabled={ttsEnabled}
           highContrast={highContrast}
           onTtsChange={setTtsEnabled}
           onHighContrastChange={setHighContrast}
+          themeHighContrast={false}
         />
 
         <Button
