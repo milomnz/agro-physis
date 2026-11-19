@@ -12,6 +12,7 @@ describe('AuthService', () => {
     findById: jest.Mock;
     create: jest.Mock;
     updateProfile: jest.Mock;
+    guardarTokenPush: jest.Mock;
   };
   let jwtService: { sign: jest.Mock };
 
@@ -24,6 +25,7 @@ describe('AuthService', () => {
     accessibilityProfile: { ttsEnabled: false, highContrast: true },
     disabilityType: DisabilityType.VISUAL,
     isActive: true,
+    pushToken: 'ExponentPushToken[secreto]',
     farms: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -35,6 +37,7 @@ describe('AuthService', () => {
       findById: jest.fn(),
       create: jest.fn(),
       updateProfile: jest.fn(),
+      guardarTokenPush: jest.fn().mockResolvedValue(undefined),
     };
     jwtService = {
       sign: jest.fn().mockReturnValue('signed-jwt-token'),
@@ -90,6 +93,28 @@ describe('AuthService', () => {
       usersService.findById.mockResolvedValue(null);
       await expect(service.perfil('missing')).rejects.toBeInstanceOf(
         UnauthorizedException,
+      );
+    });
+
+    it('no expone pushToken en AuthResponse', async () => {
+      usersService.findById.mockResolvedValue(sampleUser);
+      const res = await service.perfil('user-1');
+      expect(res).not.toHaveProperty('pushToken');
+    });
+  });
+
+  describe('guardarTokenPush', () => {
+    it('delega el guardado y borrado de pushToken en UsersService', async () => {
+      await service.guardarTokenPush('user-1', 'ExponentPushToken[abc]');
+      expect(usersService.guardarTokenPush).toHaveBeenCalledWith(
+        'user-1',
+        'ExponentPushToken[abc]',
+      );
+
+      await service.guardarTokenPush('user-1', null);
+      expect(usersService.guardarTokenPush).toHaveBeenCalledWith(
+        'user-1',
+        null,
       );
     });
   });

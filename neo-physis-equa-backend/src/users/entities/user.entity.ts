@@ -63,6 +63,15 @@ export class User {
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({
+    type: 'varchar',
+    length: 255,
+    name: 'push_token',
+    nullable: true,
+    default: null,
+  })
+  pushToken: string | null;
+
   @OneToMany(() => Farm, (farm) => farm.owner)
   farms: Farm[];
 

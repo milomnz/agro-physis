@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
+import { programarRecordatorioCultivo } from '../services/notifications';
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -86,6 +87,12 @@ export function usePestDetail() {
             if (Object.keys(patch).length > 0) {
                 const updated = await updatePest(id, patch);
                 setPest(updated);
+                void programarRecordatorioCultivo({
+                    cropId: updated.cropId,
+                    cropName: updated.crop?.species ?? pest.crop?.species,
+                    pestName: updated.commonName,
+                    severity: updated.severity,
+                });
             }
             setSaved(true);
             notifySuccess('Cambios guardados correctamente');

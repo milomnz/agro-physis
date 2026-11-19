@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { FarmsModule } from './farms/farms.module';
 import { CropsModule } from './crops/crops.module';
 import { PestsModule } from './pests/pests.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PestsModule } from './pests/pests.module';
     FarmsModule,
     CropsModule,
     PestsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

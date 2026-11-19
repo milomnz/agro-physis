@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
 import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
+import { cancelarRecordatorioCultivo } from '../services/notifications';
 import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
@@ -107,6 +108,7 @@ export function useCropDetail(id: string | undefined) {
         setError('');
         try {
             await deleteCrop(id);
+            void cancelarRecordatorioCultivo(id);
             notifySuccess('Cultivo eliminado correctamente');
             setConfirmingDelete(false);
             if (router.canGoBack()) {

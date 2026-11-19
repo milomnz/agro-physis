@@ -2,13 +2,14 @@ import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CropsService } from '../crops/crops.service';
-import { Pest } from './entities/pest.entity';
+import { NOTIFICADOR_PORT } from '../notifications/ports/notificador.port';
+import { Pest, Severity } from './entities/pest.entity';
 import { PestsService } from './pests.service';
 
 const OWNER = 'owner-1';
 const OTHER = 'owner-2';
 
-describe('PestsService (pertenencia a finca)', () => {
+describe('PestsService (pertenencia a finca y notificaciones)', () => {
   let service: PestsService;
   let repo: {
     create: jest.Mock;
@@ -19,13 +20,21 @@ describe('PestsService (pertenencia a finca)', () => {
     remove: jest.Mock;
   };
   let cropsService: { findOne: jest.Mock };
+  let notificador: { avisar: jest.Mock };
 
-  const ownPest = (): Pest =>
-    ({ id: 'pest-1', cropId: 'crop-1', crop: { id: 'crop-1' } }) as Pest;
+  const ownPest = (overrides: Partial<Pest> = {}): Pest =>
+    ({
+      id: 'pest-1',
+      cropId: 'crop-1',
+      commonName: 'Broca',
+      severity: Severity.BAJA,
+      crop: { id: 'crop-1', species: 'Café' },
+      ...overrides,
+    }) as Pest;
 
   beforeEach(async () => {
     repo = {
-      create: jest.fn((dto: Partial<Pest>) => ({ ...dto })),
+      create: jest.fn((dto: Partial<Pest>) => ({ id: 'pest-new', ...dto })),
       save: jest.fn((pest: Pest) => Promise.resolve(pest)),
       find: jest.fn().mockResolvedValue([]),
       findOne: jest.fn(),
@@ -38,9 +47,15 @@ describe('PestsService (pertenencia a finca)', () => {
     cropsService = {
       findOne: jest.fn((id: string, ownerId: string) =>
         ownerId === OWNER && ['crop-1', 'crop-2'].includes(id)
-          ? Promise.resolve({ id })
+          ? Promise.resolve({
+              id,
+              species: id === 'crop-1' ? 'Café' : 'Cacao',
+            })
           : Promise.reject(new NotFoundException()),
       ),
+    };
+    notificador = {
+      avisar: jest.fn().mockResolvedValue(undefined),
     };
 
     const moduleRef = await Test.createTestingModule({
@@ -48,6 +63,7 @@ describe('PestsService (pertenencia a finca)', () => {
         PestsService,
         { provide: getRepositoryToken(Pest), useValue: repo },
         { provide: CropsService, useValue: cropsService },
+        { provide: NOTIFICADOR_PORT, useValue: notificador },
       ],
     }).compile();
 
@@ -66,6 +82,87 @@ describe('PestsService (pertenencia a finca)', () => {
         service.create(OTHER, { cropId: 'crop-1', commonName: 'Broca' }),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(repo.save).not.toHaveBeenCalled();
+      expect(notificador.avisar).not.toHaveBeenCalled();
+    });
+
+    it('envía notificación push cuando la severidad es ALTA', async () => {
+      await service.create(OWNER, {
+        cropId: 'crop-1',
+        commonName: 'Broca',
+        severity: Severity.ALTA,
+      });
+
+      expect(notificador.avisar).toHaveBeenCalledWith(OWNER, {
+        titulo: 'Alerta alta en Café',
+        cuerpo: 'Se registró Broca. Toca para ver el detalle.',
+        datos: {
+          tipo: 'pest',
+          pestId: 'pest-new',
+          cropId: 'crop-1',
+          severity: Severity.ALTA,
+          route: '/pests/pest-new',
+        },
+      });
+    });
+
+    it('envía notificación push cuando la severidad es MEDIA', async () => {
+      await service.create(OWNER, {
+        cropId: 'crop-1',
+        commonName: 'Roya',
+        severity: Severity.MEDIA,
+      });
+
+      expect(notificador.avisar).toHaveBeenCalledWith(OWNER, {
+        titulo: 'Alerta media en Café',
+        cuerpo: 'Se registró Roya. Toca para ver el detalle.',
+        datos: {
+          tipo: 'pest',
+          pestId: 'pest-new',
+          cropId: 'crop-1',
+          severity: Severity.MEDIA,
+          route: '/pests/pest-new',
+        },
+      });
+    });
+
+    it('usa título de respaldo si el cultivo no tiene nombre de especie', async () => {
+      cropsService.findOne.mockResolvedValueOnce({ id: 'crop-1', species: '' });
+
+      await service.create(OWNER, {
+        cropId: 'crop-1',
+        commonName: 'Broca',
+        severity: Severity.ALTA,
+      });
+
+      expect(notificador.avisar).toHaveBeenCalledWith(
+        OWNER,
+        expect.objectContaining({
+          titulo: 'Alerta alta de plaga',
+        }),
+      );
+    });
+
+    it('NO envía notificación cuando la severidad es BAJA', async () => {
+      await service.create(OWNER, {
+        cropId: 'crop-1',
+        commonName: 'Hormiga',
+        severity: Severity.BAJA,
+      });
+
+      expect(notificador.avisar).not.toHaveBeenCalled();
+    });
+
+    it('no falla la creación si el notificador lanza un error (best-effort)', async () => {
+      notificador.avisar.mockRejectedValueOnce(new Error('Expo down'));
+
+      const saved = await service.create(OWNER, {
+        cropId: 'crop-1',
+        commonName: 'Broca',
+        severity: Severity.ALTA,
+      });
+
+      expect(saved.commonName).toBe('Broca');
+      expect(notificador.avisar).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -125,6 +222,7 @@ describe('PestsService (pertenencia a finca)', () => {
         service.update('pest-1', OTHER, { commonName: 'x' }),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(repo.save).not.toHaveBeenCalled();
+      expect(notificador.avisar).not.toHaveBeenCalled();
     });
 
     it('edita sin cambiar de cultivo sin volver a validarlo', async () => {
@@ -135,6 +233,7 @@ describe('PestsService (pertenencia a finca)', () => {
       });
       expect(cropsService.findOne).not.toHaveBeenCalled();
       expect(result.commonName).toBe('Roya');
+      expect(notificador.avisar).not.toHaveBeenCalled();
     });
 
     it('permite mover la plaga a otro cultivo propio', async () => {
@@ -153,6 +252,47 @@ describe('PestsService (pertenencia a finca)', () => {
         service.update('pest-1', OWNER, { cropId: 'crop-de-otro' }),
       ).rejects.toBeInstanceOf(NotFoundException);
       expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('envía notificación si la severidad cambia a ALTA o MEDIA', async () => {
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.BAJA }));
+
+      await service.update('pest-1', OWNER, { severity: Severity.ALTA });
+
+      expect(notificador.avisar).toHaveBeenCalledWith(OWNER, {
+        titulo: 'Alerta alta en Café',
+        cuerpo:
+          'Se actualizó Broca a severidad alta. Toca para ver el detalle.',
+        datos: {
+          tipo: 'pest',
+          pestId: 'pest-1',
+          cropId: 'crop-1',
+          severity: Severity.ALTA,
+          route: '/pests/pest-1',
+        },
+      });
+    });
+
+    it('NO envía notificación si la severidad no cambia o baja a BAJA', async () => {
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.ALTA }));
+      await service.update('pest-1', OWNER, { severity: Severity.ALTA });
+      expect(notificador.avisar).not.toHaveBeenCalled();
+
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.ALTA }));
+      await service.update('pest-1', OWNER, { severity: Severity.BAJA });
+      expect(notificador.avisar).not.toHaveBeenCalled();
+    });
+
+    it('no falla la actualización si el notificador falla (best-effort)', async () => {
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.BAJA }));
+      notificador.avisar.mockRejectedValueOnce(new Error('timeout'));
+
+      const result = await service.update('pest-1', OWNER, {
+        severity: Severity.MEDIA,
+      });
+
+      expect(result.severity).toBe(Severity.MEDIA);
+      expect(notificador.avisar).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -14,6 +14,7 @@ import {
 } from '@expo-google-fonts/jetbrains-mono';
 import { AccessibilityProvider, useAccessibility } from '../src/accessibility/context';
 import { FeedbackProvider } from '../src/feedback/context';
+import { useNotificationNavigation } from '../src/hooks/useNotificationNavigation';
 import { useSession } from '../src/hooks/useSession';
 import { SessionProvider } from '../src/session/context';
 import { colors } from '../src/theme/tokens';
@@ -25,6 +26,8 @@ function RootStack() {
   const segments = useSegments();
   const router = useRouter();
   const bgColor = highContrast ? colors.tinta : colors.azul;
+
+  useNotificationNavigation();
 
   useEffect(() => {
     if (loading) return;

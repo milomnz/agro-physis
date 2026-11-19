@@ -1,8 +1,21 @@
-import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { AuthResponse } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
+import { PushTokenDto } from './dto/push-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -37,5 +50,22 @@ export class AuthController {
     @Body() dto: UpdateProfileDto,
   ): Promise<AuthResponse> {
     return this.authService.actualizarPerfil(req.user.id, dto);
+  }
+
+  @Put('push-token')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async guardarPushToken(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: PushTokenDto,
+  ): Promise<void> {
+    await this.authService.guardarTokenPush(req.user.id, dto.token);
+  }
+
+  @Delete('push-token')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async eliminarPushToken(@Req() req: AuthenticatedRequest): Promise<void> {
+    await this.authService.guardarTokenPush(req.user.id, null);
   }
 }

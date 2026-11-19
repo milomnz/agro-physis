@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
 import { getCrops, type Crop } from '../services/crops';
+import { programarRecordatorioCultivo } from '../services/notifications';
 import { createPest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -77,6 +78,13 @@ export function useNewPest() {
                     .split(',')
                     .map((s) => s.trim())
                     .filter(Boolean),
+            });
+            const selectedCrop = crops.find((c) => c.id === pest.cropId);
+            void programarRecordatorioCultivo({
+                cropId: pest.cropId,
+                cropName: pest.crop?.species ?? selectedCrop?.species,
+                pestName: pest.commonName,
+                severity: pest.severity,
             });
             notifySuccess('Plaga registrada correctamente');
             router.replace(`/pests?cropId=${pest.cropId}`);

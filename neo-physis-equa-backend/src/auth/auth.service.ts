@@ -88,4 +88,8 @@ export class AuthService {
       disabilityType: user.disabilityType,
     };
   }
+
+  async guardarTokenPush(userId: string, token: string | null): Promise<void> {
+    await this.usersService.guardarTokenPush(userId, token);
+  }
 }
