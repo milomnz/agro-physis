@@ -2,27 +2,14 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useRef,
-  useState,
   type ReactNode,
 } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAccessibility } from '../accessibility/context';
-import Notice from '../components/Notice';
-
-// Tiempo que la alerta visual permanece en pantalla.
-const VISIBLE_MS = 4000;
 
 interface FeedbackContextValue {
-  /**
-   * Confirma una acción completada (crear, guardar, eliminar) con vibración
-   * y una alerta visual. Solo actúa con el perfil auditivo; para el resto de
-   * usuarios no hace nada.
-   */
   notifySuccess: (message: string) => void;
 }
 
@@ -32,30 +19,13 @@ const FeedbackContext = createContext<FeedbackContextValue>({
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
     const { actionFeedback } = useAccessibility();
-    const insets = useSafeAreaInsets();
-    const [message, setMessage] = useState<string | null>(null);
-    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Limpia el temporizador si el provider se desmonta.
-    useEffect(
-        () => () => {
-        if (timer.current) clearTimeout(timer.current);
-        },
-        [],
-    );
 
     const notifySuccess = useCallback(
-        (text: string) => {
+        (_message: string) => {
         if (!actionFeedback) return;
-
-        // La vibración no existe en web; en el móvil confirmamos con "éxito".
         if (Platform.OS !== 'web') {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
         }
-
-        setMessage(text);
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => setMessage(null), VISIBLE_MS);
         },
         [actionFeedback],
     );
@@ -65,15 +35,6 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     return (
         <FeedbackContext.Provider value={value}>
         {children}
-        {message ? (
-          <View
-            accessibilityLiveRegion="polite"
-            className="absolute left-4 right-4"
-            style={{ top: insets.top + 64, pointerEvents: 'none' }}
-          >
-            <Notice variant="success">{message}</Notice>
-          </View>
-        ) : null}
         </FeedbackContext.Provider>
     );
 }
