@@ -45,8 +45,8 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
       >
         <Ionicons name={icon} size={24} color={isActive ? activeText : textColor} />
         <Text
-          className="ml-4 flex-1 text-base"
-          style={{ fontFamily: 'Inter_600SemiBold', color: isActive ? activeText : textColor }}
+          className="ml-4 flex-1 text-base font-inter-semibold"
+          style={{ color: isActive ? activeText : textColor }}
         >
           {label}
         </Text>
@@ -62,12 +62,12 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
         style={{ paddingTop: insets.top + 16, borderBottomColor: borderColor + '30' }}
       >
         <Text
-          className="text-2xl"
-          style={{ fontFamily: 'BricolageGrotesque_700Bold', color: highContrast ? colors.crema : colors.azul }}
+          className="text-2xl font-bricolage"
+          style={{ color: highContrast ? colors.crema : colors.azul }}
         >
           AgroPhysis
         </Text>
-        <Text className="text-sm opacity-70" style={{ fontFamily: 'Inter_400Regular', color: textColor }}>
+        <Text className="text-sm font-inter opacity-70" style={{ color: textColor }}>
           Menú de gestión
         </Text>
       </View>
@@ -97,7 +97,7 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
           accessibilityRole="button"
         >
           <Ionicons name="log-out-outline" size={24} color={textColor} />
-          <Text className="ml-4 flex-1 text-base" style={{ fontFamily: 'Inter_600SemiBold', color: textColor }}>
+          <Text className="ml-4 flex-1 text-base font-inter-semibold" style={{ color: textColor }}>
             Cerrar sesión
           </Text>
         </Pressable>

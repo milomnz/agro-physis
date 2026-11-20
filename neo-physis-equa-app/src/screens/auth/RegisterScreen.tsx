@@ -40,7 +40,7 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <AuthHeader
-          title="Neo Physis Equa"
+          title="AgroPhysis"
           subtitle="Crea tu cuenta para comenzar"
           titleClassName="mb-1 text-3xl"
           subtitleClassName="mb-8 text-sm"

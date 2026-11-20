@@ -1,11 +1,14 @@
 import { useCallback } from 'react';
 import { ActivityIndicator, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
+import Notice from '../../components/Notice';
 import { useAccessibility } from '../../accessibility/context';
+import { colors } from '../../theme/tokens';
 import { useEditProfile } from '../../hooks/useEditProfile';
 import { useRequireSession } from '../../hooks/useRequireSession';
 import { useSession } from '../../hooks/useSession';
@@ -14,6 +17,7 @@ import DisabilitySelector from '../auth/components/DisabilitySelector';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { highContrast: themeHighContrast, palette, actionFeedback } = useAccessibility();
   const sessionReady = useRequireSession();
   const { session, loading, signOut } = useSession();
@@ -62,7 +66,7 @@ export default function ProfileScreen() {
   const initial = session.nombre.trim().charAt(0).toUpperCase() || '?';
 
   const inputBorderClass = errors.nombre
-    ? 'border-red-500'
+    ? palette.fieldErrorBorder
     : focusedField === 'nombre'
       ? themeHighContrast
         ? 'border-crema'
@@ -71,13 +75,13 @@ export default function ProfileScreen() {
         ? 'border-crema/70'
         : 'border-turquesa/50';
 
-  const inputSurfaceClass = themeHighContrast ? 'bg-noche text-crema' : 'bg-white text-noche';
+  const inputSurfaceClass = themeHighContrast ? 'bg-noche text-crema' : 'bg-crema text-tinta';
 
   return (
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-2 pt-4">
@@ -89,22 +93,16 @@ export default function ProfileScreen() {
         </View>
 
         {successMessage ? (
-          <View
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-            className={`mt-6 rounded-xl p-3 ${palette.successBanner}`}
-          >
-            <Text className="text-center text-sm font-inter-semibold">{successMessage}</Text>
-          </View>
+          <Notice variant="success" className="mt-6">
+            {successMessage}
+          </Notice>
         ) : null}
 
         {apiError ? (
-          <View
-            accessibilityRole="alert"
-            accessibilityLiveRegion="assertive"
-            className={`mt-6 rounded-xl p-3 ${palette.errorBanner}`}
-          >
-            <Text className="text-center text-sm font-inter-semibold">{apiError}</Text>
+          <View accessibilityLiveRegion="assertive">
+            <Notice variant="error" className="mt-6">
+              {apiError}
+            </Notice>
           </View>
         ) : null}
 
@@ -118,16 +116,8 @@ export default function ProfileScreen() {
                 Adaptaciones activas para tu experiencia
               </Text>
               <View className="flex-row flex-wrap gap-2">
-                {disability ? (
-                  <Badge value={disability} />
-                ) : (
-                  <Text
-                    className={`rounded-full px-2.5 py-1 text-[10px] font-inter-bold ${palette.chipBg}`}
-                  >
-                    Discapacidad: ninguna
-                  </Text>
-                )}
-                <Badge value={ttsEnabled ? 'resuelto' : 'inactivo'} />
+                <Badge value={disability ?? 'ninguna'} />
+                <Badge value={ttsEnabled ? 'activo' : 'inactivo'} />
                 <Badge value={highContrast ? 'activo' : 'inactivo'} />
               </View>
               <View className="mt-3 gap-1">
@@ -179,7 +169,7 @@ export default function ProfileScreen() {
               <TextInput
                 className={`min-h-[48px] rounded-xl border-2 px-4 py-3 text-base ${inputBorderClass} ${inputSurfaceClass}`}
                 placeholder="Tu nombre completo"
-                placeholderTextColor={themeHighContrast ? '#F3F4F480' : '#6B979A'}
+                placeholderTextColor={themeHighContrast ? colors.crema : colors.azul}
                 value={nombre}
                 onChangeText={setNombre}
                 autoCapitalize="words"
@@ -189,9 +179,7 @@ export default function ProfileScreen() {
                 onBlur={() => setFocusedField(null)}
               />
               {errors.nombre ? (
-                <Text
-                  className={`mt-1 text-xs ${themeHighContrast ? 'text-red-300' : 'text-red-600'}`}
-                >
+                <Text className={`mt-1 text-xs ${palette.errorText}`}>
                   {errors.nombre}
                 </Text>
               ) : null}

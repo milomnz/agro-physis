@@ -25,7 +25,7 @@ export default function ChipFilter({
 
   return (
     <View className="mb-4 gap-1.5">
-      <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
+      <Text className={`text-sm font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
         {label}
       </Text>
       {options.length === 0 ? (

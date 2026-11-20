@@ -1,5 +1,7 @@
 # Diccionario de Estilos (AgroPhysis)
 
+> Documento histórico: refleja la paleta original. La fuente de verdad vigente es `ESTILOS.md` junto con `src/theme/tokens.ts` y `tailwind.config.js`.
+
 Este documento define las bases visuales del proyecto, priorizando la legibilidad y el alto contraste para cumplir con los requerimientos de accesibilidad de la aplicación.
 
 ## Tipografía

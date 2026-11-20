@@ -124,6 +124,7 @@ export function useCropDetail(id: string | undefined) {
     };
 
     return {
+        crop,
         control,
         loading,
         saving: isSubmitting,

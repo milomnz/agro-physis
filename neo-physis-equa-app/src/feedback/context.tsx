@@ -8,11 +8,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAccessibility } from '../accessibility/context';
+import Notice from '../components/Notice';
 
 // Tiempo que la alerta visual permanece en pantalla.
 const VISIBLE_MS = 4000;
@@ -31,7 +31,7 @@ const FeedbackContext = createContext<FeedbackContextValue>({
 });
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
-    const { actionFeedback, highContrast } = useAccessibility();
+    const { actionFeedback } = useAccessibility();
     const insets = useSafeAreaInsets();
     const [message, setMessage] = useState<string | null>(null);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,32 +66,13 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         <FeedbackContext.Provider value={value}>
         {children}
         {message ? (
-            // Flota sobre la pantalla y no intercepta toques.
-            <View
+          <View
+            accessibilityLiveRegion="polite"
             className="absolute left-4 right-4"
-            style={{ top: insets.top + 8, pointerEvents: 'none' }}
-            >
-            <View
-                accessibilityRole="alert"
-                accessibilityLiveRegion="polite"
-                className={`flex-row items-center gap-3 rounded-2xl border-2 p-4 ${
-                highContrast ? 'border-green-300 bg-green-950' : 'border-green-700 bg-green-50'
-                }`}
-            >
-                <Ionicons
-                name="checkmark-circle"
-                size={28}
-                color={highContrast ? '#86EFAC' : '#15803D'}
-                />
-                <Text
-                className={`flex-1 font-inter-semibold ${
-                    highContrast ? 'text-green-300' : 'text-green-700'
-                }`}
-                >
-                {message}
-                </Text>
-            </View>
-            </View>
+            style={{ top: insets.top + 64, pointerEvents: 'none' }}
+          >
+            <Notice variant="success">{message}</Notice>
+          </View>
         ) : null}
         </FeedbackContext.Provider>
     );

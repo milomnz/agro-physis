@@ -36,6 +36,12 @@ export default function NewPestScreen() {
           </Text>
         </View>
 
+        {rootError ? (
+          <Notice variant="error" onDismiss={dismissRootError}>
+            {rootError}
+          </Notice>
+        ) : null}
+
         {crops.length === 0 ? (
           <View className="gap-3">
             <Text className={`text-center ${palette.sub}`}>
@@ -45,12 +51,6 @@ export default function NewPestScreen() {
           </View>
         ) : (
           <>
-            {rootError && (
-              <Notice variant="error" onDismiss={dismissRootError}>
-                {rootError}
-              </Notice>
-            )}
-
             <Select
               control={control}
               name="cropId"

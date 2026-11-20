@@ -48,7 +48,7 @@ export default function PestsListScreen() {
             {selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}
           </Text>
         </View>
-        <Button text="+ Nueva" onPress={goToNew} className="rounded-xl p-3" />
+        <Button text="+ Nueva" onPress={goToNew} />
       </View>
 
       {error ? (
@@ -68,8 +68,8 @@ export default function PestsListScreen() {
       ) : null}
 
       {crops.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+        <CenteredScroll className={`rounded-2xl ${palette.card}`} contentClassName="gap-3 p-6">
+          <Text className={`text-center text-lg font-inter-semibold ${palette.title}`}>
             Aún no tienes cultivos registrados
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
@@ -82,6 +82,7 @@ export default function PestsListScreen() {
           data={filteredPests}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
+          contentContainerClassName="gap-3"
           contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>

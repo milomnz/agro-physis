@@ -29,7 +29,7 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
         keyboardShouldPersistTaps="handled"
       >
-        <AuthHeader title="Neo Physis Equa" subtitle="Inicia sesión en tu cuenta" />
+        <AuthHeader title="AgroPhysis" subtitle="Inicia sesión en tu cuenta" />
 
         {error && (
           <Notice variant="error" onDismiss={dismissError}>

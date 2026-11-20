@@ -40,7 +40,7 @@ export default function Select<T extends FieldValues>({
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <View className="gap-1.5">
-          <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
+          <Text className={`text-sm font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
             {label}
           </Text>
           {options.length === 0 ? (

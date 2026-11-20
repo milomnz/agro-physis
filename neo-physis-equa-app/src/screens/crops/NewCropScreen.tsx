@@ -46,6 +46,17 @@ export default function NewCropScreen() {
           </Text>
         </View>
 
+        {rootError ? (
+          <Notice variant="error" onDismiss={dismissRootError}>
+            {rootError}
+          </Notice>
+        ) : null}
+        {loadError ? (
+          <Notice variant="error" onDismiss={dismissLoadError}>
+            {loadError}
+          </Notice>
+        ) : null}
+
         {farms.length === 0 ? (
           <View className="gap-3">
             <Text className={`text-center ${palette.sub}`}>
@@ -55,17 +66,6 @@ export default function NewCropScreen() {
           </View>
         ) : (
           <>
-            {rootError && (
-              <Notice variant="error" onDismiss={dismissRootError}>
-                {rootError}
-              </Notice>
-            )}
-            {loadError ? (
-              <Notice variant="error" onDismiss={dismissLoadError}>
-                {loadError}
-              </Notice>
-            ) : null}
-
             <Select
               control={control}
               name="farmId"

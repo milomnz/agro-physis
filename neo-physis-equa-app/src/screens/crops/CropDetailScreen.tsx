@@ -1,5 +1,6 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -12,9 +13,11 @@ export default function CropDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : undefined;
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { palette } = useAccessibility();
 
   const {
+    crop,
     control,
     loading,
     saving,
@@ -38,11 +41,22 @@ export default function CropDetailScreen() {
     );
   }
 
+  if (!crop) {
+    return (
+      <View className={`flex-1 items-center justify-center gap-4 p-6 ${palette.bg}`}>
+        <Notice variant="error" className="w-full">
+          {error || 'No se pudo cargar el cultivo.'}
+        </Notice>
+        <Button text="Volver a mis cultivos" onPress={() => router.replace('/crops')} />
+      </View>
+    );
+  }
+
   return (
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivo</Text>

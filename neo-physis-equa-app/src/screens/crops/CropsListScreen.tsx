@@ -13,7 +13,11 @@ import { useCropList } from '../../hooks/useCropList';
 function formatPlantedDate(isoDate: string): string {
   const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
   if (!year || !month || !day) return isoDate;
-  return new Date(year, month - 1, day).toLocaleDateString();
+  return new Intl.DateTimeFormat('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(year, month - 1, day));
 }
 
 export default function CropsListScreen() {
@@ -55,7 +59,7 @@ export default function CropsListScreen() {
             {selectedFarmName ? `Finca: ${selectedFarmName}` : 'Todos tus cultivos'}
           </Text>
         </View>
-        <Button text="+ Nuevo" onPress={goToNew} className="rounded-xl p-3" />
+        <Button text="+ Nuevo" onPress={goToNew} />
       </View>
 
       {error ? (
@@ -75,8 +79,8 @@ export default function CropsListScreen() {
       ) : null}
 
       {farms.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+        <CenteredScroll className={`rounded-2xl ${palette.card}`} contentClassName="gap-3 p-6">
+          <Text className={`text-center text-lg font-inter-semibold ${palette.title}`}>
             Aún no tienes fincas registradas
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
@@ -85,8 +89,8 @@ export default function CropsListScreen() {
           <Button text="Ir a mis fincas" onPress={() => router.push('/farms')} />
         </CenteredScroll>
       ) : crops.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+        <CenteredScroll className={`rounded-2xl ${palette.card}`} contentClassName="gap-3 p-6">
+          <Text className={`text-center text-lg font-inter-semibold ${palette.title}`}>
             No tienes cultivos registrados
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
@@ -99,6 +103,7 @@ export default function CropsListScreen() {
           data={filteredCrops}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
+          contentContainerClassName="gap-3"
           contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
@@ -127,7 +132,7 @@ export default function CropsListScreen() {
               accessibilityHint="Abre el detalle del cultivo para editarlo, eliminarlo o ver sus plagas"
               accessibilityRole="button"
               onPress={() => router.push(`/crops/${item.id}`)}
-              className={`mb-3 rounded-2xl p-4 ${palette.card}`}
+              className={`rounded-2xl p-4 active:opacity-80 ${palette.card}`}
             >
               <View className="flex-row items-center justify-between gap-2">
                 <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
@@ -137,7 +142,7 @@ export default function CropsListScreen() {
                 Finca: {item.farm?.name ?? 'No asociada'}
               </Text>
               {item.plantedDate ? (
-                <Text className={`mt-0.5 text-xs ${palette.faint}`}>
+                <Text className={`mt-0.5 font-mono-medium text-xs ${palette.sub}`}>
                   Sembrado: {formatPlantedDate(item.plantedDate)}
                 </Text>
               ) : null}

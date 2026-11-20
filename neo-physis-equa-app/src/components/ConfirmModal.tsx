@@ -46,7 +46,7 @@ export default function ConfirmModal({
           <Text className={`text-xl font-bricolage ${palette.title}`}>{title}</Text>
           <Text className={`text-sm ${palette.body}`}>{message}</Text>
 
-          <View className="mt-2 flex-row gap-3">
+          <View className="flex-row gap-3">
             <Button
               text={cancelText}
               onPress={onCancel}

@@ -1,5 +1,7 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from '../../components/Button';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -11,8 +13,11 @@ import { SEVERITIES } from '../../services/pests';
 import { usePestDetail } from '../../hooks/usePestDetail';
 
 export default function PestDetailScreen() {
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { palette } = useAccessibility();
     const {
+        pest,
         control,
         loading,
         saving,
@@ -36,11 +41,22 @@ export default function PestDetailScreen() {
         );
     }
 
+    if (!pest) {
+        return (
+            <View className={`flex-1 items-center justify-center gap-4 p-6 ${palette.bg}`}>
+                <Notice variant="error" className="w-full">
+                    {screenError || 'No se pudo cargar la plaga.'}
+                </Notice>
+                <Button text="Volver a mis plagas" onPress={() => router.replace('/pests')} />
+            </View>
+        );
+    }
+
     return (
         <View className={`flex-1 ${palette.bg}`}>
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+                contentContainerStyle={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}
                 keyboardShouldPersistTaps="handled"
             >
                 <Text className={`text-2xl font-bricolage ${palette.title}`}>Plaga</Text>

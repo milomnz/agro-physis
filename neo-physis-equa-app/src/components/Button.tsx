@@ -55,6 +55,7 @@ export default function Button({
       accessibilityLabel={accessibilityLabel ?? text}
       accessibilityHint={accessibilityHint}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
       className={`min-h-12 min-w-12 items-center justify-center rounded-boton p-4 active:opacity-80 disabled:opacity-50 ${containerClass} ${className}`}
     >
       <Text className={`text-center font-bricolage ${textClass}`}>{text}</Text>

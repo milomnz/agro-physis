@@ -18,16 +18,18 @@ export default function PestCard({ pest, onPress }: PestCardProps) {
       accessibilityHint="Abre el detalle de la plaga para editarla o eliminarla"
       accessibilityRole="button"
       onPress={() => onPress(pest)}
-      className={`mb-3 rounded-2xl p-4 ${palette.card}`}
+      className={`rounded-2xl p-4 active:opacity-80 ${palette.card}`}
     >
       <View className="flex-row items-center justify-between gap-2">
-         <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{pest.commonName}</Text>
+          <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`} numberOfLines={1}>
+            {pest.commonName}
+          </Text>
         <Badge value={pest.severity} />
       </View>
       {pest.scientificName ? (
         <Text className={`mt-0.5 text-xs italic ${palette.sub}`}>{pest.scientificName}</Text>
       ) : null}
-      <Text className={`mt-1 text-sm ${palette.sub}`}>
+      <Text className={`mt-1 text-sm ${palette.sub}`} numberOfLines={1}>
         Cultivo: {pest.crop?.species ?? 'No asociado'}
       </Text>
       {pest.symptoms.length > 0 ? (
