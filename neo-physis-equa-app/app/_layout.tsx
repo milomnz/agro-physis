@@ -68,6 +68,7 @@ function RootStack() {
         <Stack.Screen name="pests/new" options={{ title: 'Nueva Plaga' }} />
         <Stack.Screen name="pests/[id]" options={{ title: 'Plaga' }} />
         <Stack.Screen name="profile" options={{ title: 'Mi perfil' }} />
+        <Stack.Screen name="diagnosis" options={{ title: 'Diagnóstico' }} />
       </Stack>
     </>
   );

@@ -78,6 +78,7 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
         <NavItem path="/farms" icon="leaf-outline" label="Mis Fincas" />
         <NavItem path="/crops" icon="nutrition-outline" label="Mis Cultivos" />
         <NavItem path="/pests" icon="bug-outline" label="Catálogo de Plagas" />
+        <NavItem path="/diagnosis" icon="medkit-outline" label="Diagnóstico de síntomas" />
         <NavItem path="/profile" icon="person-outline" label="Mi perfil" />
       </ScrollView>
 
