@@ -9,9 +9,11 @@ import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
 import { usePestDetail } from '../../hooks/usePestDetail';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function PestDetailScreen() {
     const { palette } = useAccessibility();
+    const insets = useSafeAreaInsets();
     const {
         control,
         loading,
@@ -40,7 +42,7 @@ export default function PestDetailScreen() {
         <View className={`flex-1 ${palette.bg}`}>
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+                contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
                 keyboardShouldPersistTaps="handled"
             >
                 <Text className={`text-2xl font-bricolage ${palette.title}`}>Plaga</Text>

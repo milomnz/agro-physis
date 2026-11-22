@@ -7,9 +7,11 @@ import Notice from '../../components/Notice';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmDetail } from '../../hooks/useFarmDetail';
 import FarmFormFields from './components/FarmFormFields';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function FarmDetailScreen() {
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     farm,
     loading,
@@ -57,7 +59,7 @@ export default function FarmDetailScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
         keyboardShouldPersistTaps="handled"
       >
       <Text className={`text-2xl font-bricolage ${palette.title}`}>Mi finca</Text>

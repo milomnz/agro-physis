@@ -8,9 +8,11 @@ import { useAccessibility } from '../../accessibility/context';
 import { useNewCrop } from '../../hooks/useNewCrop';
 import CropFormFields from './CropFormFields';
 import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function NewCropScreen() {
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     control,
     farms,
@@ -36,7 +38,7 @@ export default function NewCropScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24, paddingBottom: insets.bottom + 24 }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-1">

@@ -11,12 +11,14 @@ import { useRequireSession } from '../../hooks/useRequireSession';
 import { useSession } from '../../hooks/useSession';
 import AccessibilityPreferences from '../auth/components/AccessibilityPreferences';
 import DisabilitySelector from '../auth/components/DisabilitySelector';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { highContrast: themeHighContrast, palette, actionFeedback } = useAccessibility();
   const sessionReady = useRequireSession();
   const { session, loading, signOut } = useSession();
+  const insets = useSafeAreaInsets();
   const {
     isEditing,
     nombre,
@@ -77,7 +79,7 @@ export default function ProfileScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-2 pt-4">

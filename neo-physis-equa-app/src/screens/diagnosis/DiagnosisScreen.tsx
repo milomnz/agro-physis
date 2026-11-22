@@ -7,10 +7,12 @@ import { useDiagnosis } from '../../hooks/useDiagnosis';
 import { colors } from '../../theme/tokens';
 import OptionButton from './components/OptionButton';
 import PestMatchCard from './components/PestMatchCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function DiagnosisScreen() {
   const router = useRouter();
   const { palette, highContrast } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const {
     stage,
     loading,
@@ -38,7 +40,11 @@ export default function DiagnosisScreen() {
   }
 
   return (
-    <ScrollView className={`flex-1 ${palette.bg}`} contentContainerClassName="gap-4 p-6">
+    <ScrollView
+      className={`flex-1 ${palette.bg}`}
+      contentContainerClassName="gap-4"
+      contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 24 }}
+    >
       {error ? (
         <Text className={`rounded-xl p-3 text-center ${palette.errorBanner}`}>{error}</Text>
       ) : null}

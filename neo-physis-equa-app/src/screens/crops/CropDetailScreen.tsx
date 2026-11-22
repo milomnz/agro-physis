@@ -7,13 +7,14 @@ import Notice from '../../components/Notice';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropDetail } from '../../hooks/useCropDetail';
 import CropFormFields from './CropFormFields';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CropDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : undefined;
   const router = useRouter();
   const { palette } = useAccessibility();
-
+  const insets = useSafeAreaInsets();
   const {
     control,
     loading,
@@ -42,7 +43,7 @@ export default function CropDetailScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivo</Text>
