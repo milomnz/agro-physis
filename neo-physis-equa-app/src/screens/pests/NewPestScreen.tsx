@@ -8,9 +8,11 @@ import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
 import { useNewPest } from '../../hooks/useNewPest';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function NewPestScreen() {
   const { palette } = useAccessibility();
+  const insets = useSafeAreaInsets();
   const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
     useNewPest();
 
@@ -26,7 +28,7 @@ export default function NewPestScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24, paddingBottom: insets.bottom + 24 }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-1">
