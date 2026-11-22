@@ -43,7 +43,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
         options: [
             { id: 'manchas', label: 'Manchas', keywords: ['mancha', 'lesion', 'necros', 'pecas'] },
             { id: 'amarillo', label: 'Se pone amarilla', keywords: ['amarill', 'clorosis', 'palid', 'decolor'] },
-            { id: 'agujeros', label: 'Agujeros o mordidas', keywords: ['agujero', 'mordid', 'roid', 'perfor', 'comid', 'defolia', 'galeria'] },
+            { id: 'agujeros', label: 'Agujeros o mordidas', keywords: ['agujero', 'mordid','mordedur', 'roid', 'perfor', 'comid', 'defolia', 'galeria'] },
             { id: 'marchita', label: 'Se marchita o se seca', keywords: ['marchit', 'seca', 'mustia', 'mustio', 'decaim', 'caida'] },
             NOT_SURE
         ]
