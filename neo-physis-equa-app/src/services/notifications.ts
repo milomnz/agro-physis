@@ -39,31 +39,52 @@ if (Platform.OS !== 'web') {
 
 let androidChannelsConfigured = false;
 
-export async function configurarCanalesAndroid(): Promise<void> {
-  if (Platform.OS !== 'android' || androidChannelsConfigured) return;
+async function crearCanalConFallback(
+  id: string,
+  config: Notifications.NotificationChannelInput,
+): Promise<boolean> {
+  try {
+    await Notifications.setNotificationChannelAsync(id, config);
+    return true;
+  } catch {
+    try {
+      await Notifications.setNotificationChannelAsync(id, {
+        name: config.name,
+        importance: config.importance,
+      });
+      return true;
+    } catch (err) {
+      console.warn(`[notifications] No se pudo configurar el canal "${id}":`, err);
+      return false;
+    }
+  }
+}
 
-  await Promise.all([
-    Notifications.setNotificationChannelAsync(PEST_ALERTS_CHANNEL_ID, {
+export async function configurarCanalesAndroid(): Promise<boolean> {
+  if (Platform.OS !== 'android') return true;
+  if (androidChannelsConfigured) return true;
+
+  const [, remindersReady] = await Promise.all([
+    crearCanalConFallback(PEST_ALERTS_CHANNEL_ID, {
       name: 'Alertas de plagas',
       description: 'Alertas inmediatas de plagas de severidad media y alta',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       enableVibrate: true,
-      sound: 'default',
       lightColor: '#17506B',
     }),
-    Notifications.setNotificationChannelAsync(CROP_REMINDERS_CHANNEL_ID, {
+    crearCanalConFallback(CROP_REMINDERS_CHANNEL_ID, {
       name: 'Recordatorios de cultivos',
       description: 'Recordatorios periódicos para revisar cultivos con plagas registradas',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 200, 150, 200],
       enableVibrate: true,
-      sound: 'default',
       lightColor: '#17506B',
     }),
   ]);
 
-  androidChannelsConfigured = true;
+  androidChannelsConfigured = remindersReady;
+  return remindersReady;
 }
 
 async function asegurarPermisosNotificaciones(): Promise<boolean> {
@@ -98,13 +119,12 @@ export async function obtenerTokenPushAsync(): Promise<string | null> {
   }
 
   try {
-    await configurarCanalesAndroid();
-
     const granted = await asegurarPermisosNotificaciones();
     if (!granted) {
       return null;
     }
 
+    await configurarCanalesAndroid();
     const projectId = resolverProjectId();
     if (!projectId) {
       console.warn('[notifications] No se encontró projectId de EAS para registrar token push.');
@@ -155,12 +175,13 @@ export async function programarRecordatorioCultivo(params: CropReminderParams): 
   if (Platform.OS === 'web' || !params.cropId) return;
 
   try {
-    await configurarCanalesAndroid();
 
     const granted = await asegurarPermisosNotificaciones();
     if (!granted) {
       return;
     }
+
+    const channelsReady = await configurarCanalesAndroid();
 
     await cancelarRecordatorioCultivo(params.cropId);
 
@@ -183,7 +204,7 @@ export async function programarRecordatorioCultivo(params: CropReminderParams): 
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
         seconds,
         repeats: true,
-        ...(Platform.OS === 'android' ? { channelId: CROP_REMINDERS_CHANNEL_ID } : {}),
+        ...(Platform.OS === 'android' && channelsReady ? { channelId: CROP_REMINDERS_CHANNEL_ID } : {}),
       },
     });
   } catch (err) {
