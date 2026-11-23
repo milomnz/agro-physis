@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Not } from 'typeorm';
 import { DisabilityType, User, UserRole } from './entities/user.entity';
 import { UsersService } from './users.service';
 
@@ -10,6 +11,7 @@ describe('UsersService', () => {
     create: jest.Mock;
     save: jest.Mock;
     findOne: jest.Mock;
+    update: jest.Mock;
   };
 
   const makeUser = (): User => ({
@@ -21,6 +23,7 @@ describe('UsersService', () => {
     accessibilityProfile: { ttsEnabled: true, highContrast: false },
     disabilityType: DisabilityType.NINGUNA,
     isActive: true,
+    pushToken: null,
     farms: [],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -31,6 +34,7 @@ describe('UsersService', () => {
       create: jest.fn((dto: Partial<User>) => ({ ...dto })),
       save: jest.fn((user: User) => Promise.resolve(user)),
       findOne: jest.fn(),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
 
     const moduleRef = await Test.createTestingModule({
@@ -84,6 +88,57 @@ describe('UsersService', () => {
         highContrast: false,
       });
       expect(repo.save).toHaveBeenCalledWith(user);
+    });
+  });
+
+  describe('guardarTokenPush', () => {
+    it('limpia el token en otros usuarios antes de asignarlo al usuario actual', async () => {
+      const token = 'ExponentPushToken[abc123]';
+
+      await service.guardarTokenPush('user-1', token);
+
+      expect(repo.update).toHaveBeenNthCalledWith(
+        1,
+        { pushToken: token, id: Not('user-1') },
+        { pushToken: null },
+      );
+      expect(repo.update).toHaveBeenNthCalledWith(
+        2,
+        { id: 'user-1' },
+        { pushToken: token },
+      );
+    });
+
+    it('solo limpia el token del usuario actual cuando token es null', async () => {
+      await service.guardarTokenPush('user-1', null);
+
+      expect(repo.update).toHaveBeenCalledTimes(1);
+      expect(repo.update).toHaveBeenCalledWith(
+        { id: 'user-1' },
+        { pushToken: null },
+      );
+    });
+  });
+
+  describe('tokenPush', () => {
+    it('consulta solo id y pushToken y retorna el token guardado', async () => {
+      repo.findOne.mockResolvedValue({
+        id: 'user-1',
+        pushToken: 'ExponentPushToken[xyz]',
+      });
+
+      const result = await service.tokenPush('user-1');
+
+      expect(repo.findOne).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        select: { id: true, pushToken: true },
+      });
+      expect(result).toBe('ExponentPushToken[xyz]');
+    });
+
+    it('retorna null si el usuario no existe o no tiene token', async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.tokenPush('missing')).resolves.toBeNull();
     });
   });
 });

@@ -1,8 +1,14 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  ValidationPipe,
+} from '@nestjs/common';
+import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
 import { Test } from '@nestjs/testing';
 import { DisabilityType, UserRole } from '../users/entities/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { PushTokenDto } from './dto/push-token.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -11,7 +17,7 @@ const USER_ID = '11111111-1111-4111-8111-111111111111';
 describe('AuthController & UpdateProfileDto', () => {
   let controller: AuthController;
   let service: Record<
-    'registro' | 'login' | 'perfil' | 'actualizarPerfil',
+    'registro' | 'login' | 'perfil' | 'actualizarPerfil' | 'guardarTokenPush',
     jest.Mock
   >;
   let validationPipe: ValidationPipe;
@@ -40,6 +46,7 @@ describe('AuthController & UpdateProfileDto', () => {
         accessibilityProfile: { ttsEnabled: false, highContrast: true },
         disabilityType: DisabilityType.VISUAL,
       }),
+      guardarTokenPush: jest.fn().mockResolvedValue(undefined),
     };
 
     const moduleRef = await Test.createTestingModule({
@@ -123,5 +130,103 @@ describe('AuthController & UpdateProfileDto', () => {
         { type: 'body', metatype: UpdateProfileDto },
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  describe('push-token endpoints & PushTokenDto', () => {
+    const authReq = () =>
+      ({
+        user: {
+          id: USER_ID,
+          email: 'ana@example.com',
+          role: UserRole.PRODUCTOR,
+        },
+      }) as unknown as Parameters<AuthController['guardarPushToken']>[0];
+
+    it('PUT /api/auth/push-token guarda un ExponentPushToken válido y responde 204', async () => {
+      const payload = { token: 'ExponentPushToken[abc123XYZ]' };
+      const dto = (await validationPipe.transform(payload, {
+        type: 'body',
+        metatype: PushTokenDto,
+      })) as PushTokenDto;
+
+      await controller.guardarPushToken(authReq(), dto);
+
+      expect(service.guardarTokenPush).toHaveBeenCalledWith(
+        USER_ID,
+        'ExponentPushToken[abc123XYZ]',
+      );
+      const guardarDescriptor = Object.getOwnPropertyDescriptor(
+        AuthController.prototype,
+        'guardarPushToken',
+      );
+      expect(
+        Reflect.getMetadata(
+          HTTP_CODE_METADATA,
+          guardarDescriptor?.value as object,
+        ),
+      ).toBe(HttpStatus.NO_CONTENT);
+    });
+
+    it('PUT /api/auth/push-token acepta ExpoPushToken[...] y null', async () => {
+      const dtoExpo = (await validationPipe.transform(
+        { token: 'ExpoPushToken[token-2]' },
+        { type: 'body', metatype: PushTokenDto },
+      )) as PushTokenDto;
+      await controller.guardarPushToken(authReq(), dtoExpo);
+      expect(service.guardarTokenPush).toHaveBeenCalledWith(
+        USER_ID,
+        'ExpoPushToken[token-2]',
+      );
+
+      const dtoNull = (await validationPipe.transform(
+        { token: null },
+        { type: 'body', metatype: PushTokenDto },
+      )) as PushTokenDto;
+      await controller.guardarPushToken(authReq(), dtoNull);
+      expect(service.guardarTokenPush).toHaveBeenCalledWith(USER_ID, null);
+    });
+
+    it('DELETE /api/auth/push-token limpia el token con null y responde 204', async () => {
+      await controller.eliminarPushToken(authReq());
+
+      expect(service.guardarTokenPush).toHaveBeenCalledWith(USER_ID, null);
+      const eliminarDescriptor = Object.getOwnPropertyDescriptor(
+        AuthController.prototype,
+        'eliminarPushToken',
+      );
+      expect(
+        Reflect.getMetadata(
+          HTTP_CODE_METADATA,
+          eliminarDescriptor?.value as object,
+        ),
+      ).toBe(HttpStatus.NO_CONTENT);
+    });
+
+    it('PushTokenDto rechaza formatos inválidos, campos faltantes y propiedades extra', async () => {
+      await expect(
+        validationPipe.transform(
+          { token: 'invalid-token' },
+          { type: 'body', metatype: PushTokenDto },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      await expect(
+        validationPipe.transform(
+          { token: '' },
+          { type: 'body', metatype: PushTokenDto },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      await expect(
+        validationPipe.transform({}, { type: 'body', metatype: PushTokenDto }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      await expect(
+        validationPipe.transform(
+          { token: 'ExponentPushToken[abc]', extra: true },
+          { type: 'body', metatype: PushTokenDto },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 });

@@ -77,3 +77,20 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Auth
     body: payload,
   });
 }
+
+export async function updatePushToken(token: string | null): Promise<void> {
+  const headers = await getAuthHeaders();
+  if (token === null) {
+    await apiClient<void>('/api/auth/push-token', {
+      method: 'DELETE',
+      headers,
+    });
+    return;
+  }
+
+  await apiClient<void>('/api/auth/push-token', {
+    method: 'PUT',
+    headers,
+    body: { token },
+  });
+}

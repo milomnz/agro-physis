@@ -3,10 +3,12 @@ import {
   login as loginRequest,
   register as registerRequest,
   updateProfile as updateProfileRequest,
+  updatePushToken,
   type LoginData,
   type RegisterData,
   type UpdateProfilePayload,
 } from '../services/auth';
+import { obtenerTokenPushAsync } from '../services/notifications';
 import { clearSession, getSession, saveSession, type Session } from '../services/session';
 import { setSessionExpiredHandler } from '../services/api';
 
@@ -101,7 +103,35 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [session],
   );
 
+  useEffect(() => {
+    if (!session?.token) return;
+    let active = true;
+
+    (async () => {
+      try {
+        const pushToken = await obtenerTokenPushAsync();
+        if (!active || !pushToken) return;
+        await updatePushToken(pushToken);
+      } catch (err) {
+        console.warn('[notifications] No se pudo sincronizar el token push:', err);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [session?.id, session?.token]);
+
   const signOut = useCallback(async () => {
+    try {
+      const current = await getSession();
+      if (current?.token) {
+        await updatePushToken(null);
+      }
+    } catch (err) {
+      console.warn('[notifications] No se pudo revocar el token push al cerrar sesión:', err);
+    }
+
     await clearSession();
     setSession(null);
   }, []);

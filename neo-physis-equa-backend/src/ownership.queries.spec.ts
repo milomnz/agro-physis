@@ -73,6 +73,7 @@ describe('SQL de pertenencia (TypeORM)', () => {
     pestsService = new PestsService(
       dataSource.getRepository(Pest),
       cropsService,
+      { avisar: jest.fn().mockResolvedValue(undefined) },
     );
   });
 

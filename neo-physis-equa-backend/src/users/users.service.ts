@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
 import { User } from './entities/user.entity';
@@ -55,5 +55,24 @@ export class UsersService {
     }
 
     return this.userRepository.save(user);
+  }
+
+  async guardarTokenPush(id: string, token: string | null): Promise<void> {
+    if (token !== null) {
+      await this.userRepository.update(
+        { pushToken: token, id: Not(id) },
+        { pushToken: null },
+      );
+    }
+
+    await this.userRepository.update({ id }, { pushToken: token });
+  }
+
+  async tokenPush(id: string): Promise<string | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: { id: true, pushToken: true },
+    });
+    return user?.pushToken ?? null;
   }
 }
