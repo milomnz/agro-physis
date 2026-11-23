@@ -29,7 +29,7 @@ export default function Notice({
   onDismiss,
   autoDismissMs,
 }: NoticeProps) {
-  const { highContrast, palette } = useAccessibility();
+  const { highContrast, palette, speak } = useAccessibility();
   const onDismissRef = useRef(onDismiss);
   onDismissRef.current = onDismiss;
   const hasDismiss = Boolean(onDismiss);
@@ -41,6 +41,13 @@ export default function Notice({
     }, autoDismissMs);
     return () => clearTimeout(timerId);
   }, [autoDismissMs, children, hasDismiss]);
+
+  useEffect(() => {
+    if (!children?.trim()) return;
+    const prefijo =
+      variant === 'error' ? 'Error: ' : variant === 'warning' ? 'Aviso: ' : '';
+    speak(`${prefijo}${children}`, { prioritario: true });
+  }, [children, variant, speak]);
 
   const container =
     variant === 'error'
