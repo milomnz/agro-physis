@@ -12,6 +12,7 @@ import Screen from '../../components/Screen';
 import ScreenTitle from '../../components/ScreenTitle';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmDetail } from '../../hooks/useFarmDetail';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space, type } from '../../theme/tokens';
 import FarmFormFields from './components/FarmFormFields';
 
@@ -38,6 +39,11 @@ export default function FarmDetailScreen() {
     dismissScreenError,
     dismissRootError,
   } = useFarmDetail();
+
+  useScreenSpeech(
+    farm ? `Detalle de finca ${farm.name}. Altitud ${farm.altitude} metros.` : null,
+    !loading && Boolean(farm),
+  );
 
   if (loading) {
     return <LoadingView label="Cargando la finca…" />;

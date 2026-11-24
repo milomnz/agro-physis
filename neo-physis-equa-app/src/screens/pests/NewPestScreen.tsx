@@ -12,12 +12,15 @@ import ScreenTitle from '../../components/ScreenTitle';
 import Select from '../../components/Select';
 import { SEVERITIES } from '../../services/pests';
 import { useNewPest } from '../../hooks/useNewPest';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space } from '../../theme/tokens';
 
 export default function NewPestScreen() {
   const insets = useSafeAreaInsets();
   const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
     useNewPest();
+
+  useScreenSpeech('Nueva plaga. Registra una plaga asociada a un cultivo.', !loading);
 
   if (loading) {
     return <LoadingView label="Cargando tus cultivos…" />;

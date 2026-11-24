@@ -13,6 +13,7 @@ import ScreenTitle from '../../components/ScreenTitle';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useFarmList } from '../../hooks/useFarmList';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { type } from '../../theme/tokens';
 import FarmCard from './components/FarmCard';
 import FarmFormFields from './components/FarmFormFields';
@@ -41,6 +42,13 @@ export default function FarmsListScreen() {
     dismissScannerNotice,
     dismissError,
   } = useFarmList();
+
+  useScreenSpeech(
+    farms.length === 0
+      ? 'Mis fincas. No tienes fincas registradas.'
+      : `Mis fincas. ${farms.length} ${farms.length === 1 ? 'finca registrada' : 'fincas registradas'}.`,
+    !loading,
+  );
 
   if (loading) {
     return <LoadingView label="Cargando tus fincas…" />;

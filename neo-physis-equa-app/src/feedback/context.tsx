@@ -48,7 +48,7 @@ const FeedbackContext = createContext<FeedbackContextValue>({
 });
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
-  const { actionFeedback, palette } = useAccessibility();
+  const { actionFeedback, palette, speak } = useAccessibility();
   const insets = useSafeAreaInsets();
   const [banner, setBanner] = useState<FeedbackBannerState | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -69,6 +69,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
 
   const notifySuccess = useCallback(
     (text: string) => {
+      speak(text, { prioritario: true });
       if (!actionFeedback) return;
 
       // La vibración no existe en web; en el móvil confirmamos con "éxito".
@@ -78,11 +79,12 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
 
       showBanner(text, 'success');
     },
-    [actionFeedback, showBanner],
+    [actionFeedback, showBanner, speak],
   );
 
   const notifyWarning = useCallback(
     (text: string, options?: FeedbackOptions) => {
+      speak(text, { prioritario: true });
       if (!actionFeedback) return;
 
       if (!options?.skipHaptics && Platform.OS !== 'web') {
@@ -91,7 +93,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
 
       showBanner(text, 'warning');
     },
-    [actionFeedback, showBanner],
+    [actionFeedback, showBanner, speak],
   );
 
   const value = useMemo(

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import Screen from '../../components/Screen';
 import ScreenTitle from '../../components/ScreenTitle';
 import { useAccessibility } from '../../accessibility/context';
 import { useDiagnosis } from '../../hooks/useDiagnosis';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { colors, gradients, space, type } from '../../theme/tokens';
 import OptionButton from './components/OptionButton';
 import PestMatchCard from './components/PestMatchCard';
@@ -36,6 +38,40 @@ export default function DiagnosisScreen() {
     goBack,
     restart,
   } = useDiagnosis();
+
+  const speechMessage = useMemo(() => {
+    if (stage === 'crop') {
+      return crops.length === 0
+        ? 'Diagnosticar plaga. Aún no tienes cultivos registrados.'
+        : 'Diagnosticar plaga. ¿Qué cultivo quieres revisar? Selecciona un cultivo de la lista.';
+    }
+
+    if (stage === 'empty') {
+      return `${crop?.species ?? 'Este cultivo'} no tiene plagas registradas. Agrega al menos una para poder usar el cuestionario.`;
+    }
+
+    if (stage === 'question' && question) {
+      const optionsText = question.options.map((option) => option.label).join(', ');
+      return `Pregunta ${questionIndex + 1} de ${totalQuestions}. ${question.title}. Opciones: ${optionsText}.`;
+    }
+
+    if (stage === 'result') {
+      if (results.length === 0) {
+        return `Resultado del diagnóstico para ${crop?.species ?? 'el cultivo'}. No encontramos coincidencias con las plagas registradas.`;
+      }
+      const topMatches = results
+        .map((match, index) => {
+          const position = index === 0 ? 'Más probable' : `Opción ${index + 1}`;
+          return `${position}: ${match.pest.commonName}, severidad ${match.pest.severity}, coincide con ${match.score} de ${match.answered} respuestas`;
+        })
+        .join('. ');
+      return `Resultado del diagnóstico para ${crop?.species ?? 'el cultivo'}. ${topMatches}. Confirma con un técnico agrónomo antes de aplicar un tratamiento.`;
+    }
+
+    return null;
+  }, [stage, crops.length, crop?.species, question, questionIndex, totalQuestions, results]);
+
+  useScreenSpeech(speechMessage, !loading);
 
   if (loading) {
     return <LoadingView label="Preparando el diagnóstico…" />;
@@ -154,7 +190,7 @@ export default function DiagnosisScreen() {
               ))
             )}
 
-            <Notice variant="warning">
+            <Notice variant="warning" silent>
               Es una orientación basada en las plagas que registraste. Confirma con un técnico agrónomo
               antes de aplicar un tratamiento.
             </Notice>

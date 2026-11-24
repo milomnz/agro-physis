@@ -14,12 +14,14 @@ import Select from '../../components/Select';
 import { useAccessibility } from '../../accessibility/context';
 import { SEVERITIES } from '../../services/pests';
 import { usePestDetail } from '../../hooks/usePestDetail';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space, type } from '../../theme/tokens';
 
 export default function PestDetailScreen() {
   const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const {
+    pest,
     control,
     loading,
     saving,
@@ -34,6 +36,15 @@ export default function PestDetailScreen() {
     dismissSaved,
     dismissError,
   } = usePestDetail();
+
+  useScreenSpeech(
+    pest
+      ? `Detalle de plaga ${pest.commonName}. Severidad ${pest.severity}.${
+          pest.symptoms.length > 0 ? ` Síntomas: ${pest.symptoms.join(', ')}.` : ''
+        }`
+      : null,
+    !loading && Boolean(pest),
+  );
 
   if (loading) {
     return <LoadingView label="Cargando la plaga…" />;

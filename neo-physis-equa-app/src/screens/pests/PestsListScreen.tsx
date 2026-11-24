@@ -12,6 +12,7 @@ import ScreenTitle from '../../components/ScreenTitle';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { usePestList } from '../../hooks/usePestList';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { type } from '../../theme/tokens';
 import PestCard from './components/PestCard';
 
@@ -35,6 +36,15 @@ export default function PestsListScreen() {
     dismissError,
     dismissWarning,
   } = usePestList();
+
+  useScreenSpeech(
+    filteredPests.length === 0
+      ? 'Plagas. No hay plagas registradas.'
+      : `Plagas${selectedCropLabel ? ` en ${selectedCropLabel}` : ''}. ${filteredPests.length} ${
+          filteredPests.length === 1 ? 'registro' : 'registros'
+        }.`,
+    !loading,
+  );
 
   if (loading) {
     return <LoadingView label="Cargando el catálogo de plagas…" />;

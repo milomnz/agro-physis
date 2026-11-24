@@ -10,6 +10,7 @@ import Screen from '../../components/Screen';
 import ScreenTitle from '../../components/ScreenTitle';
 import Select from '../../components/Select';
 import { useNewCrop } from '../../hooks/useNewCrop';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space } from '../../theme/tokens';
 import CropFormFields from './CropFormFields';
 import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
@@ -28,6 +29,8 @@ export default function NewCropScreen() {
     dismissRootError,
     dismissLoadError,
   } = useNewCrop();
+
+  useScreenSpeech('Nuevo cultivo. Registra un cultivo asociado a una de tus fincas.', !loading);
 
   if (loading) {
     return <LoadingView label="Cargando tus fincas…" />;

@@ -136,6 +136,7 @@ export function usePestDetail() {
     };
 
     return {
+        pest,
         control,
         loading,
         saving,

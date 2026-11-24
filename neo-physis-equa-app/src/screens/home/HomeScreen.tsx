@@ -11,6 +11,7 @@ import LoadingView from '../../components/LoadingView';
 import Screen from '../../components/Screen';
 import { useAccessibility } from '../../accessibility/context';
 import { useRequireSession } from '../../hooks/useRequireSession';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { useSession } from '../../hooks/useSession';
 import { space, type } from '../../theme/tokens';
 
@@ -32,6 +33,13 @@ export default function HomeScreen() {
   const { palette } = useAccessibility();
   const sessionReady = useRequireSession();
   const { session, loading } = useSession();
+
+  useScreenSpeech(
+    session?.nombre
+      ? `Inicio. Hola, ${session.nombre}. Gestiona tus fincas, cultivos y plagas desde aquí o desde el menú lateral.`
+      : null,
+    !loading && sessionReady && Boolean(session?.token),
+  );
 
   if (loading || !sessionReady || !session?.token) {
     return <LoadingView label="Cargando tu inicio…" />;

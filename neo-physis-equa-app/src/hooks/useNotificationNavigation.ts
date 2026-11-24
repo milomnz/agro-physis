@@ -79,16 +79,12 @@ export function useNotificationNavigation(): void {
     );
 
     const receivedSubscription = Notifications.addNotificationReceivedListener((notification) => {
-      if (!actionFeedbackRef.current) return;
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-
       const { title, body } = notification.request.content;
       const parts = [title, body].filter(
         (value): value is string => typeof value === 'string' && value.trim().length > 0,
       );
       const message = parts.length > 0 ? parts.join(': ') : 'Nueva alerta recibida';
-      notifyWarningRef.current(message, { skipHaptics: true });
+      notifyWarningRef.current(message);
     });
 
     return () => {

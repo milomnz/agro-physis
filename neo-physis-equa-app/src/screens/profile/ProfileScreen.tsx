@@ -17,6 +17,7 @@ import TextField from '../../components/TextField';
 import { useAccessibility } from '../../accessibility/context';
 import { useEditProfile } from '../../hooks/useEditProfile';
 import { useRequireSession } from '../../hooks/useRequireSession';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { useSession } from '../../hooks/useSession';
 import { space, type } from '../../theme/tokens';
 import AccessibilityPreferences from '../auth/components/AccessibilityPreferences';
@@ -70,6 +71,11 @@ export default function ProfileScreen() {
     await signOut();
     router.replace('/login');
   }, [signOut, router]);
+
+  useScreenSpeech(
+    session?.nombre ? `Mi perfil. Usuario ${session.nombre}.` : null,
+    !loading && sessionReady && Boolean(session?.token),
+  );
 
   if (loading || !sessionReady || !session?.token) {
     return <LoadingView label="Cargando tu perfil…" />;

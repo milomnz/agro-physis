@@ -18,6 +18,7 @@ interface NoticeProps {
   className?: string;
   onDismiss?: () => void;
   autoDismissMs?: number;
+  silent?: boolean;
 }
 
 // Aviso con la misma regla del Badge: color + ícono + texto, nunca color solo.
@@ -27,8 +28,9 @@ export default function Notice({
   className = '',
   onDismiss,
   autoDismissMs,
+  silent = false,
 }: NoticeProps) {
-  const { palette } = useAccessibility();
+  const { palette, speak } = useAccessibility();
   const onDismissRef = useRef(onDismiss);
   onDismissRef.current = onDismiss;
   const hasDismiss = Boolean(onDismiss);
@@ -40,6 +42,13 @@ export default function Notice({
     }, autoDismissMs);
     return () => clearTimeout(timerId);
   }, [autoDismissMs, children, hasDismiss]);
+
+  useEffect(() => {
+    if (silent || !children?.trim()) return;
+    const prefijo =
+      variant === 'error' ? 'Error: ' : variant === 'warning' ? 'Aviso: ' : '';
+    speak(`${prefijo}${children}`, { prioritario: true });
+  }, [children, variant, speak, silent]);
 
   const container =
     variant === 'error'

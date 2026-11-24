@@ -11,6 +11,7 @@ import Screen from '../../components/Screen';
 import ScreenTitle from '../../components/ScreenTitle';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropDetail } from '../../hooks/useCropDetail';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space, type } from '../../theme/tokens';
 import CropFormFields from './CropFormFields';
 
@@ -21,6 +22,7 @@ export default function CropDetailScreen() {
   const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const {
+    crop,
     control,
     loading,
     saving,
@@ -35,6 +37,11 @@ export default function CropDetailScreen() {
     dismissSaved,
     dismissError,
   } = useCropDetail(id);
+
+  useScreenSpeech(
+    crop ? `Detalle de cultivo ${crop.species}. Etapa ${crop.growthStage}.` : null,
+    !loading && Boolean(crop),
+  );
 
   if (loading) {
     return <LoadingView label="Cargando el cultivo…" />;

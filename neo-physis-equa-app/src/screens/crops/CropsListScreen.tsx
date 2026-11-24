@@ -15,6 +15,7 @@ import ScreenTitle from '../../components/ScreenTitle';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropList } from '../../hooks/useCropList';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { type } from '../../theme/tokens';
 
 function formatPlantedDate(isoDate: string): string {
@@ -44,6 +45,15 @@ export default function CropsListScreen() {
     dismissError,
     dismissWarning,
   } = useCropList(typeof params.farmId === 'string' ? params.farmId : undefined);
+
+  useScreenSpeech(
+    filteredCrops.length === 0
+      ? 'Cultivos. No hay cultivos registrados.'
+      : `Cultivos${selectedFarmName ? ` de ${selectedFarmName}` : ''}. ${filteredCrops.length} ${
+          filteredCrops.length === 1 ? 'cultivo' : 'cultivos'
+        }.`,
+    !loading,
+  );
 
   if (loading) {
     return <LoadingView label="Cargando tus cultivos…" />;
