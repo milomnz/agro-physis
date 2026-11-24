@@ -4,7 +4,11 @@ import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
 import { deleteCrop, getCrop, updateCrop, type Crop, type UpdateCropData } from '../services/crops';
-import { cancelarRecordatorioCultivo } from '../services/notifications';
+import {
+    cancelarRecordatorioCultivo,
+    cancelarRecordatorioEtapaCultivo,
+    programarRecordatorioEtapaCultivo,
+} from '../services/notifications';
 import { isUnauthorizedError } from '../services/api';
 import type { CropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
@@ -83,6 +87,12 @@ export function useCropDetail(id: string | undefined) {
             if (Object.keys(patch).length > 0) {
                 const updated = await updateCrop(id, patch);
                 setCrop(updated);
+                void programarRecordatorioEtapaCultivo({
+                    cropId: updated.id,
+                    species: updated.species,
+                    growthStage: updated.growthStage,
+                    plantedDate: updated.plantedDate,
+                });
             }
             setSaved(true);
             notifySuccess('Cambios guardados correctamente');
@@ -109,6 +119,7 @@ export function useCropDetail(id: string | undefined) {
         try {
             await deleteCrop(id);
             void cancelarRecordatorioCultivo(id);
+            void cancelarRecordatorioEtapaCultivo(id);
             notifySuccess('Cultivo eliminado correctamente');
             setConfirmingDelete(false);
             if (router.canGoBack()) {

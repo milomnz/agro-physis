@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 
 import { useActionFeedback } from '../feedback/context';
-import { programarRecordatorioCultivo } from '../services/notifications';
+import { cancelarRecordatorioCultivo, programarRecordatorioCultivo } from '../services/notifications';
 import { deletePest, getPest, updatePest, type Severity } from '../services/pests';
 import { isUnauthorizedError } from '../services/api';
 import { useRequireSession } from './useRequireSession';
@@ -119,6 +119,9 @@ export function usePestDetail() {
         setScreenError('');
         try {
             await deletePest(id);
+            if (pest?.cropId) {
+                void cancelarRecordatorioCultivo(pest.cropId);
+            }
             notifySuccess('Plaga eliminada correctamente');
             setConfirmingDelete(false);
             if (router.canGoBack()) {

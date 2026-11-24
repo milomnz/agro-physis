@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import type { GrowthStage } from './crops';
 import type { Severity } from './pests';
 
 export const PEST_ALERTS_CHANNEL_ID = 'pest-alerts';
@@ -24,6 +25,24 @@ export interface CropReminderParams {
   cropName?: string;
   pestName: string;
   severity: Severity;
+}
+
+export const CROP_STAGE_REMINDER_DAYS = 30;
+export const CROP_STAGE_REMINDER_SECONDS = CROP_STAGE_REMINDER_DAYS * 24 * 3600;
+
+export const NEXT_GROWTH_STAGE: Record<GrowthStage, GrowthStage | null> = {
+  vegetativo: 'floración',
+  floración: 'fructificación',
+  fructificación: 'producción',
+  producción: null,
+};
+
+export interface CropStageReminderParams {
+  cropId: string;
+  species: string;
+  growthStage: GrowthStage;
+  plantedDate?: string | null;
+  delaySeconds?: number;
 }
 
 if (Platform.OS !== 'web') {
@@ -153,22 +172,25 @@ function construirMensajeRecordatorio(params: CropReminderParams): string {
   }
 }
 
-export async function cancelarRecordatorioCultivo(cropId: string): Promise<void> {
+async function cancelarNotificacionesCultivoPorTipo(cropId: string, tipo: string): Promise<void> {
   if (Platform.OS === 'web' || !cropId) return;
 
   try {
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
     const matching = scheduled.filter(
-      (item) =>
-        item.content.data?.tipo === 'crop-reminder' && item.content.data?.cropId === cropId,
+      (item) => item.content.data?.tipo === tipo && item.content.data?.cropId === cropId,
     );
 
     await Promise.all(
       matching.map((item) => Notifications.cancelScheduledNotificationAsync(item.identifier)),
     );
   } catch (err) {
-    console.warn('[notifications] No se pudo cancelar el recordatorio previo del cultivo:', err);
+    console.warn(`[notifications] No se pudo cancelar el recordatorio (${tipo}) del cultivo:`, err);
   }
+}
+
+export async function cancelarRecordatorioCultivo(cropId: string): Promise<void> {
+  await cancelarNotificacionesCultivoPorTipo(cropId, 'crop-reminder');
 }
 
 export async function programarRecordatorioCultivo(params: CropReminderParams): Promise<void> {
@@ -209,5 +231,71 @@ export async function programarRecordatorioCultivo(params: CropReminderParams): 
     });
   } catch (err) {
     console.warn('[notifications] No se pudo programar el recordatorio del cultivo:', err);
+  }
+}
+
+function obtenerSiguienteEtapa(stage: GrowthStage): GrowthStage | null {
+  return NEXT_GROWTH_STAGE[stage] ?? null;
+}
+
+export async function cancelarRecordatorioEtapaCultivo(cropId: string): Promise<void> {
+  await cancelarNotificacionesCultivoPorTipo(cropId, 'crop-stage-reminder');
+}
+
+export async function programarRecordatorioEtapaCultivo(
+  params: CropStageReminderParams,
+): Promise<void> {
+  if (Platform.OS === 'web' || !params.cropId) return;
+
+  try {
+    // Cancela cualquier recordatorio previo antes de comprobar si llegó a "producción".
+    await cancelarRecordatorioEtapaCultivo(params.cropId);
+
+    const nextStage = obtenerSiguienteEtapa(params.growthStage);
+    if (!nextStage) {
+      return;
+    }
+
+    const granted = await asegurarPermisosNotificaciones();
+    if (!granted) {
+      return;
+    }
+
+    const channelsReady = await configurarCanalesAndroid();
+    const speciesLabel = params.species.trim() || 'cultivo';
+    const seconds = params.delaySeconds ?? CROP_STAGE_REMINDER_SECONDS;
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `¿Tu ${speciesLabel} ya cambió?`,
+        body: `Lleva ${CROP_STAGE_REMINDER_DAYS} días en ${params.growthStage}. Si ya está en ${nextStage}, actualízalo.`,
+        sound: 'default',
+        data: {
+          tipo: 'crop-stage-reminder',
+          cropId: params.cropId,
+          currentStage: params.growthStage,
+          nextStage,
+          route: `/crops/${params.cropId}`,
+        },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds,
+        repeats: false,
+        ...(Platform.OS === 'android' && channelsReady ? { channelId: CROP_REMINDERS_CHANNEL_ID } : {}),
+      },
+    });
+  } catch (err) {
+    console.warn('[notifications] No se pudo programar el recordatorio de etapa del cultivo:', err);
+  }
+}
+
+export async function cancelarTodosLosRecordatoriosLocales(): Promise<void> {
+  if (Platform.OS === 'web') return;
+
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch (err) {
+    console.warn('[notifications] No se pudieron cancelar los recordatorios locales:', err);
   }
 }

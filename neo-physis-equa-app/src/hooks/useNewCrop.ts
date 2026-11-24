@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useActionFeedback } from '../feedback/context'; 
 import { createCrop } from '../services/crops';
 import { getFarms, type Farm } from '../services/farms';
+import { programarRecordatorioEtapaCultivo } from '../services/notifications';
 import { isUnauthorizedError } from '../services/api';
 import type { NewCropFormValues } from '../utils/crop-validators';
 import { useRequireSession } from './useRequireSession';
@@ -66,6 +67,12 @@ export function useNewCrop() {
                 growthStage: data.growthStage,
                 plantedDate: (data.plantedDate ?? '').trim() || null,
                 notes: (data.notes ?? '').trim() || null,
+            });
+            void programarRecordatorioEtapaCultivo({
+                cropId: crop.id,
+                species: crop.species,
+                growthStage: crop.growthStage,
+                plantedDate: crop.plantedDate,
             });
             notifySuccess('Cultivo registrado correctamente');
             router.replace(`/crops?farmId=${crop.farmId}`);
