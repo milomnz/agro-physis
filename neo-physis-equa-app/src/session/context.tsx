@@ -8,7 +8,10 @@ import {
   type RegisterData,
   type UpdateProfilePayload,
 } from '../services/auth';
-import { obtenerTokenPushAsync } from '../services/notifications';
+import {
+  cancelarTodosLosRecordatoriosLocales,
+  obtenerTokenPushAsync,
+} from '../services/notifications';
 import { clearSession, getSession, saveSession, type Session } from '../services/session';
 import { setSessionExpiredHandler } from '../services/api';
 
@@ -132,6 +135,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       console.warn('[notifications] No se pudo revocar el token push al cerrar sesión:', err);
     }
 
+    await cancelarTodosLosRecordatoriosLocales();
     await clearSession();
     setSession(null);
   }, []);

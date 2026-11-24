@@ -254,28 +254,51 @@ describe('PestsService (pertenencia a finca y notificaciones)', () => {
       expect(repo.save).not.toHaveBeenCalled();
     });
 
-    it('envía notificación si la severidad cambia a ALTA o MEDIA', async () => {
+    it('envía alerta "Plaga en aumento" si la severidad sube de BAJA a ALTA', async () => {
       repo.findOne.mockResolvedValue(ownPest({ severity: Severity.BAJA }));
 
       await service.update('pest-1', OWNER, { severity: Severity.ALTA });
 
       expect(notificador.avisar).toHaveBeenCalledWith(OWNER, {
-        titulo: 'Alerta alta en Café',
-        cuerpo:
-          'Se actualizó Broca a severidad alta. Toca para ver el detalle.',
+        titulo: 'Plaga en aumento',
+        cuerpo: 'Broca en Café pasó de baja a alta.',
         datos: {
-          tipo: 'pest',
+          tipo: 'pest-worsened',
           pestId: 'pest-1',
           cropId: 'crop-1',
+          previousSeverity: Severity.BAJA,
           severity: Severity.ALTA,
           route: '/pests/pest-1',
         },
       });
     });
 
-    it('NO envía notificación si la severidad no cambia o baja a BAJA', async () => {
+    it('envía alerta "Plaga en aumento" si la severidad sube de MEDIA a ALTA', async () => {
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.MEDIA }));
+
+      await service.update('pest-1', OWNER, { severity: Severity.ALTA });
+
+      expect(notificador.avisar).toHaveBeenCalledWith(OWNER, {
+        titulo: 'Plaga en aumento',
+        cuerpo: 'Broca en Café pasó de media a alta.',
+        datos: {
+          tipo: 'pest-worsened',
+          pestId: 'pest-1',
+          cropId: 'crop-1',
+          previousSeverity: Severity.MEDIA,
+          severity: Severity.ALTA,
+          route: '/pests/pest-1',
+        },
+      });
+    });
+
+    it('NO envía notificación si la severidad no cambia o baja', async () => {
       repo.findOne.mockResolvedValue(ownPest({ severity: Severity.ALTA }));
       await service.update('pest-1', OWNER, { severity: Severity.ALTA });
+      expect(notificador.avisar).not.toHaveBeenCalled();
+
+      repo.findOne.mockResolvedValue(ownPest({ severity: Severity.ALTA }));
+      await service.update('pest-1', OWNER, { severity: Severity.MEDIA });
       expect(notificador.avisar).not.toHaveBeenCalled();
 
       repo.findOne.mockResolvedValue(ownPest({ severity: Severity.ALTA }));

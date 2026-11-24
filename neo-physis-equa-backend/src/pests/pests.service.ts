@@ -10,6 +10,12 @@ import {
   type Notificador,
 } from '../notifications/ports/notificador.port';
 
+const SEVERITY_RANK: Record<Severity, number> = {
+  [Severity.BAJA]: 1,
+  [Severity.MEDIA]: 2,
+  [Severity.ALTA]: 3,
+};
+
 @Injectable()
 export class PestsService {
   private readonly logger = new Logger(PestsService.name);
@@ -29,7 +35,7 @@ export class PestsService {
     const saved = await this.pestRepository.save(pest);
 
     if (this.debeNotificarSeveridad(saved.severity)) {
-      await this.enviarAlertaPlaga(ownerId, saved, crop?.species, 'create');
+      await this.enviarAlertaPlaga(ownerId, saved, crop?.species);
     }
 
     return saved;
@@ -78,15 +84,12 @@ export class PestsService {
     this.pestRepository.merge(pest, updatePestDto);
     const saved = await this.pestRepository.save(pest);
 
-    if (
-      saved.severity !== previousSeverity &&
-      this.debeNotificarSeveridad(saved.severity)
-    ) {
-      await this.enviarAlertaPlaga(
+    if (this.severidadEmpeoro(previousSeverity, saved.severity)) {
+      await this.enviarAlertaPlagaEmpeora(
         ownerId,
         saved,
+        previousSeverity,
         saved.crop?.species ?? pest.crop?.species,
-        'update',
       );
     }
 
@@ -104,21 +107,25 @@ export class PestsService {
     return severity === Severity.MEDIA || severity === Severity.ALTA;
   }
 
+  private severidadEmpeoro(
+    anterior: Severity | undefined,
+    nueva: Severity | undefined,
+  ): boolean {
+    if (!anterior || !nueva) return false;
+    return SEVERITY_RANK[nueva] > SEVERITY_RANK[anterior];
+  }
+
   private async enviarAlertaPlaga(
     ownerId: string,
     pest: Pest,
     cropSpecies: string | undefined,
-    evento: 'create' | 'update',
   ): Promise<void> {
     const nivel = pest.severity === Severity.ALTA ? 'alta' : 'media';
     const cropName = cropSpecies?.trim();
     const titulo = cropName
       ? `Alerta ${nivel} en ${cropName}`
       : `Alerta ${nivel} de plaga`;
-    const cuerpo =
-      evento === 'create'
-        ? `Se registró ${pest.commonName}. Toca para ver el detalle.`
-        : `Se actualizó ${pest.commonName} a severidad ${nivel}. Toca para ver el detalle.`;
+    const cuerpo = `Se registró ${pest.commonName}. Toca para ver el detalle.`;
 
     try {
       await this.notificador.avisar(ownerId, {
@@ -135,6 +142,38 @@ export class PestsService {
     } catch (error) {
       this.logger.warn(
         `No se pudo enviar la notificación push para la plaga ${pest.id}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+
+  private async enviarAlertaPlagaEmpeora(
+    ownerId: string,
+    pest: Pest,
+    previousSeverity: Severity,
+    cropSpecies: string | undefined,
+  ): Promise<void> {
+    const cropName = cropSpecies?.trim() || 'tu cultivo';
+    const titulo = 'Plaga en aumento';
+    const cuerpo = `${pest.commonName} en ${cropName} pasó de ${previousSeverity} a ${pest.severity}.`;
+
+    try {
+      await this.notificador.avisar(ownerId, {
+        titulo,
+        cuerpo,
+        datos: {
+          tipo: 'pest-worsened',
+          pestId: pest.id,
+          cropId: pest.cropId,
+          previousSeverity,
+          severity: pest.severity,
+          route: `/pests/${pest.id}`,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `No se pudo enviar la alerta de empeoramiento para la plaga ${pest.id}: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
