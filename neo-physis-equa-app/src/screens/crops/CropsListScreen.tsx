@@ -1,17 +1,24 @@
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import Badge from '../../components/Badge';
-import Button from '../../components/Button';
-import CenteredScroll from '../../components/CenteredScroll';
-import ChipFilter from '../../components/ChipFilter';
-import Notice from '../../components/Notice';
-import SearchBar from '../../components/SearchBar';
-import { useAccessibility } from '../../accessibility/context';
-import { useCropList } from '../../hooks/useCropList';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
+import CenteredScroll from "../../components/CenteredScroll";
+import ChipFilter from "../../components/ChipFilter";
+import Notice from "../../components/Notice";
+import SearchBar from "../../components/SearchBar";
+import { useAccessibility } from "../../accessibility/context";
+import { useCropList } from "../../hooks/useCropList";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
 
 function formatPlantedDate(isoDate: string): string {
-  const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
+  const [year, month, day] = isoDate.slice(0, 10).split("-").map(Number);
   if (!year || !month || !day) return isoDate;
   return new Date(year, month - 1, day).toLocaleDateString();
 }
@@ -36,8 +43,19 @@ export default function CropsListScreen() {
     goToNew,
     dismissError,
     dismissWarning,
-  } = useCropList(typeof params.farmId === 'string' ? params.farmId : undefined);
+  } = useCropList(
+    typeof params.farmId === "string" ? params.farmId : undefined,
+  );
 
+  useScreenSpeech(
+    filteredCrops.length === 0
+      ? "Cultivos. No hay cultivos registrados."
+      : `Cultivos${selectedFarmName ? ` de ${selectedFarmName}` : ""}. ${filteredCrops.length} ${
+          filteredCrops.length === 1 ? "cultivo" : "cultivos"
+        }.`,
+    !loading,
+  );
+  
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
@@ -50,9 +68,13 @@ export default function CropsListScreen() {
     <View className={`flex-1 ${palette.bg} p-6`}>
       <View className="mb-4 flex-row items-center justify-between gap-3">
         <View className="flex-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivos</Text>
+          <Text className={`text-2xl font-bricolage ${palette.title}`}>
+            Cultivos
+          </Text>
           <Text className={`text-sm ${palette.sub}`}>
-            {selectedFarmName ? `Finca: ${selectedFarmName}` : 'Todos tus cultivos'}
+            {selectedFarmName
+              ? `Finca: ${selectedFarmName}`
+              : "Todos tus cultivos"}
           </Text>
         </View>
         <Button text="+ Nuevo" onPress={goToNew} className="rounded-xl p-3" />
@@ -76,17 +98,24 @@ export default function CropsListScreen() {
 
       {farms.length === 0 ? (
         <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+          <Text
+            className={`text-center text-lg font-inter-semibold ${palette.body}`}
+          >
             Aún no tienes fincas registradas
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
             Registra tu primera finca para poder crear cultivos.
           </Text>
-          <Button text="Ir a mis fincas" onPress={() => router.push('/farms')} />
+          <Button
+            text="Ir a mis fincas"
+            onPress={() => router.push("/farms")}
+          />
         </CenteredScroll>
       ) : crops.length === 0 ? (
         <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+          <Text
+            className={`text-center text-lg font-inter-semibold ${palette.body}`}
+          >
             No tienes cultivos registrados
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
@@ -110,7 +139,10 @@ export default function CropsListScreen() {
               />
               <ChipFilter
                 label="Filtrar por finca"
-                options={farms.map((farm) => ({ value: farm.id, label: farm.name }))}
+                options={farms.map((farm) => ({
+                  value: farm.id,
+                  label: farm.name,
+                }))}
                 selected={selectedFarm}
                 onSelect={setSelectedFarm}
               />
@@ -130,11 +162,15 @@ export default function CropsListScreen() {
               className={`mb-3 rounded-2xl p-4 ${palette.card}`}
             >
               <View className="flex-row items-center justify-between gap-2">
-                <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
+                <Text
+                  className={`flex-1 text-lg font-inter-semibold ${palette.title}`}
+                >
+                  {item.species}
+                </Text>
                 <Badge value={item.growthStage} />
               </View>
               <Text className={`mt-1 text-sm ${palette.sub}`}>
-                Finca: {item.farm?.name ?? 'No asociada'}
+                Finca: {item.farm?.name ?? "No asociada"}
               </Text>
               {item.plantedDate ? (
                 <Text className={`mt-0.5 text-xs ${palette.faint}`}>
@@ -142,7 +178,10 @@ export default function CropsListScreen() {
                 </Text>
               ) : null}
               {item.notes ? (
-                <Text className={`mt-1 text-xs ${palette.sub}`} numberOfLines={1}>
+                <Text
+                  className={`mt-1 text-xs ${palette.sub}`}
+                  numberOfLines={1}
+                >
                   Notas: {item.notes}
                 </Text>
               ) : null}

@@ -1,15 +1,16 @@
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Button from '../../components/Button';
-import CenteredScroll from '../../components/CenteredScroll';
-import Notice from '../../components/Notice';
-import SearchBar from '../../components/SearchBar';
-import { useAccessibility } from '../../accessibility/context';
-import { useFarmList } from '../../hooks/useFarmList';
-import FarmCard from './components/FarmCard';
-import FarmFormFields from './components/FarmFormFields';
+import Button from "../../components/Button";
+import CenteredScroll from "../../components/CenteredScroll";
+import Notice from "../../components/Notice";
+import SearchBar from "../../components/SearchBar";
+import { useAccessibility } from "../../accessibility/context";
+import { useFarmList } from "../../hooks/useFarmList";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
+import FarmCard from "./components/FarmCard";
+import FarmFormFields from "./components/FarmFormFields";
 
 export default function FarmsListScreen() {
   const { palette } = useAccessibility();
@@ -36,6 +37,13 @@ export default function FarmsListScreen() {
     dismissError,
   } = useFarmList();
 
+  useScreenSpeech(
+    farms.length === 0
+      ? "Mis fincas. No tienes fincas registradas."
+      : `Mis fincas. ${farms.length} ${farms.length === 1 ? "finca registrada" : "fincas registradas"}.`,
+    !loading,
+  );
+  
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
@@ -47,7 +55,9 @@ export default function FarmsListScreen() {
   const headerContent = (
     <>
       <View className="mb-5 gap-1">
-        <Text className={`text-2xl font-bricolage ${palette.title}`}>Mis Fincas</Text>
+        <Text className={`text-2xl font-bricolage ${palette.title}`}>
+          Mis Fincas
+        </Text>
         <Text className={`text-sm ${palette.sub}`}>
           Terrenos agrícolas para el diagnóstico de plagas
         </Text>
@@ -55,9 +65,11 @@ export default function FarmsListScreen() {
 
       <View className="mb-5 flex-row items-center justify-between gap-3">
         <Button
-          text={showForm ? 'Cancelar' : '+ Nueva finca'}
+          text={showForm ? "Cancelar" : "+ Nueva finca"}
           onPress={() => setShowForm((v) => !v)}
-          accessibilityLabel={showForm ? 'Cerrar formulario de registro' : 'Registrar nueva finca'}
+          accessibilityLabel={
+            showForm ? "Cerrar formulario de registro" : "Registrar nueva finca"
+          }
           accessibilityHint="Muestra u oculta el formulario para inscribir un nuevo terreno agrícola"
           className="flex-1"
         />
@@ -101,12 +113,14 @@ export default function FarmsListScreen() {
         >
           {headerContent}
           <View className={`mb-6 gap-5 rounded-2xl p-4 ${palette.card}`}>
-            <Text className={`text-xl font-bricolage ${palette.title}`}>Registrar finca</Text>
+            <Text className={`text-xl font-bricolage ${palette.title}`}>
+              Registrar finca
+            </Text>
 
             <FarmFormFields control={control} withPlaceholders />
 
             <Button
-              text={submitting ? 'Registrando…' : 'Registrar finca'}
+              text={submitting ? "Registrando…" : "Registrar finca"}
               onPress={handleSubmit(onSubmit)}
               disabled={submitting}
             />
@@ -116,12 +130,21 @@ export default function FarmsListScreen() {
         <>
           {headerContent}
           {farms.length === 0 ? (
-            <CenteredScroll className={`rounded-2xl ${palette.card}`} contentClassName="gap-3 p-6">
-              <Text className={`text-lg font-inter-semibold ${palette.title}`}>No tienes fincas registradas</Text>
-              <Text className={`text-center text-sm ${palette.sub}`}>
-                Registra tu primera finca para vincularla al diagnóstico de plagas.
+            <CenteredScroll
+              className={`rounded-2xl ${palette.card}`}
+              contentClassName="gap-3 p-6"
+            >
+              <Text className={`text-lg font-inter-semibold ${palette.title}`}>
+                No tienes fincas registradas
               </Text>
-              <Button text="+ Registrar finca" onPress={() => setShowForm(true)} />
+              <Text className={`text-center text-sm ${palette.sub}`}>
+                Registra tu primera finca para vincularla al diagnóstico de
+                plagas.
+              </Text>
+              <Button
+                text="+ Registrar finca"
+                onPress={() => setShowForm(true)}
+              />
             </CenteredScroll>
           ) : (
             <FlatList
@@ -129,7 +152,9 @@ export default function FarmsListScreen() {
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
               contentContainerClassName="gap-3"
-              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
+              contentContainerStyle={{
+                paddingBottom: Math.max(insets.bottom, 24),
+              }}
               ListHeaderComponent={
                 farms.length > 1 || filteredFarms.length === 0 ? (
                   <SearchBar
@@ -146,7 +171,11 @@ export default function FarmsListScreen() {
                 </Text>
               }
               renderItem={({ item }) => (
-                <FarmCard farm={item} onScan={openScanner} onOpen={(farm) => goToDetail(farm.id)} />
+                <FarmCard
+                  farm={item}
+                  onScan={openScanner}
+                  onOpen={(farm) => goToDetail(farm.id)}
+                />
               )}
             />
           )}

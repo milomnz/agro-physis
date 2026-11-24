@@ -1,21 +1,23 @@
-import { ActivityIndicator, Text, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import Button from '../../components/Button';
-import ConfirmModal from '../../components/ConfirmModal';
-import Notice from '../../components/Notice';
-import { useAccessibility } from '../../accessibility/context';
-import { useCropDetail } from '../../hooks/useCropDetail';
-import CropFormFields from './CropFormFields';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Button from "../../components/Button";
+import ConfirmModal from "../../components/ConfirmModal";
+import Notice from "../../components/Notice";
+import { useAccessibility } from "../../accessibility/context";
+import { useCropDetail } from "../../hooks/useCropDetail";
+import CropFormFields from "./CropFormFields";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
 
 export default function CropDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
-  const id = typeof params.id === 'string' ? params.id : undefined;
+  const id = typeof params.id === "string" ? params.id : undefined;
   const router = useRouter();
   const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const {
+    crop,
     control,
     loading,
     saving,
@@ -31,6 +33,13 @@ export default function CropDetailScreen() {
     dismissError,
   } = useCropDetail(id);
 
+  useScreenSpeech(
+    crop
+      ? `Detalle de cultivo ${crop.species}. Etapa ${crop.growthStage}.`
+      : null,
+    !loading && Boolean(crop),
+  );
+  
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
@@ -43,16 +52,26 @@ export default function CropDetailScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
+        contentContainerStyle={{
+          padding: 24,
+          paddingBottom: insets.bottom + 40,
+        }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivo</Text>
+        <Text className={`text-2xl font-bricolage ${palette.title}`}>
+          Cultivo
+        </Text>
         <Text className={`mb-5 text-sm ${palette.sub}`}>
           Edita los datos del cultivo o gestiona sus plagas
         </Text>
 
         {saved ? (
-          <Notice variant="success" className="mb-4" onDismiss={dismissSaved} autoDismissMs={5000}>
+          <Notice
+            variant="success"
+            className="mb-4"
+            onDismiss={dismissSaved}
+            autoDismissMs={5000}
+          >
             Cambios guardados correctamente
           </Notice>
         ) : null}
@@ -63,26 +82,38 @@ export default function CropDetailScreen() {
         ) : null}
 
         <View className={`mb-6 gap-5 rounded-2xl p-5 ${palette.card}`}>
-          <Text className={`text-lg font-bricolage ${palette.title}`}>Editar datos</Text>
+          <Text className={`text-lg font-bricolage ${palette.title}`}>
+            Editar datos
+          </Text>
 
           <CropFormFields control={control} />
 
           <Button
-            text={saving ? 'Guardando…' : 'Guardar cambios'}
+            text={saving ? "Guardando…" : "Guardar cambios"}
             onPress={onSubmit}
             disabled={saving}
           />
         </View>
 
         <View className={`mb-6 rounded-2xl p-5 ${palette.card}`}>
-          <Text className={`mb-1 text-lg font-bricolage ${palette.title}`}>Plagas de este cultivo</Text>
+          <Text className={`mb-1 text-lg font-bricolage ${palette.title}`}>
+            Plagas de este cultivo
+          </Text>
           <Text className={`mb-4 text-sm ${palette.sub}`}>
             Registra y gestiona las plagas que afectan este cultivo.
           </Text>
-          <Button text="Ver / registrar plagas →" onPress={() => router.push(`/pests?cropId=${id}`)} />
+          <Button
+            text="Ver / registrar plagas →"
+            onPress={() => router.push(`/pests?cropId=${id}`)}
+          />
         </View>
 
-        <Button text="Eliminar cultivo" danger onPress={requestDelete} disabled={deleting} />
+        <Button
+          text="Eliminar cultivo"
+          danger
+          onPress={requestDelete}
+          disabled={deleting}
+        />
       </KeyboardAwareScrollView>
 
       <ConfirmModal

@@ -1,21 +1,35 @@
-import { ActivityIndicator, Text, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { ActivityIndicator, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
-import Button from '../../components/Button';
-import Field from '../../components/Field';
-import Notice from '../../components/Notice';
-import Select from '../../components/Select';
-import { useAccessibility } from '../../accessibility/context';
-import { SEVERITIES } from '../../services/pests';
-import { useNewPest } from '../../hooks/useNewPest';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Button from "../../components/Button";
+import Field from "../../components/Field";
+import Notice from "../../components/Notice";
+import Select from "../../components/Select";
+import { useAccessibility } from "../../accessibility/context";
+import { SEVERITIES } from "../../services/pests";
+import { useNewPest } from "../../hooks/useNewPest";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
 
 export default function NewPestScreen() {
   const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
-  const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
-    useNewPest();
+  const {
+    control,
+    crops,
+    loading,
+    submitting,
+    rootError,
+    onSubmit,
+    goToCrops,
+    dismissRootError,
+  } = useNewPest();
 
+  useScreenSpeech(
+    "Nueva plaga. Registra una plaga asociada a un cultivo.",
+    !loading,
+  );
+  
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
@@ -28,11 +42,19 @@ export default function NewPestScreen() {
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24, paddingBottom: insets.bottom + 24 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          gap: 20,
+          padding: 24,
+          paddingBottom: insets.bottom + 24,
+        }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Nueva plaga</Text>
+          <Text className={`text-2xl font-bricolage ${palette.title}`}>
+            Nueva plaga
+          </Text>
           <Text className={`text-center ${palette.sub}`}>
             Registra una plaga asociada a un cultivo
           </Text>
@@ -59,10 +81,10 @@ export default function NewPestScreen() {
               label="Cultivo *"
               options={crops.map((crop) => ({
                 value: crop.id,
-                label: `${crop.species} (${crop.farm?.name ?? 'sin finca'})`,
+                label: `${crop.species} (${crop.farm?.name ?? "sin finca"})`,
               }))}
               empty="No tienes cultivos registrados"
-              rules={{ required: 'Selecciona el cultivo afectado' }}
+              rules={{ required: "Selecciona el cultivo afectado" }}
             />
 
             <Field
@@ -72,10 +94,10 @@ export default function NewPestScreen() {
               autoCapitalize="words"
               placeholder="ej. Pulgón, Gusano cogollero"
               rules={{
-                required: 'El nombre común es obligatorio',
+                required: "El nombre común es obligatorio",
                 maxLength: {
                   value: 100,
-                  message: 'El nombre debe tener máximo 100 caracteres',
+                  message: "El nombre debe tener máximo 100 caracteres",
                 },
               }}
             />
@@ -89,7 +111,8 @@ export default function NewPestScreen() {
               rules={{
                 maxLength: {
                   value: 200,
-                  message: 'El nombre científico debe tener máximo 200 caracteres',
+                  message:
+                    "El nombre científico debe tener máximo 200 caracteres",
                 },
               }}
             />
@@ -114,13 +137,13 @@ export default function NewPestScreen() {
               rules={{
                 maxLength: {
                   value: 1000,
-                  message: 'Los síntomas deben tener máximo 1000 caracteres',
+                  message: "Los síntomas deben tener máximo 1000 caracteres",
                 },
               }}
             />
 
             <Button
-              text={submitting ? 'Registrando…' : 'Registrar plaga'}
+              text={submitting ? "Registrando…" : "Registrar plaga"}
               onPress={onSubmit}
               disabled={submitting}
             />

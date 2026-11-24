@@ -1,14 +1,15 @@
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Button from '../../components/Button';
-import CenteredScroll from '../../components/CenteredScroll';
-import ChipFilter from '../../components/ChipFilter';
-import Notice from '../../components/Notice';
-import SearchBar from '../../components/SearchBar';
-import { useAccessibility } from '../../accessibility/context';
-import { usePestList } from '../../hooks/usePestList';
-import PestCard from './components/PestCard';
+import Button from "../../components/Button";
+import CenteredScroll from "../../components/CenteredScroll";
+import ChipFilter from "../../components/ChipFilter";
+import Notice from "../../components/Notice";
+import SearchBar from "../../components/SearchBar";
+import { useAccessibility } from "../../accessibility/context";
+import { usePestList } from "../../hooks/usePestList";
+import PestCard from "./components/PestCard";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
 
 export default function PestsListScreen() {
   const { palette } = useAccessibility();
@@ -31,6 +32,15 @@ export default function PestsListScreen() {
     dismissWarning,
   } = usePestList();
 
+  useScreenSpeech(
+    filteredPests.length === 0
+      ? "Plagas. No hay plagas registradas."
+      : `Plagas${selectedCropLabel ? ` en ${selectedCropLabel}` : ""}. ${filteredPests.length} ${
+          filteredPests.length === 1 ? "registro" : "registros"
+        }.`,
+    !loading,
+  );
+  
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
@@ -43,9 +53,13 @@ export default function PestsListScreen() {
     <View className={`flex-1 ${palette.bg} p-6`}>
       <View className="mb-4 flex-row items-center justify-between gap-3">
         <View className="flex-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Plagas</Text>
+          <Text className={`text-2xl font-bricolage ${palette.title}`}>
+            Plagas
+          </Text>
           <Text className={`text-sm ${palette.sub}`}>
-            {selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}
+            {selectedCropLabel
+              ? `Cultivo: ${selectedCropLabel}`
+              : "Plagas de tus cultivos"}
           </Text>
         </View>
         <Button text="+ Nueva" onPress={goToNew} className="rounded-xl p-3" />
@@ -69,7 +83,9 @@ export default function PestsListScreen() {
 
       {crops.length === 0 ? (
         <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
+          <Text
+            className={`text-center text-lg font-inter-semibold ${palette.body}`}
+          >
             Aún no tienes cultivos registrados
           </Text>
           <Text className={`text-center text-sm ${palette.sub}`}>
@@ -93,7 +109,10 @@ export default function PestsListScreen() {
               />
               <ChipFilter
                 label="Filtrar por cultivo"
-                options={crops.map((crop) => ({ value: crop.id, label: crop.species }))}
+                options={crops.map((crop) => ({
+                  value: crop.id,
+                  label: crop.species,
+                }))}
                 selected={selectedCrop}
                 onSelect={setSelectedCrop}
               />
@@ -104,7 +123,9 @@ export default function PestsListScreen() {
               No se encontraron plagas con el criterio de búsqueda.
             </Text>
           }
-          renderItem={({ item }) => <PestCard pest={item} onPress={(pest) => goToDetail(pest.id)} />}
+          renderItem={({ item }) => (
+            <PestCard pest={item} onPress={(pest) => goToDetail(pest.id)} />
+          )}
         />
       )}
     </View>

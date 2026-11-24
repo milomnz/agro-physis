@@ -1,21 +1,27 @@
-import { useCallback } from 'react';
-import { ActivityIndicator, Text, TextInput, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useRouter } from 'expo-router';
+import { useCallback } from "react";
+import { ActivityIndicator, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useRouter } from "expo-router";
 
-import Badge from '../../components/Badge';
-import Button from '../../components/Button';
-import { useAccessibility } from '../../accessibility/context';
-import { useEditProfile } from '../../hooks/useEditProfile';
-import { useRequireSession } from '../../hooks/useRequireSession';
-import { useSession } from '../../hooks/useSession';
-import AccessibilityPreferences from '../auth/components/AccessibilityPreferences';
-import DisabilitySelector from '../auth/components/DisabilitySelector';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
+import Notice from "../../components/Notice";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
+import { useAccessibility } from "../../accessibility/context";
+import { useEditProfile } from "../../hooks/useEditProfile";
+import { useRequireSession } from "../../hooks/useRequireSession";
+import { useSession } from "../../hooks/useSession";
+import AccessibilityPreferences from "../auth/components/AccessibilityPreferences";
+import DisabilitySelector from "../auth/components/DisabilitySelector";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { highContrast: themeHighContrast, palette, actionFeedback } = useAccessibility();
+  const {
+    highContrast: themeHighContrast,
+    palette,
+    actionFeedback,
+  } = useAccessibility();
   const sessionReady = useRequireSession();
   const { session, loading, signOut } = useSession();
   const insets = useSafeAreaInsets();
@@ -42,8 +48,13 @@ export default function ProfileScreen() {
 
   const handleLogout = useCallback(async () => {
     await signOut();
-    router.replace('/login');
+    router.replace("/login");
   }, [signOut, router]);
+
+  useScreenSpeech(
+    session?.nombre ? `Mi perfil. Usuario ${session.nombre}.` : null,
+    !loading && sessionReady && Boolean(session?.token),
+  );
 
   if (loading || !sessionReady || !session?.token) {
     return (
@@ -57,57 +68,60 @@ export default function ProfileScreen() {
   const ttsEnabled = profile.ttsEnabled === true;
   const highContrast = profile.highContrast === true;
   const disability =
-    session.disabilityType && session.disabilityType !== 'ninguna'
+    session.disabilityType && session.disabilityType !== "ninguna"
       ? session.disabilityType
       : null;
 
-  const initial = session.nombre.trim().charAt(0).toUpperCase() || '?';
+  const initial = session.nombre.trim().charAt(0).toUpperCase() || "?";
 
   const inputBorderClass = errors.nombre
-    ? 'border-red-500'
-    : focusedField === 'nombre'
+    ? "border-red-500"
+    : focusedField === "nombre"
       ? themeHighContrast
-        ? 'border-crema'
-        : 'border-noche'
+        ? "border-crema"
+        : "border-noche"
       : themeHighContrast
-        ? 'border-crema/70'
-        : 'border-turquesa/50';
+        ? "border-crema/70"
+        : "border-turquesa/50";
 
-  const inputSurfaceClass = themeHighContrast ? 'bg-noche text-crema' : 'bg-white text-noche';
+  const inputSurfaceClass = themeHighContrast
+    ? "bg-noche text-crema"
+    : "bg-white text-noche";
 
   return (
     <View className={`flex-1 ${palette.bg}`}>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 40 }}
+        contentContainerStyle={{
+          padding: 24,
+          paddingBottom: insets.bottom + 40,
+        }}
         keyboardShouldPersistTaps="handled"
       >
         <View className="items-center gap-2 pt-4">
           <View className="mb-2 min-h-[64px] min-w-[64px] items-center justify-center rounded-2xl bg-turquesa px-2">
-            <Text className="text-2xl font-bricolage text-crema">{initial}</Text>
+            <Text className="text-2xl font-bricolage text-crema">
+              {initial}
+            </Text>
           </View>
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Hola, {session.nombre}</Text>
-          <Text className={`text-center text-sm ${palette.sub}`}>{session.email}</Text>
+          <Text className={`text-2xl font-bricolage ${palette.title}`}>
+            Hola, {session.nombre}
+          </Text>
+          <Text className={`text-center text-sm ${palette.sub}`}>
+            {session.email}
+          </Text>
         </View>
 
         {successMessage ? (
-          <View
-            accessibilityRole="alert"
-            accessibilityLiveRegion="polite"
-            className={`mt-6 rounded-xl p-3 ${palette.successBanner}`}
-          >
-            <Text className="text-center text-sm font-inter-semibold">{successMessage}</Text>
-          </View>
+          <Notice variant="success" className="mt-6">
+            {successMessage}
+          </Notice>
         ) : null}
 
         {apiError ? (
-          <View
-            accessibilityRole="alert"
-            accessibilityLiveRegion="assertive"
-            className={`mt-6 rounded-xl p-3 ${palette.errorBanner}`}
-          >
-            <Text className="text-center text-sm font-inter-semibold">{apiError}</Text>
-          </View>
+          <Notice variant="error" className="mt-6">
+            {apiError}
+          </Notice>
         ) : null}
 
         {!isEditing ? (
@@ -129,21 +143,23 @@ export default function ProfileScreen() {
                     Discapacidad: ninguna
                   </Text>
                 )}
-                <Badge value={ttsEnabled ? 'resuelto' : 'inactivo'} />
-                <Badge value={highContrast ? 'activo' : 'inactivo'} />
+                <Badge value={ttsEnabled ? "resuelto" : "inactivo"} />
+                <Badge value={highContrast ? "activo" : "inactivo"} />
               </View>
               <View className="mt-3 gap-1">
                 <Text className={`text-xs ${palette.sub}`}>
-                  Tipo de discapacidad: {disability ?? 'ninguna'}
+                  Tipo de discapacidad: {disability ?? "ninguna"}
                 </Text>
                 <Text className={`text-xs ${palette.sub}`}>
-                  Lectura por voz (TTS): {ttsEnabled ? 'Activada' : 'Desactivada'}
+                  Lectura por voz (TTS):{" "}
+                  {ttsEnabled ? "Activada" : "Desactivada"}
                 </Text>
                 <Text className={`text-xs ${palette.sub}`}>
-                  Alto contraste: {highContrast ? 'Activado' : 'Desactivado'}
+                  Alto contraste: {highContrast ? "Activado" : "Desactivado"}
                 </Text>
                 <Text className={`text-xs ${palette.sub}`}>
-                  Vibración y alertas visuales: {actionFeedback ? 'Activadas' : 'Desactivadas'}
+                  Vibración y alertas visuales:{" "}
+                  {actionFeedback ? "Activadas" : "Desactivadas"}
                 </Text>
               </View>
             </View>
@@ -156,7 +172,7 @@ export default function ProfileScreen() {
               />
               <Button
                 text="Ir al inicio"
-                onPress={() => router.replace('/home')}
+                onPress={() => router.replace("/home")}
                 secondary
                 accessibilityHint="Regresa a la pantalla principal de la aplicación"
               />
@@ -175,24 +191,28 @@ export default function ProfileScreen() {
             </Text>
 
             <View className="mb-5">
-              <Text className={`mb-1.5 text-sm font-inter-semibold ${palette.title}`}>
+              <Text
+                className={`mb-1.5 text-sm font-inter-semibold ${palette.title}`}
+              >
                 Nombre completo
               </Text>
               <TextInput
                 className={`min-h-[48px] rounded-xl border-2 px-4 py-3 text-base ${inputBorderClass} ${inputSurfaceClass}`}
                 placeholder="Tu nombre completo"
-                placeholderTextColor={themeHighContrast ? '#F3F4F480' : '#6B979A'}
+                placeholderTextColor={
+                  themeHighContrast ? "#F3F4F480" : "#6B979A"
+                }
                 value={nombre}
                 onChangeText={setNombre}
                 autoCapitalize="words"
                 autoCorrect={false}
                 accessibilityLabel="Nombre completo"
-                onFocus={() => setFocusedField('nombre')}
+                onFocus={() => setFocusedField("nombre")}
                 onBlur={() => setFocusedField(null)}
               />
               {errors.nombre ? (
                 <Text
-                  className={`mt-1 text-xs ${themeHighContrast ? 'text-red-300' : 'text-red-600'}`}
+                  className={`mt-1 text-xs ${themeHighContrast ? "text-red-300" : "text-red-600"}`}
                 >
                   {errors.nombre}
                 </Text>
@@ -215,7 +235,7 @@ export default function ProfileScreen() {
 
             <View className="gap-3">
               <Button
-                text={submitting ? 'Guardando…' : 'Guardar cambios'}
+                text={submitting ? "Guardando…" : "Guardar cambios"}
                 onPress={submit}
                 disabled={submitting}
                 accessibilityHint="Guarda los cambios de tu perfil y preferencias de accesibilidad"

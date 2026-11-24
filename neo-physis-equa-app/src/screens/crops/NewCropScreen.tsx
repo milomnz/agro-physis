@@ -9,6 +9,7 @@ import { useNewCrop } from '../../hooks/useNewCrop';
 import CropFormFields from './CropFormFields';
 import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 
 export default function NewCropScreen() {
   const { palette } = useAccessibility();
@@ -26,6 +27,7 @@ export default function NewCropScreen() {
     dismissLoadError,
   } = useNewCrop();
 
+  useScreenSpeech('Nuevo cultivo. Registra un cultivo asociado a una de tus fincas.', !loading);
   if (loading) {
     return (
       <View className={`flex-1 items-center justify-center ${palette.bg}`}>
