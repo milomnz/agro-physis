@@ -1,16 +1,21 @@
-import { ActivityIndicator, Text, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { Text } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Button from "../../components/Button";
-import ConfirmModal from "../../components/ConfirmModal";
-import Field from "../../components/Field";
-import Notice from "../../components/Notice";
-import Select from "../../components/Select";
-import { useAccessibility } from "../../accessibility/context";
-import { SEVERITIES } from "../../services/pests";
-import { usePestDetail } from "../../hooks/usePestDetail";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useScreenSpeech } from "../../hooks/useScreenSpeech";
+import Button from '../../components/Button';
+import Card from '../../components/Card';
+import ConfirmModal from '../../components/ConfirmModal';
+import Field from '../../components/Field';
+import LoadingView from '../../components/LoadingView';
+import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
+import ScreenTitle from '../../components/ScreenTitle';
+import Select from '../../components/Select';
+import { useAccessibility } from '../../accessibility/context';
+import { SEVERITIES } from '../../services/pests';
+import { usePestDetail } from '../../hooks/usePestDetail';
+import { useScreenSpeech } from '../../hooks/useScreenSpeech';
+import { space, type } from '../../theme/tokens';
 
 export default function PestDetailScreen() {
   const { palette } = useAccessibility();
@@ -35,58 +40,43 @@ export default function PestDetailScreen() {
   useScreenSpeech(
     pest
       ? `Detalle de plaga ${pest.commonName}. Severidad ${pest.severity}.${
-          pest.symptoms.length > 0
-            ? ` Síntomas: ${pest.symptoms.join(", ")}.`
-            : ""
+          pest.symptoms.length > 0 ? ` Síntomas: ${pest.symptoms.join(', ')}.` : ''
         }`
       : null,
     !loading && Boolean(pest),
   );
-  
+
   if (loading) {
-    return (
-      <View className={`flex-1 items-center justify-center ${palette.bg}`}>
-        <ActivityIndicator color={palette.spinner} />
-      </View>
-    );
+    return <LoadingView label="Cargando la plaga…" />;
   }
 
   return (
-    <View className={`flex-1 ${palette.bg}`}>
+    <Screen>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: 24,
+          gap: 20,
+          padding: space.gutter,
           paddingBottom: insets.bottom + 40,
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text className={`text-2xl font-bricolage ${palette.title}`}>
-          Plaga
-        </Text>
-        <Text className={`mb-5 text-sm ${palette.sub}`}>
-          Edita los datos del registro de plaga
-        </Text>
+        <ScreenTitle icon="bug" title="Plaga" subtitle="Edita los datos del registro de plaga" />
 
         {saved ? (
-          <Notice
-            variant="success"
-            className="mb-4"
-            onDismiss={dismissSaved}
-            autoDismissMs={5000}
-          >
+          <Notice variant="success" onDismiss={dismissSaved} autoDismissMs={5000}>
             Cambios guardados correctamente
           </Notice>
         ) : null}
 
         {screenError ? (
-          <Notice variant="error" className="mb-4" onDismiss={dismissError}>
+          <Notice variant="error" onDismiss={dismissError}>
             {screenError}
           </Notice>
         ) : null}
 
-        <View className={`mb-6 gap-5 rounded-2xl p-5 ${palette.card}`}>
-          <Text className={`text-lg font-bricolage ${palette.title}`}>
+        <Card className="gap-5">
+          <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
             Editar datos
           </Text>
 
@@ -96,10 +86,10 @@ export default function PestDetailScreen() {
             label="Nombre común *"
             autoCapitalize="words"
             rules={{
-              required: "El nombre común es obligatorio",
+              required: 'El nombre común es obligatorio',
               maxLength: {
                 value: 100,
-                message: "El nombre debe tener máximo 100 caracteres",
+                message: 'El nombre debe tener máximo 100 caracteres',
               },
             }}
           />
@@ -112,8 +102,7 @@ export default function PestDetailScreen() {
             rules={{
               maxLength: {
                 value: 200,
-                message:
-                  "El nombre científico debe tener máximo 200 caracteres",
+                message: 'El nombre científico debe tener máximo 200 caracteres',
               },
             }}
           />
@@ -137,20 +126,22 @@ export default function PestDetailScreen() {
             rules={{
               maxLength: {
                 value: 1000,
-                message: "Los síntomas deben tener máximo 1000 caracteres",
+                message: 'Los síntomas deben tener máximo 1000 caracteres',
               },
             }}
           />
 
           <Button
-            text={saving ? "Guardando…" : "Guardar cambios"}
+            text={saving ? 'Guardando…' : 'Guardar cambios'}
+            icon="save-outline"
             onPress={onSubmit}
             disabled={saving}
           />
-        </View>
+        </Card>
 
         <Button
           text="Eliminar plaga"
+          icon="trash-outline"
           danger
           onPress={requestDelete}
           disabled={deleting}
@@ -165,6 +156,6 @@ export default function PestDetailScreen() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
-    </View>
+    </Screen>
   );
 }

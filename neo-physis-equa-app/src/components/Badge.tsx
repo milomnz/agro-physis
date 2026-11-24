@@ -4,187 +4,87 @@ import { Text, View } from 'react-native';
 import { useAccessibility } from '../accessibility/context';
 import { colors } from '../theme/tokens';
 
-interface BadgeStyle {
+type Tone = 'neutral' | 'brand' | 'ok' | 'okSoft' | 'warn' | 'warnSoft' | 'critical';
+
+interface ToneStyle {
   container: string;
   text: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
-  hcContainer: string;
-  hcText: string;
-  hcIconColor: string;
+  icon: string;
 }
 
-const DEFAULT_STYLE: BadgeStyle = {
-  container: 'bg-crema border border-turquesa',
-  text: 'text-tinta',
-  icon: 'information-circle-outline',
-  iconColor: colors.tinta,
-  hcContainer: 'bg-turquesa border border-crema',
-  hcText: 'text-crema',
-  hcIconColor: colors.crema,
-};
-
-const BADGE_STYLES: Record<string, BadgeStyle> = {
-  baja: {
-    container: 'bg-verde',
-    text: 'text-tinta',
-    icon: 'checkmark-circle',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-verde',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
+// Tonos de la paleta (verde y lima solo como relleno con Tinta encima).
+const TONES: Record<Tone, { light: ToneStyle; hc: ToneStyle }> = {
+  neutral: {
+    light: { container: 'bg-papel border border-azul', text: 'text-tinta', icon: colors.tinta },
+    hc: { container: 'bg-azul border border-crema', text: 'text-crema', icon: colors.crema },
   },
-  media: {
-    container: 'bg-lima',
-    text: 'text-tinta',
-    icon: 'alert-circle',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-lima',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
+  brand: {
+    light: { container: 'bg-azul', text: 'text-crema', icon: colors.crema },
+    hc: { container: 'bg-crema', text: 'text-tinta', icon: colors.tinta },
   },
-  alta: {
-    container: 'bg-tinta',
-    text: 'text-crema',
-    icon: 'warning',
-    iconColor: colors.crema,
-    hcContainer: 'bg-crema',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
+  ok: {
+    light: { container: 'bg-verde', text: 'text-tinta', icon: colors.tinta },
+    hc: { container: 'bg-verde', text: 'text-tinta', icon: colors.tinta },
   },
-  activo: {
-    container: 'bg-azul',
-    text: 'text-crema',
-    icon: 'checkmark-done-circle',
-    iconColor: colors.crema,
-    hcContainer: 'bg-crema',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
+  okSoft: {
+    light: { container: 'bg-exito-bg border border-verde', text: 'text-tinta', icon: colors.tinta },
+    hc: { container: 'bg-verde', text: 'text-tinta', icon: colors.tinta },
   },
-  inactivo: {
-    container: 'bg-crema border border-turquesa',
-    text: 'text-tinta',
-    icon: 'remove-circle-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-turquesa border border-crema',
-    hcText: 'text-crema',
-    hcIconColor: colors.crema,
+  warn: {
+    light: { container: 'bg-lima', text: 'text-tinta', icon: colors.tinta },
+    hc: { container: 'bg-lima', text: 'text-tinta', icon: colors.tinta },
   },
-  pendiente: {
-    container: 'bg-alerta-bg border border-lima',
-    text: 'text-tinta',
-    icon: 'time-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-lima',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
+  warnSoft: {
+    light: { container: 'bg-alerta-bg border border-lima', text: 'text-tinta', icon: colors.tinta },
+    hc: { container: 'bg-lima', text: 'text-tinta', icon: colors.tinta },
   },
-  resuelto: {
-    container: 'bg-exito-bg border border-verde',
-    text: 'text-tinta',
-    icon: 'checkmark-circle',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-verde',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  vegetativo: {
-    container: 'bg-exito-bg border border-verde',
-    text: 'text-tinta',
-    icon: 'leaf',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-verde',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  'floración': {
-    container: 'bg-alerta-bg border border-lima',
-    text: 'text-tinta',
-    icon: 'flower',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-lima',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  'fructificación': {
-    container: 'bg-lima',
-    text: 'text-tinta',
-    icon: 'nutrition',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-lima',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  'producción': {
-    container: 'bg-azul',
-    text: 'text-crema',
-    icon: 'trending-up',
-    iconColor: colors.crema,
-    hcContainer: 'bg-crema',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  ninguna: {
-    container: 'bg-crema border border-turquesa',
-    text: 'text-tinta',
-    icon: 'remove-circle-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-turquesa border border-crema',
-    hcText: 'text-crema',
-    hcIconColor: colors.crema,
-  },
-  motora: {
-    container: 'bg-azul',
-    text: 'text-crema',
-    icon: 'accessibility-outline',
-    iconColor: colors.crema,
-    hcContainer: 'bg-crema',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  visual: {
-    container: 'bg-alerta-bg border border-lima',
-    text: 'text-tinta',
-    icon: 'eye-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-lima',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  auditiva: {
-    container: 'bg-exito-bg border border-verde',
-    text: 'text-tinta',
-    icon: 'ear-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-verde',
-    hcText: 'text-tinta',
-    hcIconColor: colors.tinta,
-  },
-  intelectual: {
-    container: 'bg-crema border border-turquesa',
-    text: 'text-tinta',
-    icon: 'bulb-outline',
-    iconColor: colors.tinta,
-    hcContainer: 'bg-turquesa border border-crema',
-    hcText: 'text-crema',
-    hcIconColor: colors.crema,
+  critical: {
+    light: { container: 'bg-tinta', text: 'text-crema', icon: colors.crema },
+    hc: { container: 'bg-crema', text: 'text-tinta', icon: colors.tinta },
   },
 };
 
-export default function Badge({ value }: { value: string }) {
+const DEFAULT_BADGE = { tone: 'neutral', icon: 'information-circle-outline' } as const;
+
+// Valor nuevo del backend ⇒ entrada nueva aquí, no un color en la pantalla.
+const BADGES: Record<string, { tone: Tone; icon: keyof typeof Ionicons.glyphMap }> = {
+  baja: { tone: 'ok', icon: 'checkmark-circle' },
+  media: { tone: 'warn', icon: 'alert-circle' },
+  alta: { tone: 'critical', icon: 'warning' },
+  activo: { tone: 'brand', icon: 'checkmark-done-circle' },
+  inactivo: { tone: 'neutral', icon: 'remove-circle-outline' },
+  pendiente: { tone: 'warnSoft', icon: 'time-outline' },
+  resuelto: { tone: 'okSoft', icon: 'checkmark-circle' },
+  vegetativo: { tone: 'okSoft', icon: 'leaf' },
+  'floración': { tone: 'warnSoft', icon: 'flower' },
+  'fructificación': { tone: 'warn', icon: 'nutrition' },
+  'producción': { tone: 'brand', icon: 'trending-up' },
+  ninguna: { tone: 'neutral', icon: 'remove-circle-outline' },
+  motora: { tone: 'brand', icon: 'accessibility-outline' },
+  visual: { tone: 'warnSoft', icon: 'eye-outline' },
+  auditiva: { tone: 'okSoft', icon: 'ear-outline' },
+  intelectual: { tone: 'neutral', icon: 'bulb-outline' },
+};
+
+interface BadgeProps {
+  /** Valor que decide tono e ícono (severidad, etapa, estado…). */
+  value: string;
+  /** Texto visible si el valor crudo no se entiende solo (p. ej. "Activada"). */
+  label?: string;
+}
+
+export default function Badge({ value, label }: BadgeProps) {
   const { highContrast } = useAccessibility();
-  const style = BADGE_STYLES[value] ?? DEFAULT_STYLE;
-  const container = highContrast ? style.hcContainer : style.container;
-  const text = highContrast ? style.hcText : style.text;
-  const iconColor = highContrast ? style.hcIconColor : style.iconColor;
+  const badge = BADGES[value] ?? DEFAULT_BADGE;
+  const style = TONES[badge.tone][highContrast ? 'hc' : 'light'];
 
   return (
     <View
-      accessibilityLabel={`Estado ${value}`}
-      className={`shrink flex-row items-center gap-1 self-start rounded-chip px-2.5 py-1 ${container}`}
+      accessibilityLabel={label ?? `Estado ${value}`}
+      className={`shrink flex-row items-center gap-1.5 self-start rounded-chip px-3 py-1 ${style.container}`}
     >
-      <Ionicons name={style.icon} size={12} color={iconColor} />
-      <Text className={`text-[10px] font-inter-bold ${text}`}>{value}</Text>
+      <Ionicons name={badge.icon} size={14} color={style.icon} />
+      <Text className={`text-xs font-inter-bold ${style.text}`}>{label ?? value}</Text>
     </View>
   );
 }

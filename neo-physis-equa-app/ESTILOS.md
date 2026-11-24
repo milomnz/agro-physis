@@ -1,287 +1,134 @@
-# Estilos estándar · Neo Physis Equa móvil
+# Estilos estándar · Agro Physis móvil
 
-Cadenas de NativeWind que ya usa la app. **Copia de aquí, no inventes una
-variante nueva.** Si algo se repite tres veces, se vuelve componente en
-`src/components/`.
+Sistema de diseño "biofilia funcional" del Documento de visión: cálido, colores del
+campo y formas orgánicas **solo en lo decorativo**. Cuando estética y accesibilidad
+chocan, gana la accesibilidad (meta WCAG 2.1 AA).
 
-Regla base: primero busca el componente (`Button`, `Field`, `Select`,
-`SearchBar`, `ChipFilter`, `Badge`, `Notice`). Solo si no existe, usa las clases
-sueltas de este documento.
-
-Fuente de verdad visual: `dist_styles.md` (diccionario histórico) y el
-**Documento de visión** (`neo-physis-equa/Respaldo/`): "biofilia funcional".
-
-Regla de accesibilidad del manual: **nunca solo color**. Estado = color +
-ícono + texto.
+Regla base: **primero el componente, después la clase suelta.** Si algo se repite
+tres veces, se vuelve componente en `src/components/`. Nunca un hex en una pantalla.
 
 ---
 
-## Paleta (Light)
+## Capas de tokens
 
-Tokens definidos en `tailwind.config.js` y en `src/theme/tokens.ts` (para props
-nativas como `placeholderTextColor`, `color`, `trackColor`).
-
-| Papel | Token | Hex | Contraste |
-|---|---|---|---|
-| Texto principal, títulos, modo HC | `tinta` | `#0F2A38` | 13.3:1 sobre crema |
-| Primario / acción / secundario | `azul` | `#17506B` | 7.8:1 sobre crema |
-| Fondo de pantalla / papel | `crema` | `#F5F2EA` | — |
-| Decorativo / bordes puntuales | `teal` | `#1E8C8C` | 3.6:1 (solo negrita o ≥18pt) |
-| Acento cálido / error | `tierra` | `#9C6B3F` | 4.1:1 (íconos y texto grande) |
-| Éxito (relleno) | `verde` | `#5FB548` | 2.3:1 → solo con texto Tinta |
-| Advertencia (relleno) | `lima` | `#B5D84A` | 1.5:1 → solo con texto Tinta |
-
-Tints de aviso (fondo claro, texto Tinta 11–12:1):
-
-| Uso | Token | Hex |
+| Capa | Archivo | Qué contiene |
 |---|---|---|
-| Éxito | `exito-bg` | `#E3EBD7` |
-| Advertencia | `alerta-bg` | `#E8EDCA` |
-| Error | `error-bg` | `#E8DED0` |
+| Primitivos | `src/theme/colors.json` | Los hex. Única fuente: la leen Tailwind y `tokens.ts`. |
+| Tokens | `src/theme/tokens.ts` | `colors`, `gradients`, `radius`, `fonts`, `type`, `space`, `motion`. |
+| Semántica | `src/theme/palette.ts` | Roles (`title`, `card`, `input`…) en claro y alto contraste. |
+| Acceso | `useAccessibility()` | Devuelve `palette` y `highContrast` según el perfil del usuario. |
 
-Alias legacy (siguen funcionando, no los uses en código nuevo): `noche` →
-`#0F2A38`, `turquesa` → `#17506B`, `accent` → `#6B979A`.
+Las pantallas usan `palette.<rol>` y `type.<nivel>`; nunca `text-tinta` directo salvo
+dentro de un componente base.
 
-Reglas duras: **no blanco puro, no rojo/verde/ámbar de Tailwind.** Verde y Lima
-nunca llevan texto Crema (fallan AA) ni se usan como texto.
+## Paleta
 
-## Radios
-
-| Elemento | Clase | px |
+| Token | Hex | Uso permitido |
 |---|---|---|
-| Inputs, banners | `rounded-campo` | 12 |
-| Botones | `rounded-boton` | 16 |
-| Tarjetas | `rounded-tarjeta` | 24 |
-| Chips, badges | `rounded-chip` | 9999 |
+| `tinta` | `#0F2A38` | Texto principal (13.3:1 sobre crema). Fondo del alto contraste. |
+| `azul` | `#17506B` | Primario, bordes interactivos, texto secundario (7.8:1). |
+| `crema` | `#F5F2EA` | Fondo de pantalla; texto sobre azul/tinta. |
+| `papel` | `#FBF9F4` | Superficie de tarjetas, campos y botón secundario. |
+| `salvia`, `bruma` | `#E8EEDF`, `#DCEAE4` | Solo dentro del degradado de fondo. |
+| `liquen` | `#36596A` | Texto tenue (`palette.faint`) y placeholder. ≥ 5.3:1 en todo el fondo. |
+| `teal` | `#1E8C8C` | Decoración y degradados (3.6:1: nunca texto de cuerpo). |
+| `tierra` | `#9C6B3F` | Error y peligro: bordes y texto grande (4.1:1). |
+| `verde` | `#5FB548` | Solo relleno con texto Tinta (5.8:1). |
+| `lima` | `#B5D84A` | Relleno con Tinta (9.2:1) o acento sobre azul/tinta (≥ 5.3:1). |
+| `abismo` | `#0A1F2A` | Fondo profundo del alto contraste. |
+| `exito-bg`, `alerta-bg`, `error-bg` | | Fondos de avisos con texto Tinta (≥ 11:1). |
 
-## Paleta (Alto Contraste / variante oscura)
+Reglas duras: no blanco puro, no rojos/verdes/ámbar de Tailwind, verde y lima nunca
+como texto sobre claro. Los alias `noche`, `turquesa` y `accent` ya no existen.
 
-Se lee de `useAccessibility()` → `palette`; **no hardcodees clases HC**.
-Resumen de las variantes HC:
+## Degradados
 
-| Papel | Variante HC |
+`style={{ backgroundImage: gradients.x }}` (React Native 0.88 y web los dibujan sin
+librerías). Siempre con un `backgroundColor` de respaldo.
+
+| Token | Dónde | Contraste verificado |
+|---|---|---|
+| `backdrop` / `backdropHc` | Fondo de toda pantalla (`<Screen>`) | Tinta, Azul y Liquen ≥ 5.3:1 en el punto más oscuro |
+| `brand` | Encabezados de navegación y `<BrandHero>` | Crema ≥ 4.9:1, Lima ≥ 5.3:1 |
+| `action` / `actionHc` | Botón primario | Crema ≥ 6:1 / Tinta ≥ 9.2:1 donde cae el texto |
+| `leaf` | Medallones, ítem activo del menú, progreso | Tinta ≥ 5.8:1 |
+
+Los degradados decoran; nunca llevan información. Ningún texto pequeño va sobre teal.
+
+## Tipografía (`type` en `tokens.ts`)
+
+| Token | Clases | Uso |
+|---|---|---|
+| `display` | `text-3xl font-bricolage` | Títulos de héroe |
+| `title` | `text-2xl font-bricolage` | Título de pantalla |
+| `heading` | `text-xl font-bricolage` | Título de tarjeta o sección |
+| `subheading` | `text-lg font-inter-semibold` | Nombre de un elemento (finca, cultivo) |
+| `body` | `text-base font-inter` | Párrafos |
+| `caption` | `text-sm font-inter` | Descripciones y metadatos |
+| `label` | `text-base font-inter-semibold` | Etiqueta de campo |
+| `data` | `text-sm font-mono-medium` | Cifras: altitud, fechas, conteos |
+
+Los títulos llevan `accessibilityRole="header"`.
+
+## Geometría y espaciado
+
+- Radios: `rounded-campo` 12 (campos, avisos), `rounded-boton` 16, `rounded-tarjeta` 24, `rounded-chip` pill.
+- Bordes: 2 px en interactivos, 1 px en tarjetas. Sin sombras.
+- Toques: botones 56 dp (`min-h-14`), resto ≥ 48 dp (`min-h-12 min-w-12`).
+- Margen de pantalla `space.gutter` (24). `gap-5` entre bloques y campos, `gap-3` dentro de tarjetas, `gap-1.5` etiqueta–control. Nunca `mt-*` en cada hijo.
+- Forma orgánica: solo el medallón de hoja (`IconBadge`) y la curva inferior del héroe.
+
+## Movimiento
+
+Transición `fade_from_bottom` de `motion.screenMs` (220 ms) entre pantallas; ninguna
+si el sistema pide reducir movimiento (`useReducedMotion`). Sin animaciones en bucle.
+
+---
+
+## Componentes
+
+| Componente | Para qué |
 |---|---|
-| Fondo de pantalla | `bg-noche` (Tinta) |
-| Tarjeta | `bg-turquesa` + `border-2 border-crema` |
-| Texto fuerte | `text-crema` |
-| Texto secundario | `text-crema/80`, tenue `text-crema/60` |
-| Chip activo / primario | `bg-crema` + `text-noche` |
-| Spinner | `palette.spinner` (`#F5F2EA`) |
-
-En modo claro el spinner es `palette.spinner` (`#17506B`).
-
----
-
-## Tipografía
-
-- **Bricolage Grotesque** (`font-bricolage`): títulos de pantalla y sección,
-  CTA y marca. Solo hay Bold (700) cargada.
-- **Inter** (`font-inter`, `font-inter-semibold`, `font-inter-bold`): cuerpo,
-  labels, chips y banners. Cargadas 400/600/700.
-- **JetBrains Mono** (`font-mono`, `font-mono-medium`, `font-mono-bold`):
-  **cifras y metadatos numéricos** (altitud, hectáreas, fechas, ids). Cargadas
-  400/500/700. Es el toque "cuaderno de campo" del manual.
-- No uses `font-bold`/`font-semibold` sueltos si quieres la familia correcta:
-  usá siempre el token de peso (`font-inter-semibold`, `font-mono-medium`).
+| `Screen` | Raíz de toda pantalla: aplica el degradado de fondo. |
+| `LoadingView` | Carga a pantalla completa; el `label` dice qué se carga. |
+| `BrandHero` | Bloque de marca con degradado. `bleed` = a todo lo ancho con curva (login, registro, menú). |
+| `ScreenTitle` | Medallón + título + subtítulo + `action` opcional. |
+| `Card` | Superficie estándar. Con `onPress` es botón y muestra chevron. |
+| `IconBadge` | Medallón de hoja con ícono o letra. Decorativo, oculto al lector. |
+| `EmptyState` | Vacío con causa y la acción que lo llena (`children`). |
+| `Button` | `primary` (degradado), `secondary`, `danger`; `icon` acompaña al texto. |
+| `TextField` / `Field` | Campo suelto / conectado a react-hook-form. Foco y error con color + ícono + texto. |
+| `SearchBar` | `TextField` con ícono de lupa y rol `search`. |
+| `Chip`, `Select`, `ChipFilter` | Selección. Activo = relleno + check. `Select` anuncia radios. |
+| `Badge` | Estado (severidad, etapa…). Valor nuevo ⇒ entrada en `BADGES`. `label` para texto legible. |
+| `Notice` | Aviso de error/éxito/advertencia con región viva. |
+| `ConfirmModal` | Confirmación destructiva. |
 
 ```tsx
-<Text className="text-2xl font-bricolage text-noche">Título de pantalla</Text>
-<Text className="text-lg font-bricolage text-noche">Título de tarjeta</Text>
-<Text className="font-inter-semibold text-noche">Título de elemento</Text>
-<Text className="text-turquesa">Subtítulo</Text>
-<Text className="text-xs text-turquesa/70">Fecha, id</Text>
-<Text className="font-inter-semibold text-noche">Label de campo</Text>
-<Text className="font-mono-medium text-noche">1.850 m s. n. m.</Text>
+<Screen>
+  <KeyboardAwareScrollView
+    contentContainerStyle={{ gap: 20, padding: space.gutter, paddingBottom: insets.bottom + 40 }}
+  >
+    <ScreenTitle icon="leaf" title="Mi finca" subtitle="Gestiona los datos de tu terreno" />
+    {saved ? <Notice variant="success">Cambios guardados</Notice> : null}
+    <Card className="gap-5">
+      <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>Editar datos</Text>
+      <Field control={control} name="name" label="Nombre *" rules={rules.name} />
+      <Button text="Guardar cambios" icon="save-outline" onPress={onSubmit} />
+    </Card>
+    <Button text="Eliminar finca" icon="trash-outline" danger onPress={requestDelete} />
+  </KeyboardAwareScrollView>
+</Screen>
 ```
 
-Todos usan `palette.<clave>` en vez de `text-noche` cuando la pantalla está
-dentro de la sesión (ve `src/accessibility/context.tsx`). Las pantallas
-pre-login (`login`, `register`) usan tokens fijos.
+## Alto contraste
 
----
+Fondo Tinta→Abismo, tarjetas Azul con borde Crema 2 px, texto Crema, foco y selección
+en Lima. Lo resuelve `palette`; no se escriben clases HC en las pantallas.
 
-## Contenedores
+## Íconos
 
-```tsx
-// Pantalla simple
-<View className="flex-1 gap-6 p-6 ${palette.bg}">
-
-// Pantalla centrada (login, error)
-<View className="flex-1 justify-center gap-5 p-6 ${palette.bg}">
-
-// Pantalla con scroll (formularios largos)
-<ScrollView
-  className="flex-1 ${palette.bg}"
-  contentContainerClassName="gap-5 p-6"
-  keyboardShouldPersistTaps="handled">
-
-// Tarjeta
-<View className="gap-2 rounded-tarjeta border-2 border-turquesa p-4 ${palette.card}">
-
-// Cargando
-<View className="flex-1 items-center justify-center ${palette.bg}">
-  <ActivityIndicator color={palette.spinner} />
-</View>
-```
-
-El espaciado entre hijos es `gap-*`, nunca `mt-*` en cada hijo.
-`gap-6` entre bloques, `gap-5` entre campos, `gap-3`/`gap-2` dentro de una
-tarjeta, `gap-1.5` entre etiqueta y control.
-
-Bordes: interactivos **2 px**, contenedores estructurales **1 px**. Sin sombras
-difusas (el manual no las usa; la elevación se da con borde y color).
-
-Toques: todo control mide al menos **48×48 dp** (`min-h-12 min-w-12`).
-
----
-
-## Botón → usa `Button`
-
-`src/components/Button.tsx` es **el** botón del proyecto.
-
-```tsx
-import Button from '../src/components/Button';
-
-// Primario
-<Button text="Registrar finca" onPress={handleSubmit(submit)} />
-
-// Secundario (borde 2px azul, sin relleno)
-<Button text="Volver" onPress={() => router.back()} secondary />
-
-// Peligro (eliminar, cerrar sesión) → prop danger, no className
-<Button text="Eliminar" onPress={handleDelete} danger />
-
-// Deshabilitado mientras se envía: el texto también cambia
-<Button
-  text={saving ? 'Guardando…' : 'Guardar cambios'}
-  onPress={handleSubmit(onSubmit)}
-  disabled={saving}
-/>
-```
-
-Props: `text`, `onPress`, `disabled?`, `secondary?`, `danger?`, `className?`.
-
-Por dentro (referencia, no lo copies):
-
-| Parte | Clases |
-|---|---|
-| Base | `min-h-12 min-w-12 items-center justify-center rounded-boton p-4 active:opacity-80 disabled:opacity-50` |
-| Primario | `bg-turquesa border-2 border-turquesa` + texto `font-bricolage text-crema` |
-| Secundario | `border-2 border-turquesa` + texto `font-bricolage text-turquesa` |
-| Peligro | `bg-error-bg border-2 border-tierra` + texto `font-bricolage text-tinta` |
-
----
-
-## Campo de texto → usa `Field`
-
-`src/components/Field.tsx` ya trae etiqueta, foco con `border-noche`, borde
-`tierra` al fallar (color + ícono + texto) y el mensaje de error. Solo dentro de
-un formulario de react-hook-form.
-
-```tsx
-<Field
-  control={control}
-  name="email"
-  label="Correo"
-  keyboardType="email-address"
-  placeholder="nombre@autonoma.edu.co"
-  rules={{
-    required: 'El correo es obligatorio',
-    pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
-  }}
-/>
-```
-
-Input suelto (fuera de un formulario, como el buscador):
-
-```tsx
-<TextInput
-  className="rounded-campo border-2 border-turquesa bg-crema p-3 text-noche"
-  placeholderTextColor={colors.azul}
-  onFocus={() => setFocused(true)}
-  onBlur={() => setFocused(false)}
-/>
-```
-
-Recuerda `placeholderTextColor` como **prop**, no como clase.
-
----
-
-## Búsqueda → usa `SearchBar`
-
-```tsx
-import SearchBar from '../src/components/SearchBar';
-<SearchBar value={query} onChangeText={setQuery} placeholder="Buscar…" />
-```
-
-Mismo comportamiento de foco que `Field`.
-
----
-
-## Selección de una opción → usa `Select`
-
-```tsx
-<Select control={control} name="severity" label="Severidad" options={SEVERITIES} />
-```
-
-`Select` y `ChipFilter` son chips `rounded-chip border-2`: activo
-`bg-turquesa text-crema`, inactivo `bg-crema border-turquesa text-noche`
-(HC: activo `bg-crema text-noche`). Exponen `accessibilityRole="button"` y
-`accessibilityState={{ selected }}`.
-
----
-
-## Etiqueta de severidad → usa `Badge`
-
-```tsx
-<Badge value={crop.healthStatus} />
-```
-
-Severidad (✅ AA): `baja` = verde + tinta + `checkmark-circle`; `media` = lima +
-tinta + `alert-circle`; `alta` = tinta + crema + `warning` (HC: crema + tinta).
-Los estados `activo/inactivo/pendiente/resuelto` conservan su mapa light/dark.
-**Valor nuevo del backend ⇒ entrada nueva en el mapa de
-`src/components/Badge.tsx`**, no un color en la pantalla.
-
----
-
-## Avisos → usa `Notice`
-
-Un solo formato para errores de servidor, éxito y advertencias:
-
-```tsx
-import Notice from '../src/components/Notice';
-
-{error && <Notice variant="error">{error}</Notice>}
-<Notice variant="success">Finca guardada</Notice>
-<Notice variant="warning">Sin conexión: mostrando datos locales</Notice>
-```
-
-Renderiza `accessibilityRole="alert"`, ícono + texto, fondo `error-bg` /
-`exito-bg` / `alerta-bg` (HC: `bg-noche` + borde verde/lima/tierra). No lo
-reemplaces por `Text` con clases de color.
-
-Error que impide cargar la pantalla: `<Notice variant="error">` + un
-`<Button ... secondary />` para volver.
-
----
-
-## Lista
-
-```tsx
-<FlatList contentContainerClassName="gap-3 p-4" ... />
-
-// Fila pulsable
-<Pressable className="gap-2 rounded-tarjeta border-2 border-turquesa p-4 ${palette.card} active:opacity-80">
-
-// Vacío o error
-<Text className={`p-6 text-center ${palette.faint}`}>
-```
-
----
-
-## Enlace
-
-```tsx
-<Link href="/login" className="text-center text-turquesa">
-```
+Ionicons, siempre junto a texto: contorno (`leaf-outline`) en reposo y lleno (`leaf`)
+cuando está activo. Fincas `leaf`, cultivos `nutrition`, plagas `bug`, diagnóstico
+`medkit`, perfil `person`. Nada de flechas "→" o "+" escritas en el texto del botón:
+van como `icon`.
