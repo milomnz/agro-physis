@@ -9,6 +9,7 @@ import { FarmsModule } from './farms/farms.module';
 import { CropsModule } from './crops/crops.module';
 import { PestsModule } from './pests/pests.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { DiagnosisModule } from './diagnosis/diagnosis.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     CropsModule,
     PestsModule,
     NotificationsModule,
+    DiagnosisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
