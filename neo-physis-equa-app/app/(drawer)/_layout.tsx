@@ -4,114 +4,103 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname, type Href } from 'expo-router';
 import { useAccessibility } from '../../src/accessibility/context';
+import BrandHero, { HeaderBackground } from '../../src/components/BrandHero';
+import Screen from '../../src/components/Screen';
 import { useSession } from '../../src/hooks/useSession';
-import { colors } from '../../src/theme/tokens';
+import { colors, fonts, gradients } from '../../src/theme/tokens';
+
+type IconName = keyof typeof Ionicons.glyphMap;
+
+interface NavItemProps {
+  path: Href;
+  icon: IconName;
+  label: string;
+  onNavigate: (path: Href) => void;
+}
+
+// Activo = relleno de hoja + ícono lleno; inactivo = ícono de contorno. No depende solo del color.
+function NavItem({ path, icon, label, onNavigate }: NavItemProps) {
+  const { palette } = useAccessibility();
+  const pathname = usePathname();
+  const target = String(path);
+  const isActive = pathname === target || pathname.startsWith(`${target}/`);
+
+  return (
+    <Pressable
+      onPress={() => onNavigate(path)}
+      className={`min-h-14 flex-row items-center gap-4 rounded-boton px-4 py-3 ${isActive ? '' : 'active:bg-azul/10'}`}
+      style={isActive ? { backgroundColor: colors.verde, backgroundImage: gradients.leaf } : undefined}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+    >
+      <Ionicons
+        name={isActive ? icon : (`${icon}-outline` as IconName)}
+        size={24}
+        color={isActive ? colors.tinta : palette.icon}
+      />
+      <Text
+        className={`flex-1 text-base font-inter-semibold ${isActive ? 'text-tinta' : palette.title}`}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
 
 function CustomDrawerContent({ onClose }: { onClose: () => void }) {
-  const { highContrast } = useAccessibility();
+  const { palette } = useAccessibility();
   const { signOut } = useSession();
   const router = useRouter();
-  const pathname = usePathname(); // Nos permite saber en qué pantalla estamos
   const insets = useSafeAreaInsets();
 
-  const textColor = highContrast ? colors.crema : colors.tinta;
-  const borderColor = highContrast ? colors.crema : colors.azul;
-  const activeText = colors.crema;
-
-  // Componente reutilizable para los botones del menú
-  const NavItem = ({
-    path,
-    icon,
-    label,
-  }: {
-    path: Href;
-    icon: keyof typeof Ionicons.glyphMap;
-    label: string;
-  }) => {
-    const target = String(path);
-    // Verificamos si la ruta actual coincide con la del botón
-    const isActive = pathname === target || pathname.startsWith(`${target}/`);
-
-    return (
-      <Pressable
-        onPress={() => {
-          onClose();
-          router.navigate(path);
-        }}
-        className={`mb-2 min-h-12 flex-row items-center rounded-campo p-3 ${isActive ? 'bg-turquesa' : 'active:bg-turquesa/10'}`}
-        accessibilityLabel={label}
-        accessibilityRole="button"
-        accessibilityState={{ selected: isActive }}
-      >
-        <Ionicons name={icon} size={24} color={isActive ? activeText : textColor} />
-        <Text
-          className="ml-4 flex-1 text-base"
-          style={{ fontFamily: 'Inter_600SemiBold', color: isActive ? activeText : textColor }}
-        >
-          {label}
-        </Text>
-      </Pressable>
-    );
+  const navigate = (path: Href) => {
+    onClose();
+    router.navigate(path);
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: highContrast ? colors.tinta : colors.crema }}>
-      {/* 1. Cabecera Visual (Respetando el inset superior de la barra de estado) */}
-      <View
-        className="mb-4 border-b px-6 pb-4"
-        style={{ paddingTop: insets.top + 16, borderBottomColor: borderColor + '30' }}
-      >
-        <Text
-          className="text-2xl"
-          style={{ fontFamily: 'BricolageGrotesque_700Bold', color: highContrast ? colors.crema : colors.azul }}
-        >
-          AgroPhysis
-        </Text>
-        <Text className="text-sm opacity-70" style={{ fontFamily: 'Inter_400Regular', color: textColor }}>
-          Menú de gestión
-        </Text>
-      </View>
+    <Screen>
+      <BrandHero bleed title="Agro Physis" subtitle="Menú de gestión" />
 
-      {/* 2. Items Nativos 100% Controlados */}
-      <ScrollView className="flex-1 px-4">
-        <NavItem path="/home" icon="home-outline" label="Inicio" />
-        <NavItem path="/farms" icon="leaf-outline" label="Mis Fincas" />
-        <NavItem path="/crops" icon="nutrition-outline" label="Mis Cultivos" />
-        <NavItem path="/pests" icon="bug-outline" label="Catálogo de Plagas" />
-        <NavItem path="/diagnosis" icon="medkit-outline" label="Diagnóstico de síntomas" />
-        <NavItem path="/profile" icon="person-outline" label="Mi perfil" />
+      <ScrollView className="flex-1" contentContainerClassName="gap-2 px-4 py-5">
+        <NavItem path="/home" icon="home" label="Inicio" onNavigate={navigate} />
+        <NavItem path="/farms" icon="leaf" label="Mis Fincas" onNavigate={navigate} />
+        <NavItem path="/crops" icon="nutrition" label="Mis Cultivos" onNavigate={navigate} />
+        <NavItem path="/pests" icon="bug" label="Catálogo de Plagas" onNavigate={navigate} />
+        <NavItem
+          path="/diagnosis"
+          icon="medkit"
+          label="Diagnóstico de síntomas"
+          onNavigate={navigate}
+        />
+        <NavItem path="/profile" icon="person" label="Mi perfil" onNavigate={navigate} />
       </ScrollView>
 
-      {/* 3. Botón inferior para cerrar sesión */}
-      <View
-        className="border-t px-4 pt-4"
-        style={{ paddingBottom: Math.max(insets.bottom, 16), borderTopColor: borderColor + '30' }}
-      >
+      <View className="px-4 pt-3" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
+        <View className={`mb-3 h-px ${palette.divider}`} />
         <Pressable
           onPress={async () => {
             onClose();
             await signOut();
             router.replace('/login');
           }}
-          className="min-h-12 flex-row items-center rounded-campo p-3 active:bg-turquesa/10"
+          className="min-h-14 flex-row items-center gap-4 rounded-boton px-4 py-3 active:bg-azul/10"
           accessibilityLabel="Cerrar sesión"
           accessibilityRole="button"
         >
-          <Ionicons name="log-out-outline" size={24} color={textColor} />
-          <Text className="ml-4 flex-1 text-base" style={{ fontFamily: 'Inter_600SemiBold', color: textColor }}>
+          <Ionicons name="log-out-outline" size={24} color={palette.icon} />
+          <Text className={`flex-1 text-base font-inter-semibold ${palette.title}`}>
             Cerrar sesión
           </Text>
         </Pressable>
       </View>
-    </View>
+    </Screen>
   );
 }
 
 export default function DrawerLayout() {
-  const { highContrast } = useAccessibility();
-
-  const bgTheme = highContrast ? colors.tinta : colors.crema;
-  const headerTheme = highContrast ? colors.tinta : colors.azul;
+  const { palette } = useAccessibility();
 
   return (
     <Drawer
@@ -119,13 +108,14 @@ export default function DrawerLayout() {
         <CustomDrawerContent onClose={() => navigation.closeDrawer()} />
       )}
       screenOptions={({ navigation }) => ({
-        headerStyle: { backgroundColor: headerTheme },
+        headerBackground: HeaderBackground,
         headerTintColor: colors.crema,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        headerTitleStyle: { fontFamily: 'BricolageGrotesque_700Bold', fontSize: 18 },
-        sceneContainerStyle: { backgroundColor: bgTheme },
-        drawerStyle: { backgroundColor: bgTheme, width: '75%' },
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 18 },
+        sceneStyle: { backgroundColor: palette.canvas },
+        drawerStyle: { backgroundColor: palette.canvas, width: '80%' },
+        overlayColor: `${colors.tinta}99`,
 
         headerLeft: () => (
           <Pressable

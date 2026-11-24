@@ -1,5 +1,7 @@
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useAccessibility } from '../accessibility/context';
+import { type } from '../theme/tokens';
+import Chip from './Chip';
 
 export interface ChipFilterOption {
   value: string;
@@ -21,50 +23,25 @@ export default function ChipFilter({
   onSelect,
   empty = 'Sin opciones disponibles',
 }: ChipFilterProps) {
-  const { highContrast } = useAccessibility();
+  const { palette } = useAccessibility();
 
   return (
     <View className="mb-4 gap-1.5">
-      <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
-        {label}
-      </Text>
+      <Text className={`${type.label} ${palette.title}`}>{label}</Text>
       {options.length === 0 ? (
-        <Text className={highContrast ? 'text-crema/80' : 'text-turquesa'}>{empty}</Text>
+        <Text className={`${type.caption} ${palette.sub}`}>{empty}</Text>
       ) : (
         <View className="flex-row flex-wrap gap-2">
           {options.map((option) => {
             const active = String(option.value) === String(selected);
             return (
-              <Pressable
+              <Chip
                 key={String(option.value)}
-                onPress={() => onSelect(active ? undefined : String(option.value))}
+                label={option.label}
                 accessibilityLabel={`${label}: ${option.label}`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                className={`min-h-12 min-w-12 items-center justify-center rounded-chip border-2 px-4 py-2 active:opacity-70 ${
-                  active
-                    ? highContrast
-                      ? 'border-crema bg-crema'
-                      : 'border-turquesa bg-turquesa'
-                    : highContrast
-                      ? 'border-crema bg-noche'
-                      : 'border-turquesa bg-crema'
-                }`}
-              >
-                <Text
-                  className={`text-xs font-inter-semibold ${
-                    active
-                      ? highContrast
-                        ? 'text-noche'
-                        : 'text-crema'
-                      : highContrast
-                        ? 'text-crema'
-                        : 'text-noche'
-                  }`}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
+                selected={active}
+                onPress={() => onSelect(active ? undefined : String(option.value))}
+              />
             );
           })}
         </View>

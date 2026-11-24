@@ -1,17 +1,23 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import Field from '../../components/Field';
 import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
 import AuthHeader from './components/AuthHeader';
+import { useAccessibility } from '../../accessibility/context';
 import { LOGIN_FIELD_RULES, type LoginForm } from '../../utils/auth-validators';
 import { useLogin } from '../../hooks/useLogin';
+import { type } from '../../theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { palette } = useAccessibility();
   const { loading, error, login, dismissError } = useLogin();
 
   const { control, handleSubmit } = useForm<LoginForm>();
@@ -23,57 +29,73 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-crema">
+    <Screen>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: Math.max(insets.bottom, 24) }}
         keyboardShouldPersistTaps="handled"
       >
-        <AuthHeader title="Neo Physis Equa" subtitle="Inicia sesión en tu cuenta" />
+        <AuthHeader subtitle="Gestiona tus fincas, cultivos y plagas en un solo lugar." />
 
-        {error && (
-          <Notice variant="error" onDismiss={dismissError}>
-            {error}
-          </Notice>
-        )}
+        <View className="-mt-8 gap-4 px-6">
+          <Card className="gap-5">
+            <View className="gap-1">
+              <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
+                Inicia sesión
+              </Text>
+              <Text className={`${type.caption} ${palette.sub}`}>Entra con tu correo y contraseña.</Text>
+            </View>
 
-        <Field
-          control={control}
-          name="email"
-          label="Email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          placeholder="tucorreo@ejemplo.com"
-          rules={LOGIN_FIELD_RULES.email}
-        />
-        <Field
-          control={control}
-          name="password"
-          label="Contraseña"
-          secureTextEntry
-          autoCapitalize="none"
-          placeholder="Tu contraseña"
-          rules={LOGIN_FIELD_RULES.password}
-        />
+            {error && (
+              <Notice variant="error" onDismiss={dismissError}>
+                {error}
+              </Notice>
+            )}
 
-        <Button
-          text={loading ? 'Iniciando…' : 'Iniciar sesión'}
-          onPress={handleSubmit(onSubmit)}
-          disabled={loading}
-        />
+            <Field
+              control={control}
+              name="email"
+              label="Email"
+              icon="mail-outline"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="tucorreo@ejemplo.com"
+              rules={LOGIN_FIELD_RULES.email}
+            />
+            <Field
+              control={control}
+              name="password"
+              label="Contraseña"
+              icon="lock-closed-outline"
+              secureTextEntry
+              autoCapitalize="none"
+              placeholder="Tu contraseña"
+              rules={LOGIN_FIELD_RULES.password}
+            />
 
-        <Link href="/register" asChild>
-          <Pressable
-            className="min-h-12 items-center justify-center"
-            accessibilityLabel="¿No tienes cuenta? Regístrate"
-            accessibilityRole="link"
-            accessibilityHint="Abre la pantalla de registro"
-          >
-            <Text className="text-center text-turquesa">¿No tienes cuenta? Regístrate</Text>
-          </Pressable>
-        </Link>
+            <Button
+              text={loading ? 'Iniciando…' : 'Iniciar sesión'}
+              icon="log-in-outline"
+              onPress={handleSubmit(onSubmit)}
+              disabled={loading}
+            />
+          </Card>
+
+          <Link href="/register" asChild>
+            <Pressable
+              className="min-h-12 items-center justify-center rounded-boton active:opacity-70"
+              accessibilityLabel="¿No tienes cuenta? Regístrate"
+              accessibilityRole="link"
+              accessibilityHint="Abre la pantalla de registro"
+            >
+              <Text className={`text-center ${type.body} ${palette.sub}`}>
+                ¿No tienes cuenta? <Text className="font-inter-bold underline">Regístrate</Text>
+              </Text>
+            </Pressable>
+          </Link>
+        </View>
       </KeyboardAwareScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

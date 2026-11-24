@@ -1,14 +1,21 @@
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
+import EmptyState from '../../components/EmptyState';
+import IconBadge from '../../components/IconBadge';
+import LoadingView from '../../components/LoadingView';
 import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
+import ScreenTitle from '../../components/ScreenTitle';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { useCropList } from '../../hooks/useCropList';
+import { type } from '../../theme/tokens';
 
 function formatPlantedDate(isoDate: string): string {
   const [year, month, day] = isoDate.slice(0, 10).split('-').map(Number);
@@ -39,66 +46,64 @@ export default function CropsListScreen() {
   } = useCropList(typeof params.farmId === 'string' ? params.farmId : undefined);
 
   if (loading) {
-    return (
-      <View className={`flex-1 items-center justify-center ${palette.bg}`}>
-        <ActivityIndicator color={palette.spinner} />
-      </View>
-    );
+    return <LoadingView label="Cargando tus cultivos…" />;
   }
 
   return (
-    <View className={`flex-1 ${palette.bg} p-6`}>
-      <View className="mb-4 flex-row items-center justify-between gap-3">
-        <View className="flex-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Cultivos</Text>
-          <Text className={`text-sm ${palette.sub}`}>
-            {selectedFarmName ? `Finca: ${selectedFarmName}` : 'Todos tus cultivos'}
-          </Text>
-        </View>
-        <Button text="+ Nuevo" onPress={goToNew} className="rounded-xl p-3" />
+    <Screen className="px-6 pt-6">
+      <View className="mb-5 gap-4">
+        <ScreenTitle
+          icon="nutrition"
+          title="Cultivos"
+          subtitle={selectedFarmName ? `Finca: ${selectedFarmName}` : 'Todos tus cultivos'}
+          action={
+            <Button
+              text="Nuevo"
+              icon="add"
+              onPress={goToNew}
+              accessibilityLabel="Registrar nuevo cultivo"
+            />
+          }
+        />
+
+        {error ? (
+          <Notice variant="error" onDismiss={dismissError}>
+            {error}
+          </Notice>
+        ) : null}
+        {warning ? (
+          <Notice variant="warning" onDismiss={dismissWarning} autoDismissMs={5000}>
+            {warning}
+          </Notice>
+        ) : null}
       </View>
 
-      {error ? (
-        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
-          {error}
-        </Notice>
-      ) : null}
-      {warning ? (
-        <Notice
-          variant="warning"
-          className="mb-4"
-          onDismiss={dismissWarning}
-          autoDismissMs={5000}
-        >
-          {warning}
-        </Notice>
-      ) : null}
-
       {farms.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
-            Aún no tienes fincas registradas
-          </Text>
-          <Text className={`text-center text-sm ${palette.sub}`}>
-            Registra tu primera finca para poder crear cultivos.
-          </Text>
-          <Button text="Ir a mis fincas" onPress={() => router.push('/farms')} />
+        <CenteredScroll>
+          <EmptyState
+            icon="leaf"
+            title="Aún no tienes fincas registradas"
+            message="Registra tu primera finca para poder crear cultivos."
+          >
+            <Button text="Ir a mis fincas" icon="leaf-outline" onPress={() => router.push('/farms')} />
+          </EmptyState>
         </CenteredScroll>
       ) : crops.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
-            No tienes cultivos registrados
-          </Text>
-          <Text className={`text-center text-sm ${palette.sub}`}>
-            Crea tu primer cultivo para empezar a registrar plagas.
-          </Text>
-          <Button text="+ Registrar cultivo" onPress={goToNew} />
+        <CenteredScroll>
+          <EmptyState
+            icon="nutrition"
+            title="No tienes cultivos registrados"
+            message="Crea tu primer cultivo para empezar a registrar plagas."
+          >
+            <Button text="Registrar cultivo" icon="add" onPress={goToNew} />
+          </EmptyState>
         </CenteredScroll>
       ) : (
         <FlatList
           data={filteredCrops}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
+          contentContainerClassName="gap-3"
           contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
@@ -117,39 +122,40 @@ export default function CropsListScreen() {
             </>
           }
           ListEmptyComponent={
-            <Text className={`py-6 text-center text-sm ${palette.sub}`}>
+            <Text className={`py-6 text-center ${type.caption} ${palette.sub}`}>
               No se encontraron cultivos con el criterio de búsqueda.
             </Text>
           }
           renderItem={({ item }) => (
-            <Pressable
+            <Card
+              onPress={() => router.push(`/crops/${item.id}`)}
               accessibilityLabel={`Cultivo ${item.species} de la finca ${item.farm?.name ?? item.farmId}`}
               accessibilityHint="Abre el detalle del cultivo para editarlo, eliminarlo o ver sus plagas"
-              accessibilityRole="button"
-              onPress={() => router.push(`/crops/${item.id}`)}
-              className={`mb-3 rounded-2xl p-4 ${palette.card}`}
             >
-              <View className="flex-row items-center justify-between gap-2">
-                <Text className={`flex-1 text-lg font-inter-semibold ${palette.title}`}>{item.species}</Text>
-                <Badge value={item.growthStage} />
+              <View className="flex-row items-center gap-3">
+                <IconBadge icon="nutrition" />
+                <View className="flex-1 gap-1">
+                  <Text className={`${type.subheading} ${palette.title}`}>{item.species}</Text>
+                  <Badge value={item.growthStage} />
+                </View>
               </View>
-              <Text className={`mt-1 text-sm ${palette.sub}`}>
+              <Text className={`${type.caption} ${palette.sub}`}>
                 Finca: {item.farm?.name ?? 'No asociada'}
               </Text>
               {item.plantedDate ? (
-                <Text className={`mt-0.5 text-xs ${palette.faint}`}>
+                <Text className={`${type.data} ${palette.faint}`}>
                   Sembrado: {formatPlantedDate(item.plantedDate)}
                 </Text>
               ) : null}
               {item.notes ? (
-                <Text className={`mt-1 text-xs ${palette.sub}`} numberOfLines={1}>
+                <Text className={`${type.caption} ${palette.sub}`} numberOfLines={1}>
                   Notas: {item.notes}
                 </Text>
               ) : null}
-            </Pressable>
+            </Card>
           )}
         />
       )}
-    </View>
+    </Screen>
   );
 }

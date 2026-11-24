@@ -1,17 +1,20 @@
-import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Control } from 'react-hook-form';
 import Button from '../../components/Button';
+import Card from '../../components/Card';
+import EmptyState from '../../components/EmptyState';
+import LoadingView from '../../components/LoadingView';
 import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
+import ScreenTitle from '../../components/ScreenTitle';
 import Select from '../../components/Select';
-import { useAccessibility } from '../../accessibility/context';
 import { useNewCrop } from '../../hooks/useNewCrop';
+import { space } from '../../theme/tokens';
 import CropFormFields from './CropFormFields';
 import { FARM_FIELD_RULES, type CropFormValues } from '../../utils/crop-validators';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function NewCropScreen() {
-  const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const {
     control,
@@ -27,34 +30,34 @@ export default function NewCropScreen() {
   } = useNewCrop();
 
   if (loading) {
-    return (
-      <View className={`flex-1 items-center justify-center ${palette.bg}`}>
-        <ActivityIndicator color={palette.spinner} />
-      </View>
-    );
+    return <LoadingView label="Cargando tus fincas…" />;
   }
 
   return (
-    <View className={`flex-1 ${palette.bg}`}>
+    <Screen>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24, paddingBottom: insets.bottom + 24 }}
+        contentContainerStyle={{
+          gap: 20,
+          padding: space.gutter,
+          paddingBottom: insets.bottom + space.gutter,
+        }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="items-center gap-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Nuevo cultivo</Text>
-          <Text className={`text-center ${palette.sub}`}>
-            Registra un cultivo asociado a una de tus fincas
-          </Text>
-        </View>
+        <ScreenTitle
+          icon="nutrition"
+          title="Nuevo cultivo"
+          subtitle="Registra un cultivo asociado a una de tus fincas"
+        />
 
         {farms.length === 0 ? (
-          <View className="gap-3">
-            <Text className={`text-center ${palette.sub}`}>
-              Para crear un cultivo primero necesitas registrar una finca.
-            </Text>
-            <Button text="Ir a mis fincas" onPress={goToFarms} />
-          </View>
+          <EmptyState
+            icon="leaf"
+            title="Primero registra una finca"
+            message="Para crear un cultivo primero necesitas registrar una finca."
+          >
+            <Button text="Ir a mis fincas" icon="leaf-outline" onPress={goToFarms} />
+          </EmptyState>
         ) : (
           <>
             {rootError && (
@@ -68,26 +71,29 @@ export default function NewCropScreen() {
               </Notice>
             ) : null}
 
-            <Select
-              control={control}
-              name="farmId"
-              label="Finca *"
-              options={farms.map((farm) => ({ value: farm.id, label: farm.name }))}
-              empty="No tienes fincas registradas"
-              rules={FARM_FIELD_RULES}
-            />
+            <Card className="gap-5">
+              <Select
+                control={control}
+                name="farmId"
+                label="Finca *"
+                options={farms.map((farm) => ({ value: farm.id, label: farm.name }))}
+                empty="No tienes fincas registradas"
+                rules={FARM_FIELD_RULES}
+              />
 
-            {/* NewCropFormValues extiende CropFormValues; los campos compartidos son compatibles */}
-            <CropFormFields control={control as unknown as Control<CropFormValues>} optionalHints />
+              {/* NewCropFormValues extiende CropFormValues; los campos compartidos son compatibles */}
+              <CropFormFields control={control as unknown as Control<CropFormValues>} optionalHints />
 
-            <Button
-              text={submitting ? 'Registrando…' : 'Registrar cultivo'}
-              onPress={onSubmit}
-              disabled={submitting}
-            />
+              <Button
+                text={submitting ? 'Registrando…' : 'Registrar cultivo'}
+                icon="checkmark"
+                onPress={onSubmit}
+                disabled={submitting}
+              />
+            </Card>
           </>
         )}
       </KeyboardAwareScrollView>
-    </View>
+    </Screen>
   );
 }

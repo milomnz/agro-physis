@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import {
   Controller,
   type Control,
@@ -8,6 +8,8 @@ import {
   type RegisterOptions,
 } from 'react-hook-form';
 import { useAccessibility } from '../accessibility/context';
+import { type } from '../theme/tokens';
+import Chip from './Chip';
 
 export interface SelectOption {
   value: string | number;
@@ -31,7 +33,7 @@ export default function Select<T extends FieldValues>({
   empty,
   rules,
 }: SelectProps<T>) {
-  const { highContrast, palette } = useAccessibility();
+  const { palette } = useAccessibility();
 
   return (
     <Controller
@@ -40,56 +42,29 @@ export default function Select<T extends FieldValues>({
       rules={rules}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <View className="gap-1.5">
-          <Text className={`font-inter-semibold ${highContrast ? 'text-crema' : 'text-noche'}`}>
-            {label}
-          </Text>
+          <Text className={`${type.label} ${palette.title}`}>{label}</Text>
           {options.length === 0 ? (
-            <Text className={highContrast ? 'text-crema/80' : 'text-turquesa'}>
+            <Text className={`${type.caption} ${palette.sub}`}>
               {empty ?? 'Sin opciones disponibles'}
             </Text>
           ) : (
-            <View className="flex-row flex-wrap gap-2">
-              {options.map((option) => {
-                const active = String(option.value) === String(value);
-                return (
-                  <Pressable
-                    key={String(option.value)}
-                    onPress={() => onChange(option.value)}
-                    accessibilityLabel={`${label}: ${option.label}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    className={`min-h-12 min-w-12 items-center justify-center rounded-chip border-2 px-4 py-2 active:opacity-70 ${
-                      active
-                        ? highContrast
-                          ? 'border-crema bg-crema'
-                          : 'border-turquesa bg-turquesa'
-                        : highContrast
-                          ? 'border-crema bg-noche'
-                          : 'border-turquesa bg-crema'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-inter-semibold ${
-                        active
-                          ? highContrast
-                            ? 'text-noche'
-                            : 'text-crema'
-                          : highContrast
-                            ? 'text-crema'
-                            : 'text-noche'
-                      }`}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
+              {options.map((option) => (
+                <Chip
+                  key={String(option.value)}
+                  radio
+                  label={option.label}
+                  accessibilityLabel={`${label}: ${option.label}`}
+                  selected={String(option.value) === String(value)}
+                  onPress={() => onChange(option.value)}
+                />
+              ))}
             </View>
           )}
           {error?.message && (
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="alert-circle" size={12} color={palette.iconError} />
-              <Text className={`text-xs font-inter-semibold ${palette.errorText}`}>
+            <View className="flex-row items-center gap-1.5">
+              <Ionicons name="alert-circle" size={16} color={palette.iconError} />
+              <Text className={`flex-1 text-sm font-inter-semibold ${palette.bannerText}`}>
                 {error.message}
               </Text>
             </View>
