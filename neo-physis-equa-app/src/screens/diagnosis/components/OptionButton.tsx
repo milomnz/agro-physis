@@ -1,4 +1,5 @@
-import { Pressable, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, Text, View } from 'react-native';
 
 import { useAccessibility } from '../../../accessibility/context';
 import { colors } from '../../../theme/tokens';
@@ -10,18 +11,20 @@ interface OptionButtonProps {
   onPress: () => void;
 }
 
-/** Opción grande de respuesta: al menos 64 de alto y el texto hace salto de línea. */
+/**
+ * Opción grande de respuesta: al menos 64 de alto y el texto hace salto de línea.
+ * Seleccionada = relleno + ícono de check, no solo color.
+ */
 export default function OptionButton({ label, sublabel, selected = false, onPress }: OptionButtonProps) {
   const { highContrast } = useAccessibility();
 
-  const background = selected
+  const container = selected
     ? highContrast
-      ? colors.crema
-      : colors.azul
+      ? 'border-lima bg-lima'
+      : 'border-azul bg-azul'
     : highContrast
-      ? colors.tinta
-      : '#FFFFFF';
-  const border = highContrast ? colors.crema : colors.azul;
+      ? 'border-crema bg-tinta'
+      : 'border-azul bg-papel';
   const textColor = selected
     ? highContrast
       ? colors.tinta
@@ -36,17 +39,23 @@ export default function OptionButton({ label, sublabel, selected = false, onPres
       accessibilityRole="button"
       accessibilityLabel={sublabel ? `${label}, ${sublabel}` : label}
       accessibilityState={{ selected }}
-      style={{ backgroundColor: background, borderColor: border }}
-      className="min-h-[64px] justify-center rounded-2xl border-2 px-5 py-4 active:opacity-70"
+      className={`min-h-16 flex-row items-center gap-3 rounded-tarjeta border-2 px-5 py-4 active:opacity-70 ${container}`}
     >
-      <Text className="text-lg font-inter-semibold" style={{ color: textColor }}>
-        {label}
-      </Text>
-      {sublabel ? (
-        <Text className="mt-0.5 text-sm" style={{ color: textColor }}>
-          {sublabel}
+      <View className="flex-1">
+        <Text className="text-lg font-inter-semibold" style={{ color: textColor }}>
+          {label}
         </Text>
-      ) : null}
+        {sublabel ? (
+          <Text className="mt-0.5 text-sm font-inter" style={{ color: textColor }}>
+            {sublabel}
+          </Text>
+        ) : null}
+      </View>
+      <Ionicons
+        name={selected ? 'checkmark-circle' : 'chevron-forward'}
+        size={24}
+        color={textColor}
+      />
     </Pressable>
   );
 }

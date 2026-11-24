@@ -2,8 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { validateNombre } from '../utils/auth-validators';
 import { useSession } from './useSession';
 
-export type ProfileFieldName = 'nombre';
-
 export interface EditProfileErrors {
   nombre?: string;
 }
@@ -19,8 +17,6 @@ export interface UseEditProfileResult {
   setTtsEnabled: (value: boolean) => void;
   highContrast: boolean;
   setHighContrast: (value: boolean) => void;
-  focusedField: ProfileFieldName | null;
-  setFocusedField: (field: ProfileFieldName | null) => void;
   errors: EditProfileErrors;
   apiError: string | null;
   successMessage: string | null;
@@ -42,7 +38,6 @@ export function useEditProfile(): UseEditProfileResult {
   const [highContrast, setHighContrast] = useState(
     () => session?.accessibilityProfile?.highContrast === true,
   );
-  const [focusedField, setFocusedField] = useState<ProfileFieldName | null>(null);
   const [errors, setErrors] = useState<EditProfileErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -74,7 +69,6 @@ export function useEditProfile(): UseEditProfileResult {
     syncFromSession();
     setErrors({});
     setApiError(null);
-    setFocusedField(null);
     setIsEditing(false);
   }, [syncFromSession]);
 
@@ -121,8 +115,6 @@ export function useEditProfile(): UseEditProfileResult {
     setTtsEnabled,
     highContrast,
     setHighContrast,
-    focusedField,
-    setFocusedField,
     errors,
     apiError,
     successMessage,

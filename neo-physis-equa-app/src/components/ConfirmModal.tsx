@@ -1,6 +1,7 @@
 import { Modal, Text, View } from 'react-native';
 
 import { useAccessibility } from '../accessibility/context';
+import { type } from '../theme/tokens';
 import Button from './Button';
 
 interface ConfirmModalProps {
@@ -37,30 +38,26 @@ export default function ConfirmModal({
         if (!loading) onCancel();
       }}
     >
-      <View className="flex-1 items-center justify-center bg-noche/70 p-6">
+      <View className="flex-1 items-center justify-center bg-tinta/80 p-6">
         <View
           accessibilityViewIsModal
           accessibilityRole="alert"
           className={`w-full max-w-md gap-4 rounded-tarjeta p-6 ${palette.card}`}
         >
-          <Text className={`text-xl font-bricolage ${palette.title}`}>{title}</Text>
-          <Text className={`text-sm ${palette.body}`}>{message}</Text>
+          <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
+            {title}
+          </Text>
+          <Text className={`${type.body} ${palette.body}`}>{message}</Text>
 
-          <View className="mt-2 flex-row gap-3">
-            <Button
-              text={cancelText}
-              onPress={onCancel}
-              secondary
-              disabled={loading}
-              className="flex-1"
-            />
+          <View className="mt-2 gap-3">
             <Button
               text={loading ? 'Eliminando…' : confirmText}
               onPress={onConfirm}
               danger={danger}
+              icon={danger ? 'trash-outline' : undefined}
               disabled={loading}
-              className="flex-1"
             />
+            <Button text={cancelText} onPress={onCancel} secondary disabled={loading} />
           </View>
         </View>
       </View>

@@ -1,13 +1,18 @@
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Button from '../../components/Button';
 import CenteredScroll from '../../components/CenteredScroll';
 import ChipFilter from '../../components/ChipFilter';
+import EmptyState from '../../components/EmptyState';
+import LoadingView from '../../components/LoadingView';
 import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
+import ScreenTitle from '../../components/ScreenTitle';
 import SearchBar from '../../components/SearchBar';
 import { useAccessibility } from '../../accessibility/context';
 import { usePestList } from '../../hooks/usePestList';
+import { type } from '../../theme/tokens';
 import PestCard from './components/PestCard';
 
 export default function PestsListScreen() {
@@ -32,56 +37,54 @@ export default function PestsListScreen() {
   } = usePestList();
 
   if (loading) {
-    return (
-      <View className={`flex-1 items-center justify-center ${palette.bg}`}>
-        <ActivityIndicator color={palette.spinner} />
-      </View>
-    );
+    return <LoadingView label="Cargando el catálogo de plagas…" />;
   }
 
   return (
-    <View className={`flex-1 ${palette.bg} p-6`}>
-      <View className="mb-4 flex-row items-center justify-between gap-3">
-        <View className="flex-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Plagas</Text>
-          <Text className={`text-sm ${palette.sub}`}>
-            {selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}
-          </Text>
-        </View>
-        <Button text="+ Nueva" onPress={goToNew} className="rounded-xl p-3" />
+    <Screen className="px-6 pt-6">
+      <View className="mb-5 gap-4">
+        <ScreenTitle
+          icon="bug"
+          title="Plagas"
+          subtitle={selectedCropLabel ? `Cultivo: ${selectedCropLabel}` : 'Plagas de tus cultivos'}
+          action={
+            <Button
+              text="Nueva"
+              icon="add"
+              onPress={goToNew}
+              accessibilityLabel="Registrar nueva plaga"
+            />
+          }
+        />
+
+        {error ? (
+          <Notice variant="error" onDismiss={dismissError}>
+            {error}
+          </Notice>
+        ) : null}
+        {warning ? (
+          <Notice variant="warning" onDismiss={dismissWarning} autoDismissMs={5000}>
+            {warning}
+          </Notice>
+        ) : null}
       </View>
 
-      {error ? (
-        <Notice variant="error" className="mb-4" onDismiss={dismissError}>
-          {error}
-        </Notice>
-      ) : null}
-      {warning ? (
-        <Notice
-          variant="warning"
-          className="mb-4"
-          onDismiss={dismissWarning}
-          autoDismissMs={5000}
-        >
-          {warning}
-        </Notice>
-      ) : null}
-
       {crops.length === 0 ? (
-        <CenteredScroll contentClassName="gap-3">
-          <Text className={`text-center text-lg font-inter-semibold ${palette.body}`}>
-            Aún no tienes cultivos registrados
-          </Text>
-          <Text className={`text-center text-sm ${palette.sub}`}>
-            Crea tu primer cultivo para poder registrar plagas.
-          </Text>
-          <Button text="Ir a mis cultivos" onPress={goToCrops} />
+        <CenteredScroll>
+          <EmptyState
+            icon="nutrition"
+            title="Aún no tienes cultivos registrados"
+            message="Crea tu primer cultivo para poder registrar plagas."
+          >
+            <Button text="Ir a mis cultivos" icon="nutrition-outline" onPress={goToCrops} />
+          </EmptyState>
         </CenteredScroll>
       ) : (
         <FlatList
           data={filteredPests}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
+          contentContainerClassName="gap-3"
           contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
           ListHeaderComponent={
             <>
@@ -100,13 +103,13 @@ export default function PestsListScreen() {
             </>
           }
           ListEmptyComponent={
-            <Text className={`py-6 text-center text-sm ${palette.sub}`}>
+            <Text className={`py-6 text-center ${type.caption} ${palette.sub}`}>
               No se encontraron plagas con el criterio de búsqueda.
             </Text>
           }
           renderItem={({ item }) => <PestCard pest={item} onPress={(pest) => goToDetail(pest.id)} />}
         />
       )}
-    </View>
+    </Screen>
   );
 }

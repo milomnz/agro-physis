@@ -48,7 +48,7 @@ const FeedbackContext = createContext<FeedbackContextValue>({
 });
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
-  const { actionFeedback, highContrast } = useAccessibility();
+  const { actionFeedback, palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const [banner, setBanner] = useState<FeedbackBannerState | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,27 +100,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   );
 
   const isWarning = banner?.variant === 'warning';
-  const containerClass = isWarning
-    ? highContrast
-      ? 'border-amber-300 bg-amber-950'
-      : 'border-amber-700 bg-amber-50'
-    : highContrast
-      ? 'border-green-300 bg-green-950'
-      : 'border-green-700 bg-green-50';
-  const textClass = isWarning
-    ? highContrast
-      ? 'text-amber-200'
-      : 'text-amber-900'
-    : highContrast
-      ? 'text-green-300'
-      : 'text-green-700';
-  const iconColor = isWarning
-    ? highContrast
-      ? '#FCD34D'
-      : '#B45309'
-    : highContrast
-      ? '#86EFAC'
-      : '#15803D';
+  const containerClass = isWarning ? palette.warningBanner : palette.successBanner;
+  const iconColor = isWarning ? palette.iconWarning : palette.iconSuccess;
 
   return (
     <FeedbackContext.Provider value={value}>
@@ -134,14 +115,14 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           <View
             accessibilityRole="alert"
             accessibilityLiveRegion={isWarning ? 'assertive' : 'polite'}
-            className={`flex-row items-center gap-3 rounded-2xl border-2 p-4 ${containerClass}`}
+            className={`flex-row items-center gap-3 rounded-campo p-4 ${containerClass}`}
           >
             <Ionicons
               name={isWarning ? 'notifications' : 'checkmark-circle'}
               size={28}
               color={iconColor}
             />
-            <Text className={`flex-1 font-inter-semibold ${textClass}`}>{banner.text}</Text>
+            <Text className={`flex-1 font-inter-semibold ${palette.bannerText}`}>{banner.text}</Text>
           </View>
         </View>
       ) : null}

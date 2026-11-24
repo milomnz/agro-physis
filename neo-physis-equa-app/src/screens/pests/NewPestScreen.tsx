@@ -1,50 +1,53 @@
-import { ActivityIndicator, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-
-import Button from '../../components/Button';
-import Field from '../../components/Field';
-import Notice from '../../components/Notice';
-import Select from '../../components/Select';
-import { useAccessibility } from '../../accessibility/context';
-import { SEVERITIES } from '../../services/pests';
-import { useNewPest } from '../../hooks/useNewPest';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Button from '../../components/Button';
+import Card from '../../components/Card';
+import EmptyState from '../../components/EmptyState';
+import Field from '../../components/Field';
+import LoadingView from '../../components/LoadingView';
+import Notice from '../../components/Notice';
+import Screen from '../../components/Screen';
+import ScreenTitle from '../../components/ScreenTitle';
+import Select from '../../components/Select';
+import { SEVERITIES } from '../../services/pests';
+import { useNewPest } from '../../hooks/useNewPest';
+import { space } from '../../theme/tokens';
+
 export default function NewPestScreen() {
-  const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
   const { control, crops, loading, submitting, rootError, onSubmit, goToCrops, dismissRootError } =
     useNewPest();
 
   if (loading) {
-    return (
-      <View className={`flex-1 items-center justify-center ${palette.bg}`}>
-        <ActivityIndicator color={palette.spinner} />
-      </View>
-    );
+    return <LoadingView label="Cargando tus cultivos…" />;
   }
 
   return (
-    <View className={`flex-1 ${palette.bg}`}>
+    <Screen>
       <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', gap: 20, padding: 24, paddingBottom: insets.bottom + 24 }}
+        contentContainerStyle={{
+          gap: 20,
+          padding: space.gutter,
+          paddingBottom: insets.bottom + space.gutter,
+        }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="items-center gap-1">
-          <Text className={`text-2xl font-bricolage ${palette.title}`}>Nueva plaga</Text>
-          <Text className={`text-center ${palette.sub}`}>
-            Registra una plaga asociada a un cultivo
-          </Text>
-        </View>
+        <ScreenTitle
+          icon="bug"
+          title="Nueva plaga"
+          subtitle="Registra una plaga asociada a un cultivo"
+        />
 
         {crops.length === 0 ? (
-          <View className="gap-3">
-            <Text className={`text-center ${palette.sub}`}>
-              Para crear una plaga primero necesitas registrar un cultivo.
-            </Text>
-            <Button text="Ir a mis cultivos" onPress={goToCrops} />
-          </View>
+          <EmptyState
+            icon="nutrition"
+            title="Primero registra un cultivo"
+            message="Para crear una plaga primero necesitas registrar un cultivo."
+          >
+            <Button text="Ir a mis cultivos" icon="nutrition-outline" onPress={goToCrops} />
+          </EmptyState>
         ) : (
           <>
             {rootError && (
@@ -53,80 +56,83 @@ export default function NewPestScreen() {
               </Notice>
             )}
 
-            <Select
-              control={control}
-              name="cropId"
-              label="Cultivo *"
-              options={crops.map((crop) => ({
-                value: crop.id,
-                label: `${crop.species} (${crop.farm?.name ?? 'sin finca'})`,
-              }))}
-              empty="No tienes cultivos registrados"
-              rules={{ required: 'Selecciona el cultivo afectado' }}
-            />
+            <Card className="gap-5">
+              <Select
+                control={control}
+                name="cropId"
+                label="Cultivo *"
+                options={crops.map((crop) => ({
+                  value: crop.id,
+                  label: `${crop.species} (${crop.farm?.name ?? 'sin finca'})`,
+                }))}
+                empty="No tienes cultivos registrados"
+                rules={{ required: 'Selecciona el cultivo afectado' }}
+              />
 
-            <Field
-              control={control}
-              name="commonName"
-              label="Nombre común *"
-              autoCapitalize="words"
-              placeholder="ej. Pulgón, Gusano cogollero"
-              rules={{
-                required: 'El nombre común es obligatorio',
-                maxLength: {
-                  value: 100,
-                  message: 'El nombre debe tener máximo 100 caracteres',
-                },
-              }}
-            />
+              <Field
+                control={control}
+                name="commonName"
+                label="Nombre común *"
+                autoCapitalize="words"
+                placeholder="ej. Pulgón, Gusano cogollero"
+                rules={{
+                  required: 'El nombre común es obligatorio',
+                  maxLength: {
+                    value: 100,
+                    message: 'El nombre debe tener máximo 100 caracteres',
+                  },
+                }}
+              />
 
-            <Field
-              control={control}
-              name="scientificName"
-              label="Nombre científico"
-              autoCapitalize="words"
-              placeholder="ej. Aphis gossypii (opcional)"
-              rules={{
-                maxLength: {
-                  value: 200,
-                  message: 'El nombre científico debe tener máximo 200 caracteres',
-                },
-              }}
-            />
+              <Field
+                control={control}
+                name="scientificName"
+                label="Nombre científico"
+                autoCapitalize="words"
+                placeholder="ej. Aphis gossypii (opcional)"
+                rules={{
+                  maxLength: {
+                    value: 200,
+                    message: 'El nombre científico debe tener máximo 200 caracteres',
+                  },
+                }}
+              />
 
-            <Select
-              control={control}
-              name="severity"
-              label="Severidad"
-              options={SEVERITIES.map((severity) => ({
-                value: severity,
-                label: severity.charAt(0).toUpperCase() + severity.slice(1),
-              }))}
-            />
+              <Select
+                control={control}
+                name="severity"
+                label="Severidad"
+                options={SEVERITIES.map((severity) => ({
+                  value: severity,
+                  label: severity.charAt(0).toUpperCase() + severity.slice(1),
+                }))}
+              />
 
-            <Field
-              control={control}
-              name="symptoms"
-              label="Síntomas (separados por coma)"
-              placeholder="ej. hojas enrolladas, manchas, mordeduras"
-              multiline
-              numberOfLines={3}
-              rules={{
-                maxLength: {
-                  value: 1000,
-                  message: 'Los síntomas deben tener máximo 1000 caracteres',
-                },
-              }}
-            />
+              <Field
+                control={control}
+                name="symptoms"
+                label="Síntomas (separados por coma)"
+                placeholder="ej. hojas enrolladas, manchas, mordeduras"
+                multiline
+                numberOfLines={3}
+                rules={{
+                  maxLength: {
+                    value: 1000,
+                    message: 'Los síntomas deben tener máximo 1000 caracteres',
+                  },
+                }}
+              />
 
-            <Button
-              text={submitting ? 'Registrando…' : 'Registrar plaga'}
-              onPress={onSubmit}
-              disabled={submitting}
-            />
+              <Button
+                text={submitting ? 'Registrando…' : 'Registrar plaga'}
+                icon="checkmark"
+                onPress={onSubmit}
+                disabled={submitting}
+              />
+            </Card>
           </>
         )}
       </KeyboardAwareScrollView>
-    </View>
+    </Screen>
   );
 }
