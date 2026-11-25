@@ -8,6 +8,13 @@
       "expo-secure-store",
       "expo-font",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Agro Physis necesita acceso a tus fotos para analizar hojas con síntomas de plagas.",
+          "cameraPermission": "Agro Physis necesita acceso a la cámara para fotografiar hojas y diagnosticar plagas."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",

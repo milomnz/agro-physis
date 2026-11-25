@@ -1,23 +1,23 @@
-import { Text } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import Button from '../../components/Button';
-import Card from '../../components/Card';
-import ConfirmModal from '../../components/ConfirmModal';
-import LoadingView from '../../components/LoadingView';
-import Notice from '../../components/Notice';
-import Screen from '../../components/Screen';
-import ScreenTitle from '../../components/ScreenTitle';
-import { useAccessibility } from '../../accessibility/context';
-import { useCropDetail } from '../../hooks/useCropDetail';
-import { useScreenSpeech } from '../../hooks/useScreenSpeech';
-import { space, type } from '../../theme/tokens';
-import CropFormFields from './CropFormFields';
+import { Text } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import Button from "../../components/Button";
+import Card from "../../components/Card";
+import ConfirmModal from "../../components/ConfirmModal";
+import LoadingView from "../../components/LoadingView";
+import Notice from "../../components/Notice";
+import Screen from "../../components/Screen";
+import ScreenTitle from "../../components/ScreenTitle";
+import { useAccessibility } from "../../accessibility/context";
+import { useCropDetail } from "../../hooks/useCropDetail";
+import { useScreenSpeech } from "../../hooks/useScreenSpeech";
+import { space, type } from "../../theme/tokens";
+import CropFormFields from "./CropFormFields";
 
 export default function CropDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
-  const id = typeof params.id === 'string' ? params.id : undefined;
+  const id = typeof params.id === "string" ? params.id : undefined;
   const router = useRouter();
   const { palette } = useAccessibility();
   const insets = useSafeAreaInsets();
@@ -39,7 +39,9 @@ export default function CropDetailScreen() {
   } = useCropDetail(id);
 
   useScreenSpeech(
-    crop ? `Detalle de cultivo ${crop.species}. Etapa ${crop.growthStage}.` : null,
+    crop
+      ? `Detalle de cultivo ${crop.species}. Etapa ${crop.growthStage}.`
+      : null,
     !loading && Boolean(crop),
   );
 
@@ -65,7 +67,11 @@ export default function CropDetailScreen() {
         />
 
         {saved ? (
-          <Notice variant="success" onDismiss={dismissSaved} autoDismissMs={5000}>
+          <Notice
+            variant="success"
+            onDismiss={dismissSaved}
+            autoDismissMs={5000}
+          >
             Cambios guardados correctamente
           </Notice>
         ) : null}
@@ -76,14 +82,17 @@ export default function CropDetailScreen() {
         ) : null}
 
         <Card className="gap-5">
-          <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
+          <Text
+            accessibilityRole="header"
+            className={`${type.heading} ${palette.title}`}
+          >
             Editar datos
           </Text>
 
           <CropFormFields control={control} />
 
           <Button
-            text={saving ? 'Guardando…' : 'Guardar cambios'}
+            text={saving ? "Guardando…" : "Guardar cambios"}
             icon="save-outline"
             onPress={onSubmit}
             disabled={saving}
@@ -91,7 +100,10 @@ export default function CropDetailScreen() {
         </Card>
 
         <Card>
-          <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
+          <Text
+            accessibilityRole="header"
+            className={`${type.heading} ${palette.title}`}
+          >
             Plagas de este cultivo
           </Text>
           <Text className={`${type.caption} ${palette.sub}`}>
@@ -101,6 +113,12 @@ export default function CropDetailScreen() {
             text="Ver y registrar plagas"
             icon="bug-outline"
             onPress={() => router.push(`/pests?cropId=${id}`)}
+          />
+          <Button
+            text="Diagnosticar hoja de este cultivo"
+            icon="medkit-outline"
+            secondary
+            onPress={() => router.push(`/diagnosis?cropId=${id}`)}
           />
         </Card>
 

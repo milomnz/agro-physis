@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -37,10 +37,18 @@ export default function PestDetailScreen() {
     dismissError,
   } = usePestDetail();
 
+  const imageList = pest?.imageReferences ?? [];
+
   useScreenSpeech(
     pest
       ? `Detalle de plaga ${pest.commonName}. Severidad ${pest.severity}.${
           pest.symptoms.length > 0 ? ` Síntomas: ${pest.symptoms.join(', ')}.` : ''
+        }${
+          imageList.length > 0
+            ? ` Tiene ${imageList.length} ${
+                imageList.length === 1 ? 'fotografía asociada' : 'fotografías asociadas'
+              }.`
+            : ''
         }`
       : null,
     !loading && Boolean(pest),
@@ -74,6 +82,37 @@ export default function PestDetailScreen() {
             {screenError}
           </Notice>
         ) : null}
+
+                <Card className="gap-3">
+          <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
+            Fotografías asociadas ({imageList.length})
+          </Text>
+          {imageList.length === 0 ? (
+            <Text className={`${type.caption} ${palette.sub}`}>
+              Esta plaga aún no tiene fotografías registradas. Puedes adjuntar una al realizar un
+              diagnóstico del cultivo.
+            </Text>
+          ) : (
+            <View className="gap-3">
+              {imageList.map((uri, index) => (
+                <View key={`${uri}-${index}`} className="gap-1.5">
+                  <Image
+                    source={{ uri }}
+                    style={{ width: '100%', height: 200, borderRadius: 14 }}
+                    resizeMode="cover"
+                    accessible
+                    accessibilityLabel={`Fotografía ${index + 1} de ${imageList.length} asociada a ${
+                      pest?.commonName ?? 'la plaga'
+                    }`}
+                  />
+                  <Text className={`${type.caption} ${palette.sub}`}>
+                    Evidencia fotográfica #{index + 1}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </Card>
 
         <Card className="gap-5">
           <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>

@@ -37,6 +37,7 @@ export class ApiError extends Error {
 
 interface ApiClientOptions extends Omit<RequestInit, 'body'> {
   body?: unknown;
+  timeoutMs?: number;
 }
 
 type SessionExpiredHandler = () => Promise<void> | void;
@@ -101,10 +102,10 @@ export async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 export async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): Promise<T> {
-  const { body, headers, ...rest } = options;
+  const { body, headers, timeoutMs, ...rest } = options;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs ?? REQUEST_TIMEOUT_MS);
 
   let response: Response;
   try {
