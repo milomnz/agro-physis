@@ -7,7 +7,12 @@ interface CloudinaryUploadResponse {
   error?: { message?: string };
 }
 
-const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]);
 const CLOUDINARY_FOLDER = 'agro-physis/leaves';
 
 @Injectable()
@@ -20,9 +25,13 @@ export class CloudinaryService {
     imageBase64: string,
     mimeType = 'image/jpeg',
   ): Promise<string | null> {
-    const cloudName = this.configService.get<string>('CLOUDINARY_CLOUD_NAME')?.trim();
+    const cloudName = this.configService
+      .get<string>('CLOUDINARY_CLOUD_NAME')
+      ?.trim();
     const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY')?.trim();
-    const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET')?.trim();
+    const apiSecret = this.configService
+      .get<string>('CLOUDINARY_API_SECRET')
+      ?.trim();
 
     if (!cloudName || !apiKey || !apiSecret) {
       this.logger.warn(
@@ -35,7 +44,9 @@ export class CloudinaryService {
       ? mimeType.toLowerCase()
       : 'image/jpeg';
 
-    const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '').trim();
+    const cleanBase64 = imageBase64
+      .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '')
+      .trim();
     if (!cleanBase64) {
       return null;
     }

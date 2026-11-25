@@ -5,16 +5,22 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
 
   // Habilitar CORS
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:19006'],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:8081',
+      'http://localhost:19006',
+    ],
     credentials: true,
   });
 

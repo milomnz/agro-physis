@@ -112,8 +112,7 @@ export function useFarmList() {
 
     const goToDetail = (id: string) => router.push(`/farms/${id}`);
 
-    const openScanner = (farm: Farm) =>
-        setScannerNotice(`Preparando la cámara para analizar plagas en ${farm.name}…`);
+    const openScanner = () => router.push('/diagnosis');
 
     return {
         farms,

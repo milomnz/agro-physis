@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native';
 
 import Badge from '../../../components/Badge';
+import Button from '../../../components/Button';
 import Card from '../../../components/Card';
 import { useAccessibility } from '../../../accessibility/context';
 import type { Pest } from '../../../services/pests';
@@ -10,19 +11,27 @@ import type { PestMatch } from '../../../utils/symptom-diagnosis';
 interface PestMatchCardProps {
   match: PestMatch;
   rank: number;
-  onPress: (pest: Pest) => void;
+  savedPestId?: string;
+  saving?: boolean;
+  onSaveToHistory: (pest: Pest) => void;
+  onOpenDetail: (pestId: string) => void;
 }
 
-export default function PestMatchCard({ match, rank, onPress }: PestMatchCardProps) {
+export default function PestMatchCard({
+  match,
+  rank,
+  savedPestId,
+  saving = false,
+  onSaveToHistory,
+  onOpenDetail,
+}: PestMatchCardProps) {
   const { palette } = useAccessibility();
   const { pest, score, answered } = match;
   const position = rank === 1 ? 'Más probable' : `Opción ${rank}`;
 
   return (
     <Card
-      onPress={() => onPress(pest)}
       accessibilityLabel={`${position}: ${pest.commonName}, severidad ${pest.severity}. Coincide con ${score} de ${answered} respuestas`}
-      accessibilityHint="Abre el detalle de la plaga"
     >
       <Text className={`text-xs font-inter-bold uppercase ${palette.sub}`}>{position}</Text>
       <View className="gap-0.5">
@@ -42,8 +51,28 @@ export default function PestMatchCard({ match, rank, onPress }: PestMatchCardPro
         <Text className="font-mono-bold">{answered}</Text> respuestas
       </Text>
       {pest.symptoms.length > 0 ? (
-        <Text className={`${type.caption} ${palette.faint}`}>Síntomas: {pest.symptoms.join(', ')}</Text>
+        <Text className={`${type.caption} ${palette.faint}`}>
+          Síntomas: {pest.symptoms.join(', ')}
+        </Text>
       ) : null}
+
+      <View className="mt-2">
+        {savedPestId ? (
+          <Button
+            text="Ver plaga y fotos en el historial"
+            icon="images-outline"
+            secondary
+            onPress={() => onOpenDetail(savedPestId)}
+          />
+        ) : (
+          <Button
+            text={saving ? 'Guardando en el historial…' : 'Guardar en el historial del cultivo'}
+            icon="bookmark-outline"
+            onPress={() => onSaveToHistory(pest)}
+            disabled={saving}
+          />
+        )}
+      </View>
     </Card>
   );
 }

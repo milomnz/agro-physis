@@ -32,7 +32,7 @@ export interface DiagnosisAnalysisResult {
 interface GeminiCandidateResponse {
   candidates?: Array<{
     content?: {
-      parts?: Array<{ text?: string }>;
+      parts?: Array<{ text?: string; thought?: boolean }>;
     };
   }>;
 }
@@ -45,19 +45,46 @@ interface GeminiRawMatch {
   score?: unknown;
 }
 
-const QUESTION_LABELS: Record<string, Record<string, { label: string; keywords: string[] }>> = {
+const QUESTION_LABELS: Record<
+  string,
+  Record<string, { label: string; keywords: string[] }>
+> = {
   zona: {
     hojas: { label: 'En las hojas', keywords: ['hoja', 'follaje', 'foliar'] },
-    tallos: { label: 'En tallos o ramas', keywords: ['tallo', 'rama', 'tronco', 'brote'] },
-    frutos: { label: 'En frutos o flores', keywords: ['fruto', 'flor', 'grano', 'cereza', 'mazorca'] },
-    raices: { label: 'En raíces o base', keywords: ['raiz', 'raices', 'cuello', 'base', 'suelo'] },
+    tallos: {
+      label: 'En tallos o ramas',
+      keywords: ['tallo', 'rama', 'tronco', 'brote'],
+    },
+    frutos: {
+      label: 'En frutos o flores',
+      keywords: ['fruto', 'flor', 'grano', 'cereza', 'mazorca'],
+    },
+    raices: {
+      label: 'En raíces o base',
+      keywords: ['raiz', 'raices', 'cuello', 'base', 'suelo'],
+    },
   },
   aspecto: {
-    manchas: { label: 'Manchas', keywords: ['mancha', 'lesion', 'necros', 'pecas'] },
-    amarillo: { label: 'Se pone amarilla', keywords: ['amarill', 'clorosis', 'palid', 'decolor'] },
+    manchas: {
+      label: 'Manchas',
+      keywords: ['mancha', 'lesion', 'necros', 'pecas'],
+    },
+    amarillo: {
+      label: 'Se pone amarilla',
+      keywords: ['amarill', 'clorosis', 'palid', 'decolor'],
+    },
     agujeros: {
       label: 'Agujeros o mordidas',
-      keywords: ['agujero', 'mordid', 'mordedur', 'roid', 'perfor', 'comid', 'defolia', 'galeria'],
+      keywords: [
+        'agujero',
+        'mordid',
+        'mordedur',
+        'roid',
+        'perfor',
+        'comid',
+        'defolia',
+        'galeria',
+      ],
     },
     marchita: {
       label: 'Se marchita o se seca',
@@ -83,7 +110,18 @@ const QUESTION_LABELS: Record<string, Record<string, { label: string; keywords: 
     },
     polvo: {
       label: 'Polvo, moho o pelusa',
-      keywords: ['polvo', 'moho', 'hongo', 'pelusa', 'algodon', 'ceniza', 'roya', 'mildiu', 'oidio', 'pustula'],
+      keywords: [
+        'polvo',
+        'moho',
+        'hongo',
+        'pelusa',
+        'algodon',
+        'ceniza',
+        'roya',
+        'mildiu',
+        'oidio',
+        'pustula',
+      ],
     },
     telarana: {
       label: 'Telarañas o puntos diminutos',
@@ -96,47 +134,71 @@ const QUESTION_LABELS: Record<string, Record<string, { label: string; keywords: 
   },
 };
 
-const BASE_PEST_CATALOG: Array<Omit<DiagnosisPestCandidate, 'id' | 'cropId' | 'imageReferences'>> = [
+const BASE_PEST_CATALOG: Array<
+  Omit<DiagnosisPestCandidate, 'id' | 'cropId' | 'imageReferences'>
+> = [
   {
     commonName: 'Roya foliar',
     scientificName: 'Hemileia vastatrix',
     severity: Severity.ALTA,
-    symptoms: ['Manchas amarillas en las hojas', 'Polvo o pústulas anaranjadas en el envés', 'Caída de hojas'],
+    symptoms: [
+      'Manchas amarillas en las hojas',
+      'Polvo o pústulas anaranjadas en el envés',
+      'Caída de hojas',
+    ],
     affectedCrops: [],
   },
   {
     commonName: 'Tizón temprano',
     scientificName: 'Alternaria solani',
     severity: Severity.MEDIA,
-    symptoms: ['Manchas oscuras concéntricas en las hojas', 'Amarillamiento foliar', 'Hojas que se secan'],
+    symptoms: [
+      'Manchas oscuras concéntricas en las hojas',
+      'Amarillamiento foliar',
+      'Hojas que se secan',
+    ],
     affectedCrops: [],
   },
   {
     commonName: 'Gusano o larva defoliadora',
     scientificName: 'Spodoptera frugiperda',
     severity: Severity.ALTA,
-    symptoms: ['Agujeros o mordeduras en las hojas', 'Presencia de larvas o gusanos en brotes y tallos'],
+    symptoms: [
+      'Agujeros o mordeduras en las hojas',
+      'Presencia de larvas o gusanos en brotes y tallos',
+    ],
     affectedCrops: [],
   },
   {
     commonName: 'Pulgón o áfido',
     scientificName: 'Aphis gossypii',
     severity: Severity.MEDIA,
-    symptoms: ['Hojas amarillas y enrolladas', 'Insectos pequeños agrupados en hojas y tallos tiernos'],
+    symptoms: [
+      'Hojas amarillas y enrolladas',
+      'Insectos pequeños agrupados en hojas y tallos tiernos',
+    ],
     affectedCrops: [],
   },
   {
     commonName: 'Ácaro o araña roja',
     scientificName: 'Tetranychus urticae',
     severity: Severity.MEDIA,
-    symptoms: ['Puntos diminutos amarillos en las hojas', 'Telarañas finas', 'Hojas que se secan'],
+    symptoms: [
+      'Puntos diminutos amarillos en las hojas',
+      'Telarañas finas',
+      'Hojas que se secan',
+    ],
     affectedCrops: [],
   },
   {
     commonName: 'Marchitez o pudrición radicular',
     scientificName: 'Fusarium oxysporum',
     severity: Severity.ALTA,
-    symptoms: ['Planta que se marchita o se seca', 'Pudrición en raíces o base del tallo', 'Clorosis general'],
+    symptoms: [
+      'Planta que se marchita o se seca',
+      'Pudrición en raíces o base del tallo',
+      'Clorosis general',
+    ],
     affectedCrops: [],
   },
 ];
@@ -169,7 +231,10 @@ export class DiagnosisService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async analyze(ownerId: string, dto: AnalyzeDiagnosisDto): Promise<DiagnosisAnalysisResult> {
+  async analyze(
+    ownerId: string,
+    dto: AnalyzeDiagnosisDto,
+  ): Promise<DiagnosisAnalysisResult> {
     const crop = await this.cropsService.findOne(dto.cropId, ownerId);
     const existingPests = await this.pestsService.findAll(ownerId, dto.cropId);
 
@@ -196,9 +261,7 @@ export class DiagnosisService {
         ...item,
         pest: {
           ...item.pest,
-          imageReferences: imageUrl
-            ? [imageUrl]
-            : item.pest.imageReferences,
+          imageReferences: imageUrl ? [imageUrl] : item.pest.imageReferences,
         },
       }));
 
@@ -281,52 +344,133 @@ export class DiagnosisService {
     const parts: Array<Record<string, unknown>> = [{ text: prompt }];
 
     if (imageBase64) {
-      const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '').trim();
+      const cleanBase64 = imageBase64
+        .replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '')
+        .trim();
       if (cleanBase64) {
         parts.push({
-          inline_data: {
-            mime_type: mimeType || 'image/jpeg',
+          inlineData: {
+            mimeType: mimeType || 'image/jpeg',
             data: cleanBase64,
           },
         });
       }
     }
 
+    const configuredModel = this.configService
+      .get<string>('GEMINI_MODEL')
+      ?.trim();
+    const candidateModels = configuredModel
+      ? [configuredModel, 'gemini-3.8-flash']
+      : ['gemini-3.8-flash', 'gemini-3.8-flash'];
+    const isVertexExpressKey = apiKey.startsWith('AQ.');
+
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-        {
+      let payload: GeminiCandidateResponse | null = null;
+
+      for (let attempt = 0; attempt < candidateModels.length; attempt++) {
+        const modelName = candidateModels[attempt];
+        const endpoint = isVertexExpressKey
+          ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`
+          : `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(50000),
           body: JSON.stringify({
-            contents: [{ parts }],
+            contents: [{ role: 'user', parts }],
             generationConfig: {
               temperature: 0.2,
               responseMimeType: 'application/json',
+              thinkingConfig: {
+                thinkingBudget: 0,
+              },
             },
           }),
-        },
-      );
+        });
 
-      if (!response.ok) {
-        this.logger.warn(`Gemini API respondió con estado ${response.status}. Usando catálogo local.`);
+        if (response.ok) {
+          payload = (await response.json()) as GeminiCandidateResponse;
+          break;
+        }
+
+        const errorText = await response.text().catch(() => '');
+        this.logger.warn(
+          `Intento ${attempt + 1}/${candidateModels.length} (${modelName}) respondió ${response.status} (${errorText.slice(0, 140)}).`,
+        );
+
+        if (response.status === 503 || response.status === 429) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+      }
+
+      if (!payload) {
+        this.logger.warn(
+          'Todos los intentos a Gemini fallaron. Usando catálogo local.',
+        );
         return null;
       }
 
-      const payload = (await response.json()) as GeminiCandidateResponse;
-      const rawText = payload.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      const candidateParts = payload.candidates?.[0]?.content?.parts ?? [];
+      const textPart =
+        [...candidateParts]
+          .reverse()
+          .find(
+            (p) =>
+              !p.thought &&
+              typeof p.text === 'string' &&
+              p.text.trim().length > 0,
+          ) ??
+        candidateParts.find(
+          (p) => typeof p.text === 'string' && p.text.trim().length > 0,
+        );
+
+      const rawText = textPart?.text
+        ?.replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+
       if (!rawText) {
+        this.logger.warn(
+          'Gemini respondió sin texto útil. Usando catálogo local.',
+        );
         return null;
       }
 
       const parsed = JSON.parse(rawText) as unknown;
-      const list = Array.isArray(parsed) ? (parsed as GeminiRawMatch[]) : [];
+      let list: GeminiRawMatch[] = [];
+      if (Array.isArray(parsed)) {
+        list = parsed as GeminiRawMatch[];
+      } else if (parsed && typeof parsed === 'object') {
+        const obj = parsed as Record<string, unknown>;
+        const nestedArray = Object.values(obj).find((val) =>
+          Array.isArray(val),
+        );
+        if (Array.isArray(nestedArray)) {
+          list = nestedArray as GeminiRawMatch[];
+        } else if (typeof obj.commonName === 'string') {
+          list = [obj as GeminiRawMatch];
+        }
+      }
+
       if (list.length === 0) {
+        this.logger.warn(
+          `Gemini devolvió JSON sin elementos: ${rawText.slice(0, 140)}`,
+        );
         return null;
       }
 
+      this.logger.log(
+        `Diagnóstico generado con Gemini: ${list.length} plaga(s) probable(s).`,
+      );
+
       return list.slice(0, 3).map((item, idx) => {
-        const rawSeverity = typeof item.severity === 'string' ? item.severity.toLowerCase() : 'media';
+        const rawSeverity =
+          typeof item.severity === 'string'
+            ? item.severity.toLowerCase()
+            : 'media';
         const severity: Severity =
           rawSeverity === 'alta'
             ? Severity.ALTA
@@ -335,10 +479,15 @@ export class DiagnosisService {
               : Severity.MEDIA;
 
         const symptoms = Array.isArray(item.symptoms)
-          ? item.symptoms.filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+          ? item.symptoms.filter(
+              (s): s is string => typeof s === 'string' && s.trim().length > 0,
+            )
           : symptomLabels;
 
-        const rawScore = typeof item.score === 'number' ? Math.round(item.score) : answeredCount - idx;
+        const rawScore =
+          typeof item.score === 'number'
+            ? Math.round(item.score)
+            : answeredCount - idx;
         const score = Math.min(Math.max(rawScore, 1), answeredCount);
 
         return {
@@ -350,7 +499,8 @@ export class DiagnosisService {
                 ? item.commonName.trim()
                 : `Plaga probable ${idx + 1}`,
             scientificName:
-              typeof item.scientificName === 'string' && item.scientificName.trim()
+              typeof item.scientificName === 'string' &&
+              item.scientificName.trim()
                 ? item.scientificName.trim()
                 : null,
             severity,
@@ -378,18 +528,24 @@ export class DiagnosisService {
     species: string,
     answeredEntries: Array<{ label: string; keywords: string[] }>,
   ): DiagnosisMatchItem[] {
-    const baseCandidates: DiagnosisPestCandidate[] = BASE_PEST_CATALOG.map((item, index) => ({
-      ...item,
-      id: `catalog-${index + 1}`,
-      cropId,
-      affectedCrops: [species],
-      imageReferences: [],
-    }));
+    const baseCandidates: DiagnosisPestCandidate[] = BASE_PEST_CATALOG.map(
+      (item, index) => ({
+        ...item,
+        id: `catalog-${index + 1}`,
+        cropId,
+        affectedCrops: [species],
+        imageReferences: [],
+      }),
+    );
 
-    const existingNames = new Set(userPests.map((p) => normalizeText(p.commonName)));
+    const existingNames = new Set(
+      userPests.map((p) => normalizeText(p.commonName)),
+    );
     const combined = [
       ...userPests,
-      ...baseCandidates.filter((c) => !existingNames.has(normalizeText(c.commonName))),
+      ...baseCandidates.filter(
+        (c) => !existingNames.has(normalizeText(c.commonName)),
+      ),
     ];
 
     if (answeredEntries.length === 0) {
@@ -403,7 +559,9 @@ export class DiagnosisService {
     const scored = combined
       .map((pest) => {
         const text = normalizeText(
-          [pest.commonName, pest.scientificName ?? '', ...pest.symptoms].join(' '),
+          [pest.commonName, pest.scientificName ?? '', ...pest.symptoms].join(
+            ' ',
+          ),
         );
         const score = answeredEntries.filter((option) =>
           option.keywords.some((kw) => text.includes(kw)),
