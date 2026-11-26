@@ -1,6 +1,11 @@
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
+import * as bcrypt from 'bcryptjs';
 import { DisabilityType, User, UserRole } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -100,6 +105,28 @@ describe('AuthService', () => {
       usersService.findById.mockResolvedValue(sampleUser);
       const res = await service.perfil('user-1');
       expect(res).not.toHaveProperty('pushToken');
+    });
+
+    it('lanza UnauthorizedException si el usuario está inactivo', async () => {
+      usersService.findById.mockResolvedValue({ ...sampleUser, isActive: false });
+      await expect(service.perfil('user-1')).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+    });
+  });
+
+  describe('login', () => {
+    it('lanza ForbiddenException si las credenciales son válidas pero la cuenta está desactivada', async () => {
+      const hashedPassword = await bcrypt.hash('secret123', 4);
+      usersService.findByEmail.mockResolvedValue({
+        ...sampleUser,
+        password: hashedPassword,
+        isActive: false,
+      });
+
+      await expect(
+        service.login({ email: 'ana@example.com', password: 'secret123' }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 

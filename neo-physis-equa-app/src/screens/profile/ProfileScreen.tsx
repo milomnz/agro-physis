@@ -19,6 +19,7 @@ import { useEditProfile } from '../../hooks/useEditProfile';
 import { useRequireSession } from '../../hooks/useRequireSession';
 import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { useSession } from '../../hooks/useSession';
+import { USER_ROLE_LABELS, type UserRole } from '../../services/admin';
 import { space, type } from '../../theme/tokens';
 import AccessibilityPreferences from '../auth/components/AccessibilityPreferences';
 import DisabilitySelector from '../auth/components/DisabilitySelector';
@@ -122,6 +123,17 @@ export default function ProfileScreen() {
                   Adaptaciones activas para tu experiencia
                 </Text>
               </View>
+              <ProfileRow
+                icon="shield-checkmark-outline"
+                label="Rol en la plataforma"
+                value={session.role ?? 'productor'}
+                badgeLabel={
+                  USER_ROLE_LABELS[(session.role as UserRole) ?? 'productor'] ??
+                  session.role ??
+                  'Productor'
+                }
+              />
+              <View className={`h-px ${palette.divider}`} />
               <ProfileRow
                 icon="body-outline"
                 label="Tipo de discapacidad"

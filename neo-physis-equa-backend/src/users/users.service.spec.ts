@@ -47,6 +47,20 @@ describe('UsersService', () => {
     service = moduleRef.get(UsersService);
   });
 
+  describe('create', () => {
+    it('asigna siempre role PRODUCTOR e isActive true en el registro público', async () => {
+      const created = await service.create({
+        name: 'Pedro Campo',
+        email: 'pedro@example.com',
+        password: 'password123',
+      });
+
+      expect(created.role).toBe(UserRole.PRODUCTOR);
+      expect(created.isActive).toBe(true);
+      expect(repo.save).toHaveBeenCalled();
+    });
+  });
+
   describe('updateProfile', () => {
     it('lanza NotFoundException si el usuario no existe', async () => {
       repo.findOne.mockResolvedValue(null);

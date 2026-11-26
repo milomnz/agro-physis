@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
@@ -45,6 +50,12 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    if (!user.isActive) {
+      throw new ForbiddenException(
+        'Tu cuenta ha sido desactivada. Contacta al administrador.',
+      );
+    }
+
     const token = this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
     return {
       token,
@@ -60,8 +71,8 @@ export class AuthService {
 
   async perfil(id: string): Promise<AuthResponse> {
     const user = await this.usersService.findById(id);
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Usuario no encontrado o cuenta inactiva');
     }
     return {
       token: null,
