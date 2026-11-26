@@ -1,6 +1,7 @@
 import { apiClient, getAuthHeaders } from './api';
 
 export type UserRole = 'productor' | 'colaborador' | 'admin';
+export type PestSeverity = 'baja' | 'media' | 'alta';
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   productor: 'Productor',
@@ -20,6 +21,30 @@ export interface AdminUserSummary {
   updatedAt: string;
 }
 
+export interface TopPestMetric {
+  commonName: string;
+  scientificName: string | null;
+  count: number;
+  highSeverityCount: number;
+  dominantSeverity: PestSeverity;
+}
+
+export interface RecentPestAlert {
+  id: string;
+  commonName: string;
+  scientificName: string | null;
+  severity: PestSeverity;
+  cropSpecies: string;
+  farmName: string;
+  ownerName: string;
+  createdAt: string;
+}
+
+export interface TopCropMetric {
+  species: string;
+  count: number;
+}
+
 export interface AdminMetrics {
   users: {
     total: number;
@@ -33,10 +58,14 @@ export interface AdminMetrics {
   };
   crops: {
     total: number;
+    topSpecies: TopCropMetric[];
   };
   pests: {
     total: number;
     highSeverity: number;
+    bySeverity: Record<PestSeverity, number>;
+    topPests: TopPestMetric[];
+    recentAlerts: RecentPestAlert[];
   };
 }
 

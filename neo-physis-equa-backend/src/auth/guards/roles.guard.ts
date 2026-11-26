@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate {
 
     if (!userRole || !requiredRoles.includes(userRole as UserRole)) {
       throw new ForbiddenException(
-        'No tienes permisos de administrador para realizar esta acción',
+        'No tienes permisos suficientes para realizar esta acción',
       );
     }
 

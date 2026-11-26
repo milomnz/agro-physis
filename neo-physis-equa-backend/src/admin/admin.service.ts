@@ -16,6 +16,9 @@ import {
 import {
   AdminMetricsResponse,
   AdminUserSummary,
+  RecentPestAlert,
+  TopCropMetric,
+  TopPestMetric,
 } from './dto/admin-user-response.dto';
 import { QueryAdminUsersDto } from './dto/query-admin-users.dto';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
@@ -51,7 +54,12 @@ export class AdminService {
       totalFarms,
       totalCrops,
       totalPests,
+      lowSeverityPests,
+      mediumSeverityPests,
       highSeverityPests,
+      topPestRows,
+      recentPestEntities,
+      topCropRows,
     ] = await Promise.all([
       this.userRepository.count(),
       this.userRepository.count({ where: { isActive: true } }),
@@ -64,8 +72,89 @@ export class AdminService {
       this.farmRepository.count(),
       this.cropRepository.count(),
       this.pestRepository.count(),
+      this.pestRepository.count({ where: { severity: Severity.BAJA } }),
+      this.pestRepository.count({ where: { severity: Severity.MEDIA } }),
       this.pestRepository.count({ where: { severity: Severity.ALTA } }),
+      this.pestRepository
+        .createQueryBuilder('pest')
+        .select('MAX(pest.commonName)', 'commonName')
+        .addSelect('MAX(pest.scientificName)', 'scientificName')
+        .addSelect('COUNT(pest.id)', 'count')
+        .addSelect(
+          `SUM(CASE WHEN pest.severity = '${Severity.ALTA}' THEN 1 ELSE 0 END)`,
+          'highCount',
+        )
+        .addSelect(
+          `SUM(CASE WHEN pest.severity = '${Severity.MEDIA}' THEN 1 ELSE 0 END)`,
+          'mediumCount',
+        )
+        .addSelect(
+          `SUM(CASE WHEN pest.severity = '${Severity.BAJA}' THEN 1 ELSE 0 END)`,
+          'lowCount',
+        )
+        .groupBy('LOWER(TRIM(pest.commonName))')
+        .orderBy('COUNT(pest.id)', 'DESC')
+        .addOrderBy('MAX(pest.commonName)', 'ASC')
+        .limit(5)
+        .getRawMany<{
+          commonName: string;
+          scientificName: string | null;
+          count: string;
+          highCount: string;
+          mediumCount: string;
+          lowCount: string;
+        }>(),
+      this.pestRepository.find({
+        relations: { crop: { farm: { owner: true } } },
+        order: { createdAt: 'DESC' },
+        take: 5,
+      }),
+      this.cropRepository
+        .createQueryBuilder('crop')
+        .select('MAX(crop.species)', 'species')
+        .addSelect('COUNT(crop.id)', 'count')
+        .groupBy('LOWER(TRIM(crop.species))')
+        .orderBy('COUNT(crop.id)', 'DESC')
+        .addOrderBy('MAX(crop.species)', 'ASC')
+        .limit(5)
+        .getRawMany<{ species: string; count: string }>(),
     ]);
+
+    const topPests: TopPestMetric[] = topPestRows.map((row) => {
+      const high = Number(row.highCount) || 0;
+      const medium = Number(row.mediumCount) || 0;
+      const low = Number(row.lowCount) || 0;
+      const dominantSeverity =
+        high >= medium && high >= low && high > 0
+          ? Severity.ALTA
+          : medium >= low && medium > 0
+            ? Severity.MEDIA
+            : Severity.BAJA;
+
+      return {
+        commonName: row.commonName,
+        scientificName: row.scientificName ?? null,
+        count: Number(row.count) || 0,
+        highSeverityCount: high,
+        dominantSeverity,
+      };
+    });
+
+    const recentAlerts: RecentPestAlert[] = recentPestEntities.map((pest) => ({
+      id: pest.id,
+      commonName: pest.commonName,
+      scientificName: pest.scientificName ?? null,
+      severity: pest.severity,
+      cropSpecies: pest.crop?.species ?? 'Cultivo',
+      farmName: pest.crop?.farm?.name ?? 'Finca',
+      ownerName: pest.crop?.farm?.owner?.name ?? 'Productor',
+      createdAt: pest.createdAt,
+    }));
+
+    const topSpecies: TopCropMetric[] = topCropRows.map((row) => ({
+      species: row.species,
+      count: Number(row.count) || 0,
+    }));
 
     return {
       users: {
@@ -84,10 +173,18 @@ export class AdminService {
       },
       crops: {
         total: totalCrops,
+        topSpecies,
       },
       pests: {
         total: totalPests,
         highSeverity: highSeverityPests,
+        bySeverity: {
+          [Severity.BAJA]: lowSeverityPests,
+          [Severity.MEDIA]: mediumSeverityPests,
+          [Severity.ALTA]: highSeverityPests,
+        },
+        topPests,
+        recentAlerts,
       },
     };
   }

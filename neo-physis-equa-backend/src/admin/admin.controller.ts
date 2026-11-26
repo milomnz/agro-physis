@@ -28,21 +28,23 @@ interface AuthenticatedRequest extends Request {
 
 @Controller('api/admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('metrics')
+  @Roles(UserRole.ADMIN, UserRole.COLABORADOR)
   getMetrics(): Promise<AdminMetricsResponse> {
     return this.adminService.getMetrics();
   }
 
   @Get('users')
+  @Roles(UserRole.ADMIN)
   findAllUsers(@Query() query: QueryAdminUsersDto): Promise<AdminUserSummary[]> {
     return this.adminService.findAllUsers(query);
   }
 
   @Get('users/:id')
+  @Roles(UserRole.ADMIN)
   findOneUser(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<AdminUserSummary> {
@@ -50,6 +52,7 @@ export class AdminController {
   }
 
   @Patch('users/:id')
+  @Roles(UserRole.ADMIN)
   updateUser(
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) id: string,

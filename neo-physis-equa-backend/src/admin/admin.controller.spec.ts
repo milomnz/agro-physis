@@ -82,9 +82,28 @@ describe('AdminController & DTOs', () => {
     });
   });
 
-  it('protege el controlador completo con @Roles(UserRole.ADMIN)', () => {
-    const roles = Reflect.getMetadata(ROLES_KEY, AdminController);
-    expect(roles).toEqual([UserRole.ADMIN]);
+  it('permite admin y colaborador en getMetrics, pero restringe gestión de usuarios solo a admin', () => {
+    const metricsRoles = Reflect.getMetadata(
+      ROLES_KEY,
+      AdminController.prototype.getMetrics,
+    );
+    const listUsersRoles = Reflect.getMetadata(
+      ROLES_KEY,
+      AdminController.prototype.findAllUsers,
+    );
+    const oneUserRoles = Reflect.getMetadata(
+      ROLES_KEY,
+      AdminController.prototype.findOneUser,
+    );
+    const updateUserRoles = Reflect.getMetadata(
+      ROLES_KEY,
+      AdminController.prototype.updateUser,
+    );
+
+    expect(metricsRoles).toEqual([UserRole.ADMIN, UserRole.COLABORADOR]);
+    expect(listUsersRoles).toEqual([UserRole.ADMIN]);
+    expect(oneUserRoles).toEqual([UserRole.ADMIN]);
+    expect(updateUserRoles).toEqual([UserRole.ADMIN]);
   });
 
   it('delega getMetrics, findAllUsers, findOneUser y updateUser en AdminService', async () => {

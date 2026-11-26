@@ -70,20 +70,32 @@ export default function HomeScreen() {
           Tu campo
         </Text>
 
-        {session.role === 'admin' ? (
+        {session.role === 'admin' || session.role === 'colaborador' ? (
           <Card
             onPress={() => router.push('/admin')}
-            accessibilityLabel="Panel de administración"
-            accessibilityHint="Gestiona usuarios, roles, estado de cuentas y métricas globales"
+            accessibilityLabel={
+              session.role === 'admin'
+                ? 'Panel de administración'
+                : 'Panel fitosanitario'
+            }
+            accessibilityHint={
+              session.role === 'admin'
+                ? 'Dashboard de plagas principales, métricas globales y gestión de usuarios'
+                : 'Consulta el dashboard de plagas principales y métricas globales'
+            }
           >
             <View className="flex-row items-center gap-4">
               <IconBadge icon="shield-checkmark" />
               <View className="flex-1 gap-0.5">
                 <Text className={`${type.subheading} ${palette.title}`}>
-                  Panel de administración
+                  {session.role === 'admin'
+                    ? 'Panel de administración'
+                    : 'Panel fitosanitario'}
                 </Text>
                 <Text className={`${type.caption} ${palette.sub}`}>
-                  Usuarios, roles, estado de cuentas y métricas globales
+                  {session.role === 'admin'
+                    ? 'Dashboard de plagas, métricas globales y gestión de usuarios'
+                    : 'Plagas principales, alertas recientes y métricas globales'}
                 </Text>
               </View>
             </View>

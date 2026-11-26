@@ -30,8 +30,33 @@ describe('AdminService', () => {
     count: jest.Mock;
     createQueryBuilder: jest.Mock;
   };
-  let cropRepo: { count: jest.Mock };
-  let pestRepo: { count: jest.Mock };
+  let cropQueryBuilder: {
+    select: jest.Mock;
+    addSelect: jest.Mock;
+    groupBy: jest.Mock;
+    orderBy: jest.Mock;
+    addOrderBy: jest.Mock;
+    limit: jest.Mock;
+    getRawMany: jest.Mock;
+  };
+  let cropRepo: {
+    count: jest.Mock;
+    createQueryBuilder: jest.Mock;
+  };
+  let pestQueryBuilder: {
+    select: jest.Mock;
+    addSelect: jest.Mock;
+    groupBy: jest.Mock;
+    orderBy: jest.Mock;
+    addOrderBy: jest.Mock;
+    limit: jest.Mock;
+    getRawMany: jest.Mock;
+  };
+  let pestRepo: {
+    count: jest.Mock;
+    find: jest.Mock;
+    createQueryBuilder: jest.Mock;
+  };
 
   const makeUser = (overrides: Partial<User> = {}): User => ({
     id: 'user-1',
@@ -70,8 +95,36 @@ describe('AdminService', () => {
       createQueryBuilder: jest.fn().mockReturnValue(farmQueryBuilder),
     };
 
-    cropRepo = { count: jest.fn().mockResolvedValue(0) };
-    pestRepo = { count: jest.fn().mockResolvedValue(0) };
+    cropQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+
+    cropRepo = {
+      count: jest.fn().mockResolvedValue(0),
+      createQueryBuilder: jest.fn().mockReturnValue(cropQueryBuilder),
+    };
+
+    pestQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      addOrderBy: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+
+    pestRepo = {
+      count: jest.fn().mockResolvedValue(0),
+      find: jest.fn().mockResolvedValue([]),
+      createQueryBuilder: jest.fn().mockReturnValue(pestQueryBuilder),
+    };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -87,7 +140,7 @@ describe('AdminService', () => {
   });
 
   describe('getMetrics', () => {
-    it('retorna las métricas globales agregadas de usuarios, fincas, cultivos y plagas', async () => {
+    it('retorna las métricas globales agregadas, top plagas, severidad, alertas recientes y top cultivos', async () => {
       userRepo.count
         .mockResolvedValueOnce(10) // totalUsers
         .mockResolvedValueOnce(8) // activeUsers
@@ -99,11 +152,46 @@ describe('AdminService', () => {
       cropRepo.count.mockResolvedValueOnce(28);
       pestRepo.count
         .mockResolvedValueOnce(12) // totalPests
+        .mockResolvedValueOnce(4) // lowSeverityPests
+        .mockResolvedValueOnce(5) // mediumSeverityPests
         .mockResolvedValueOnce(3); // highSeverityPests
+
+      pestQueryBuilder.getRawMany.mockResolvedValueOnce([
+        {
+          commonName: 'Roya del café',
+          scientificName: 'Hemileia vastatrix',
+          count: '6',
+          highCount: '3',
+          mediumCount: '2',
+          lowCount: '1',
+        },
+      ]);
+
+      const alertDate = new Date('2026-11-20T10:00:00Z');
+      pestRepo.find.mockResolvedValueOnce([
+        {
+          id: 'pest-1',
+          commonName: 'Roya del café',
+          scientificName: 'Hemileia vastatrix',
+          severity: Severity.ALTA,
+          createdAt: alertDate,
+          crop: {
+            species: 'Café',
+            farm: {
+              name: 'Finca El Paraíso',
+              owner: { name: 'Carlos Productor' },
+            },
+          },
+        },
+      ]);
+
+      cropQueryBuilder.getRawMany.mockResolvedValueOnce([
+        { species: 'Café', count: '14' },
+      ]);
 
       const metrics = await service.getMetrics();
 
-      expect(pestRepo.count).toHaveBeenNthCalledWith(2, {
+      expect(pestRepo.count).toHaveBeenNthCalledWith(4, {
         where: { severity: Severity.ALTA },
       });
       expect(metrics).toEqual({
@@ -119,8 +207,40 @@ describe('AdminService', () => {
           },
         },
         farms: { total: 15 },
-        crops: { total: 28 },
-        pests: { total: 12, highSeverity: 3 },
+        crops: {
+          total: 28,
+          topSpecies: [{ species: 'Café', count: 14 }],
+        },
+        pests: {
+          total: 12,
+          highSeverity: 3,
+          bySeverity: {
+            [Severity.BAJA]: 4,
+            [Severity.MEDIA]: 5,
+            [Severity.ALTA]: 3,
+          },
+          topPests: [
+            {
+              commonName: 'Roya del café',
+              scientificName: 'Hemileia vastatrix',
+              count: 6,
+              highSeverityCount: 3,
+              dominantSeverity: Severity.ALTA,
+            },
+          ],
+          recentAlerts: [
+            {
+              id: 'pest-1',
+              commonName: 'Roya del café',
+              scientificName: 'Hemileia vastatrix',
+              severity: Severity.ALTA,
+              cropSpecies: 'Café',
+              farmName: 'Finca El Paraíso',
+              ownerName: 'Carlos Productor',
+              createdAt: alertDate,
+            },
+          ],
+        },
       });
     });
   });

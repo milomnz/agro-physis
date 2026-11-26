@@ -16,6 +16,8 @@ import { useDebouncedValue } from './useDebouncedValue';
 import { useRequireSession } from './useRequireSession';
 import { useSession } from './useSession';
 
+export type AdminPanelTab = 'dashboard' | 'users';
+
 export function useAdminPanel() {
   const router = useRouter();
   const sessionReady = useRequireSession();
@@ -23,7 +25,10 @@ export function useAdminPanel() {
   const { notifySuccess } = useActionFeedback();
 
   const isAdmin = session?.role === 'admin';
+  const isColaborador = session?.role === 'colaborador';
+  const canAccessPanel = isAdmin || isColaborador;
 
+  const [activeTab, setActiveTab] = useState<AdminPanelTab>('dashboard');
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [users, setUsers] = useState<AdminUserSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,35 +50,54 @@ export function useAdminPanel() {
   const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
-    if (!sessionLoading && sessionReady && session?.token && !isAdmin) {
+    if (!sessionLoading && sessionReady && session?.token && !canAccessPanel) {
       router.replace('/home');
     }
-  }, [sessionLoading, sessionReady, session?.token, isAdmin, router]);
+  }, [sessionLoading, sessionReady, session?.token, canAccessPanel, router]);
+
+  useEffect(() => {
+    if (!isAdmin && activeTab === 'users') {
+      setActiveTab('dashboard');
+    }
+  }, [isAdmin, activeTab]);
 
   const loadData = useCallback(async () => {
-    const [nextMetrics, nextUsers] = await Promise.all([
-      getAdminMetrics(),
-      getAdminUsers(),
-    ]);
-    setMetrics(nextMetrics);
-    setUsers(nextUsers);
-  }, []);
+    if (isAdmin) {
+      const [nextMetrics, nextUsers] = await Promise.all([
+        getAdminMetrics(),
+        getAdminUsers(),
+      ]);
+      setMetrics(nextMetrics);
+      setUsers(nextUsers);
+    } else {
+      const nextMetrics = await getAdminMetrics();
+      setMetrics(nextMetrics);
+      setUsers([]);
+    }
+  }, [isAdmin]);
 
   useFocusEffect(
     useCallback(() => {
-      if (!sessionReady || !isAdmin) return;
+      if (!sessionReady || !canAccessPanel) return;
 
       let cancelled = false;
 
       (async () => {
         try {
-          const [nextMetrics, nextUsers] = await Promise.all([
-            getAdminMetrics(),
-            getAdminUsers(),
-          ]);
-          if (cancelled) return;
-          setMetrics(nextMetrics);
-          setUsers(nextUsers);
+          if (isAdmin) {
+            const [nextMetrics, nextUsers] = await Promise.all([
+              getAdminMetrics(),
+              getAdminUsers(),
+            ]);
+            if (cancelled) return;
+            setMetrics(nextMetrics);
+            setUsers(nextUsers);
+          } else {
+            const nextMetrics = await getAdminMetrics();
+            if (cancelled) return;
+            setMetrics(nextMetrics);
+            setUsers([]);
+          }
           setError('');
         } catch (err: unknown) {
           if (cancelled || isUnauthorizedError(err)) return;
@@ -91,11 +115,11 @@ export function useAdminPanel() {
         cancelled = true;
         setSuccess('');
       };
-    }, [sessionReady, isAdmin]),
+    }, [sessionReady, canAccessPanel, isAdmin]),
   );
 
   const refresh = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!canAccessPanel) return;
     setRefreshing(true);
     setError('');
     try {
@@ -110,7 +134,7 @@ export function useAdminPanel() {
     } finally {
       setRefreshing(false);
     }
-  }, [isAdmin, loadData]);
+  }, [canAccessPanel, loadData]);
 
   const toggleExpandUser = useCallback((user: AdminUserSummary) => {
     setExpandedUserId((prev) => {
@@ -229,6 +253,10 @@ export function useAdminPanel() {
     sessionLoading,
     sessionReady,
     isAdmin,
+    isColaborador,
+    canAccessPanel,
+    activeTab,
+    setActiveTab,
     metrics,
     users,
     filteredUsers,

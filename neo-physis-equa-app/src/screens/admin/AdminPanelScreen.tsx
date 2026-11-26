@@ -1,7 +1,8 @@
-import { FlatList, RefreshControl, Text, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAccessibility } from '../../accessibility/context';
+import Chip from '../../components/Chip';
 import ChipFilter, { type ChipFilterOption } from '../../components/ChipFilter';
 import ConfirmModal from '../../components/ConfirmModal';
 import EmptyState from '../../components/EmptyState';
@@ -14,6 +15,7 @@ import { useAdminPanel } from '../../hooks/useAdminPanel';
 import { useScreenSpeech } from '../../hooks/useScreenSpeech';
 import { space, type } from '../../theme/tokens';
 import AdminMetricsSection from './components/AdminMetricsSection';
+import AdminPestDashboard from './components/AdminPestDashboard';
 import AdminUserCard from './components/AdminUserCard';
 
 const ROLE_FILTER_OPTIONS: ChipFilterOption[] = [
@@ -35,6 +37,9 @@ export default function AdminPanelScreen() {
     sessionLoading,
     sessionReady,
     isAdmin,
+    canAccessPanel,
+    activeTab,
+    setActiveTab,
     metrics,
     users,
     filteredUsers,
@@ -63,24 +68,61 @@ export default function AdminPanelScreen() {
     dismissSuccess,
   } = useAdminPanel();
 
+  const topPestName = metrics?.pests.topPests[0]?.commonName;
   useScreenSpeech(
     metrics
-      ? `Panel de administración. ${metrics.users.total} usuarios registrados, ${metrics.farms.total} fincas y ${metrics.crops.total} cultivos.`
-      : 'Panel de administración.',
-    !loading && isAdmin,
+      ? `${isAdmin ? 'Panel de administración' : 'Panel fitosanitario'}. ${metrics.users.total} usuarios, ${metrics.farms.total} fincas y ${metrics.pests.total} reportes de plagas.${topPestName ? ` Plaga principal: ${topPestName}.` : ''}`
+      : isAdmin
+        ? 'Panel de administración.'
+        : 'Panel fitosanitario.',
+    !loading && canAccessPanel,
   );
 
-  if (sessionLoading || !sessionReady || !session?.token || !isAdmin || loading) {
-    return <LoadingView label="Cargando panel de administración…" />;
+  if (sessionLoading || !sessionReady || !session?.token || !canAccessPanel || loading) {
+    return (
+      <LoadingView
+        label={
+          isAdmin
+            ? 'Cargando panel de administración…'
+            : 'Cargando panel fitosanitario…'
+        }
+      />
+    );
   }
 
-  const listHeader = (
-    <View className="mb-2 gap-5">
+  const sharedTopHeader = (
+    <View className="gap-4">
       <ScreenTitle
         icon="shield-checkmark"
-        title="Administración"
-        subtitle="Métricas globales, roles y estado de las cuentas"
+        title={isAdmin ? 'Administración' : 'Panel fitosanitario'}
+        subtitle={
+          isAdmin
+            ? 'Dashboard de plagas, métricas globales y gestión de cuentas'
+            : 'Métricas globales y monitoreo de plagas principales (solo lectura)'
+        }
       />
+
+      {isAdmin ? (
+        <View
+          accessibilityRole="radiogroup"
+          className="flex-row flex-wrap gap-2"
+        >
+          <Chip
+            radio
+            label="Dashboard"
+            selected={activeTab === 'dashboard'}
+            onPress={() => setActiveTab('dashboard')}
+            accessibilityLabel="Ver dashboard de métricas y plagas principales"
+          />
+          <Chip
+            radio
+            label={`Usuarios (${users.length})`}
+            selected={activeTab === 'users'}
+            onPress={() => setActiveTab('users')}
+            accessibilityLabel={`Gestionar ${users.length} usuarios`}
+          />
+        </View>
+      ) : null}
 
       {success ? (
         <Notice variant="success" onDismiss={dismissSuccess} autoDismissMs={5000}>
@@ -93,10 +135,46 @@ export default function AdminPanelScreen() {
           {error}
         </Notice>
       ) : null}
+    </View>
+  );
 
-      {metrics ? <AdminMetricsSection metrics={metrics} /> : null}
+  const bottomPadding = Math.max(insets.bottom, space.gutter) + 16;
 
-      <View className="gap-3 pt-2">
+  if (activeTab === 'dashboard' || !isAdmin) {
+    return (
+      <Screen>
+        <ScrollView
+          contentContainerClassName="gap-5"
+          contentContainerStyle={{
+            padding: space.gutter,
+            paddingBottom: bottomPadding,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor={palette.spinner}
+              colors={[palette.spinner]}
+            />
+          }
+        >
+          {sharedTopHeader}
+          {metrics ? (
+            <>
+              <AdminMetricsSection metrics={metrics} />
+              <AdminPestDashboard metrics={metrics} />
+            </>
+          ) : null}
+        </ScrollView>
+      </Screen>
+    );
+  }
+
+  const usersListHeader = (
+    <View className="mb-2 gap-5">
+      {sharedTopHeader}
+
+      <View className="gap-3">
         <View className="flex-row items-baseline justify-between gap-2">
           <Text accessibilityRole="header" className={`${type.heading} ${palette.title}`}>
             Gestión de usuarios
@@ -139,7 +217,7 @@ export default function AdminPanelScreen() {
         contentContainerClassName="gap-4"
         contentContainerStyle={{
           padding: space.gutter,
-          paddingBottom: Math.max(insets.bottom, space.gutter) + 16,
+          paddingBottom: bottomPadding,
         }}
         refreshControl={
           <RefreshControl
@@ -149,7 +227,7 @@ export default function AdminPanelScreen() {
             colors={[palette.spinner]}
           />
         }
-        ListHeaderComponent={listHeader}
+        ListHeaderComponent={usersListHeader}
         ListEmptyComponent={
           <EmptyState
             icon="people"
