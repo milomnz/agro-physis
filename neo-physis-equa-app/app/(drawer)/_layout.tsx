@@ -50,9 +50,10 @@ function NavItem({ path, icon, label, onNavigate }: NavItemProps) {
 
 function CustomDrawerContent({ onClose }: { onClose: () => void }) {
   const { palette } = useAccessibility();
-  const { signOut } = useSession();
+  const { session, signOut } = useSession();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isAdmin = session?.role === 'admin';
 
   const navigate = (path: Href) => {
     onClose();
@@ -74,6 +75,14 @@ function CustomDrawerContent({ onClose }: { onClose: () => void }) {
           label="Diagnóstico de síntomas"
           onNavigate={navigate}
         />
+        {isAdmin ? (
+          <NavItem
+            path="/admin"
+            icon="shield-checkmark"
+            label="Administración"
+            onNavigate={navigate}
+          />
+        ) : null}
         <NavItem path="/profile" icon="person" label="Mi perfil" onNavigate={navigate} />
       </ScrollView>
 
@@ -134,6 +143,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="farms/index" options={{ title: 'Mis Fincas' }} />
       <Drawer.Screen name="crops/index" options={{ title: 'Mis Cultivos' }} />
       <Drawer.Screen name="pests/index" options={{ title: 'Plagas' }} />
+      <Drawer.Screen name="admin/index" options={{ title: 'Administración' }} />
     </Drawer>
   );
 }

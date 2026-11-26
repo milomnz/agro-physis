@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Modal, Text, View } from 'react-native';
 
 import { useAccessibility } from '../accessibility/context';
@@ -9,6 +10,8 @@ interface ConfirmModalProps {
   title: string;
   message: string;
   confirmText?: string;
+  loadingText?: string;
+  confirmIcon?: keyof typeof Ionicons.glyphMap;
   cancelText?: string;
   loading?: boolean;
   danger?: boolean;
@@ -21,6 +24,8 @@ export default function ConfirmModal({
   title,
   message,
   confirmText = 'Eliminar',
+  loadingText = 'Eliminando…',
+  confirmIcon,
   cancelText = 'Cancelar',
   loading = false,
   danger = true,
@@ -28,6 +33,7 @@ export default function ConfirmModal({
   onCancel,
 }: ConfirmModalProps) {
   const { palette } = useAccessibility();
+  const resolvedIcon = confirmIcon ?? (danger ? 'trash-outline' : undefined);
 
   return (
     <Modal
@@ -51,10 +57,10 @@ export default function ConfirmModal({
 
           <View className="mt-2 gap-3">
             <Button
-              text={loading ? 'Eliminando…' : confirmText}
+              text={loading ? loadingText : confirmText}
               onPress={onConfirm}
               danger={danger}
-              icon={danger ? 'trash-outline' : undefined}
+              icon={resolvedIcon}
               disabled={loading}
             />
             <Button text={cancelText} onPress={onCancel} secondary disabled={loading} />
@@ -64,3 +70,4 @@ export default function ConfirmModal({
     </Modal>
   );
 }
+

@@ -70,6 +70,26 @@ export default function HomeScreen() {
           Tu campo
         </Text>
 
+        {session.role === 'admin' ? (
+          <Card
+            onPress={() => router.push('/admin')}
+            accessibilityLabel="Panel de administración"
+            accessibilityHint="Gestiona usuarios, roles, estado de cuentas y métricas globales"
+          >
+            <View className="flex-row items-center gap-4">
+              <IconBadge icon="shield-checkmark" />
+              <View className="flex-1 gap-0.5">
+                <Text className={`${type.subheading} ${palette.title}`}>
+                  Panel de administración
+                </Text>
+                <Text className={`${type.caption} ${palette.sub}`}>
+                  Usuarios, roles, estado de cuentas y métricas globales
+                </Text>
+              </View>
+            </View>
+          </Card>
+        ) : null}
+
         {SHORTCUTS.map((item) => (
           <Card
             key={item.title}

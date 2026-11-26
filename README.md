@@ -106,8 +106,13 @@ El esquema se gestiona con migraciones de TypeORM (`npm run migration:run`); ver
 
 Endpoints (protegidos con JWT excepto registro/login):
 
-    /api/auth/registro  (POST)   /api/auth/login  (POST)   /api/auth/me  (GET)
+    /api/auth/registro  (POST)   /api/auth/login  (POST)   /api/auth/me  (GET, PATCH)
     /api/farms          (CRUD)   /api/crops (CRUD, filtro ?farmId=)   /api/pests (CRUD, filtro ?cropId=)
+    /api/admin/metrics  (GET, rol admin)   /api/admin/users  (GET, PATCH :id, rol admin)
+
+Para crear o promover un usuario administrador inicial (configurando `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `neo-physis-equa-backend/.env`):
+
+    npm run seed:admin
 
 Flujo de la app: Finca -> Cultivos -> Plagas (una plaga se asocia a un cultivo).
 

@@ -1,5 +1,5 @@
-import { IsBoolean, IsEmail, IsEnum, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
-import { DisabilityType, UserRole } from '../../users/entities/user.entity';
+import { IsEmail, IsEnum, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
+import { DisabilityType } from '../../users/entities/user.entity';
 
 export class RegisterDto {
   @IsString()
@@ -14,18 +14,10 @@ export class RegisterDto {
   password: string;
 
   @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
-
-  @IsOptional()
   @IsObject()
   accessibilityProfile?: Record<string, unknown>;
 
   @IsOptional()
   @IsEnum(DisabilityType)
   disabilityType?: DisabilityType;
-
-  @IsOptional()
-  @IsBoolean({ message: 'isActive debe ser booleano' })
-  isActive?: boolean;
 }

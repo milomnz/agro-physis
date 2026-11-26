@@ -4,7 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { Not, Repository } from 'typeorm';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { UpdateProfileDto } from '../auth/dto/update-profile.dto';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +18,8 @@ export class UsersService {
       email: dto.email,
       password: await bcrypt.hash(dto.password, 10),
       name: dto.name,
-      role: dto.role,
+      role: UserRole.PRODUCTOR,
+      isActive: true,
       accessibilityProfile: dto.accessibilityProfile ?? {},
       disabilityType: dto.disabilityType ?? null,
     });

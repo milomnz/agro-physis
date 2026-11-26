@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from '../../users/users.service';
 
 export interface JwtPayload {
   sub: string;
@@ -17,7 +18,10 @@ export interface AuthenticatedUser {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -26,6 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    return { id: payload.sub, email: payload.email, role: payload.role };
+    const user = await this.usersService.findById(payload.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Cuenta inactiva o no encontrada');
+    }
+    return { id: user.id, email: user.email, role: user.role };
   }
 }

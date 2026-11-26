@@ -64,6 +64,9 @@ const BADGES: Record<string, { tone: Tone; icon: keyof typeof Ionicons.glyphMap 
   visual: { tone: 'warnSoft', icon: 'eye-outline' },
   auditiva: { tone: 'okSoft', icon: 'ear-outline' },
   intelectual: { tone: 'neutral', icon: 'bulb-outline' },
+  admin: { tone: 'brand', icon: 'shield-checkmark' },
+  productor: { tone: 'okSoft', icon: 'leaf' },
+  colaborador: { tone: 'warnSoft', icon: 'people' },
 };
 
 interface BadgeProps {

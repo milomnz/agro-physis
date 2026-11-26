@@ -10,6 +10,7 @@ import { CropsModule } from './crops/crops.module';
 import { PestsModule } from './pests/pests.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DiagnosisModule } from './diagnosis/diagnosis.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DiagnosisModule } from './diagnosis/diagnosis.module';
     PestsModule,
     NotificationsModule,
     DiagnosisModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
